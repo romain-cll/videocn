@@ -42,3 +42,4 @@ next-env.d.ts
 
 # registry build output (régénéré par `pnpm registry:build`)
 /public/r
+!.env.example
