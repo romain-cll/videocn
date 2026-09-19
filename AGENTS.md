@@ -29,5 +29,10 @@ depuis un dépôt privé distinct ; c'est ce qui garantit que le lecteur reste g
 Le périmètre du MVP est figé dans `docs/mvp.md`. S'y tenir : ne pas ajouter de feature qui
 n'y figure pas sans le demander.
 
-Après toute modification, lancer `pnpm lint` et corriger les erreurs. `@shadcn/lint` est
-enregistré dans `eslint.config.mjs` ; aucune de ses règles n'est activée pour l'instant.
+Après toute modification, lancer `pnpm lint` et corriger les erreurs. `@shadcn/lint` y applique
+cinq règles en erreur : `no-raw-colors`, `no-arbitrary-values`, `no-inline-styles`,
+`no-unknown-classes`, `require-static-classes`. `no-restyle` n'est pas activée.
+
+Dans `src/components/ui/**` et `registry/**`, `no-arbitrary-values` et `require-static-classes`
+sont désactivées : ces fichiers possèdent leur apparence et ont besoin de valeurs structurelles.
+`no-raw-colors` y reste active — c'est elle qui garantit que le player hérite du thème de l'hôte.

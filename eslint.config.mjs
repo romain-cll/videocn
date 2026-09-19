@@ -6,11 +6,28 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // @shadcn/lint : plugin enregistré, aucune règle activée.
-  // Les règles disponibles et leur configuration : https://github.com/shadcn-ui/lint#rules
+  // @shadcn/lint — https://github.com/shadcn-ui/lint#rules
+  // `no-restyle` n'est volontairement pas activée.
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
     plugins: { shadcn },
+    rules: {
+      "shadcn/no-raw-colors": "error",
+      "shadcn/no-arbitrary-values": ["error", { allow: ["layout"] }],
+      "shadcn/no-inline-styles": "error",
+      "shadcn/no-unknown-classes": "error",
+      "shadcn/require-static-classes": "error",
+    },
+  },
+  // Les composants possèdent leur apparence et ont besoin de valeurs
+  // structurelles (`ring-[3px]`, pistes de quelques pixels…). `no-raw-colors`
+  // et `no-inline-styles` restent actives ici.
+  {
+    files: ["src/components/ui/**", "registry/**"],
+    rules: {
+      "shadcn/no-arbitrary-values": "off",
+      "shadcn/require-static-classes": "off",
+    },
   },
   // Override default ignores of eslint-config-next.
   globalIgnores([
