@@ -16,7 +16,9 @@ Registry shadcn distribuant un lecteur vidéo. Deux zones aux règles opposées 
   Les contraintes sont strictes et non négociables : lire `registry/README.md` avant toute
   modification. En résumé : aucun import de framework, `"use client"` partout, pas de `asChild`
   ni de `render` (l'API des primitives diffère selon que le consommateur est en `radix` ou `base`),
-  tokens sémantiques uniquement, un item = une responsabilité.
+  tokens sémantiques uniquement, un fichier = une responsabilité. Un seul item est publié,
+  `@videocn/player` : il porte tous les fichiers du lecteur dans son `files[]`. Ajouter un
+  contrôle = ajouter un fichier à cet item, jamais créer un nouvel item.
 - **`src/`** — le site Next.js. Jamais distribué, aucune de ces contraintes.
 
 Le lecteur ne doit jamais dépendre d'une API videoCn. Il consomme des formats standard du web

@@ -11,7 +11,9 @@ Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
 
 ## Contrôles
 
-Chaque contrôle est un item de registry installable seul, construit sur les primitives shadcn.
+Chaque contrôle est un fichier à part, construit sur les primitives shadcn. Un fichier par
+responsabilité, pour la lisibilité une fois le code chez l'utilisateur — mais un seul item
+publié, voir Distribution.
 
 | Contrôle | Primitive |
 | --- | --- |
@@ -64,8 +66,20 @@ fonctionnent sans configuration.
 
 ## Distribution
 
-Registry shadcn, `npx shadcn add @videocn/player`. Documentation minimale avec des exemples
-copiables tels quels.
+**Un seul item publié : `@videocn/player`.** L'utilisateur tape une commande et reçoit le
+lecteur entier, tous les fichiers nécessaires compris :
+
+```bash
+pnpm dlx shadcn@latest add @videocn/player
+```
+
+Les fichiers restent découpés un par responsabilité et atterrissent groupés dans
+`<ui>/video-player/`. Aucun contrôle n'est publié séparément : un scrubber ou un curseur de
+volume seul n'est pas un produit. Les couches réellement optionnelles — adaptateur HLS,
+storyboard — deviendront des items distincts le jour où elles existeront ; elles sont hors
+périmètre ici.
+
+Documentation minimale avec des exemples copiables tels quels.
 
 ---
 

@@ -11,8 +11,9 @@ l'utilisateur produit lui-même ou délègue.
 ## Structure
 
 ```
-registry.json          le manifeste : un objet par item distribuable
-registry/videocn/      les sources distribuées → lire registry/README.md avant d'y toucher
+registry.json          le manifeste : l'item `player` et la liste de ses fichiers
+registry/videocn/      les sources distribuées, à plat : miroir de ce que reçoit l'utilisateur
+                       dans <ui>/video-player/ → lire registry/README.md avant d'y toucher
 src/                   le site (Next.js) : landing, docs, démos — jamais distribué
 public/r/              sortie de `shadcn build`, régénérée, non versionnée
 ```
@@ -44,5 +45,9 @@ elle ne peut plus changer sans casser son projet. Elle est définie à un seul e
 ```
 
 ```bash
-npx shadcn@latest add @videocn/video-player
+pnpm dlx shadcn@latest add @videocn/player
 ```
+
+Un seul item est publié. Cette commande installe le lecteur entier — tous les fichiers
+nécessaires, groupés dans `<ui>/video-player/` — et les primitives shadcn manquantes du
+projet hôte. Aucun contrôle n'est distribué séparément.

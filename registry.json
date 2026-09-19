@@ -4,10 +4,10 @@
   "homepage": "https://videocn.dev",
   "items": [
     {
-      "name": "volume-control",
+      "name": "player",
       "type": "registry:ui",
-      "title": "Volume Control",
-      "description": "Bouton muet et curseur de volume, construits sur les primitives shadcn.",
+      "title": "Video Player",
+      "description": "Le lecteur vidéo complet : socle, contrôles, chapitres et sous-titres.",
       "registryDependencies": [
         "@shadcn/button",
         "@shadcn/slider"
@@ -17,7 +17,7 @@
       ],
       "files": [
         {
-          "path": "registry/videocn/volume-control/volume-control.tsx",
+          "path": "registry/videocn/volume-control.tsx",
           "type": "registry:ui",
           "target": "@ui/video-player/volume-control.tsx"
         }

@@ -34,17 +34,35 @@ Jamais `bg-zinc-900` ni de surcharge `dark:` manuelle. C'est ce qui fait que le 
 thème de l'utilisateur au lieu d'imposer le nôtre. Les tokens propres au lecteur passent par
 `cssVars` dans `registry.json` — ils sont injectés dans le `globals.css` du consommateur.
 
-**5. Un item = une responsabilité.** Le socle doit être utilisable sans les extras, et chaque extra
-installable seul. L'état vit dans un contexte ; les sous-composants le lisent et ne font que du
-rendu.
+**5. Un fichier = une responsabilité, un seul item publié.** Les deux granularités sont
+distinctes. Côté distribution il n'y a qu'un item, `@videocn/player` : l'utilisateur tape
+`pnpm dlx shadcn@latest add @videocn/player` et reçoit le lecteur entier. Côté fichiers, le
+découpage reste fin — un fichier par contrôle, pour la lisibilité une fois le code chez lui.
+Un item shadcn porte un tableau `files[]` où chaque entrée a son propre `type` et son propre
+`target`, donc un item unique livre autant de fichiers qu'on veut, groupés dans
+`@ui/video-player/`. Aucun contrôle n'est publié seul : un scrubber isolé n'est pas un produit.
+L'état vit dans un contexte ; les sous-composants le lisent et ne font que du rendu.
 
-## Ajouter un item
+## Ajouter un fichier au lecteur
 
-1. Créer `registry/videocn/<item>/`.
-2. Déclarer l'entrée dans `registry.json` à la racine (`name`, `type`, `files`, `registryDependencies`,
-   `dependencies`, `cssVars`).
-3. `pnpm registry:build` → écrit `public/r/<item>.json`.
-4. Vérifier le rendu : `pnpm dev`, puis importer depuis `@/registry/videocn/<item>` dans le site.
+1. Créer le fichier à plat dans `registry/videocn/`. Pas de sous-dossier : ce dossier est le
+   miroir exact de ce que l'utilisateur reçoit dans `<ui>/video-player/`.
+2. L'ajouter au tableau `files[]` de l'item `player` dans `registry.json` à la racine, avec son
+   `type` et son `target` (`@ui/video-player/<fichier>`). Compléter `registryDependencies`,
+   `dependencies` et `cssVars` de l'item si le fichier en introduit.
+3. `pnpm registry:build` → écrit `public/r/player.json`.
+4. Vérifier le rendu : `pnpm dev`, puis importer depuis `@/registry/videocn/<fichier>` dans le
+   site.
+
+Créer un nouvel item (un sous-dossier `registry/videocn/<item>/` + une entrée dans `items[]`) est
+réservé aux couches réellement optionnelles, comme l'adaptateur HLS ou le storyboard — jamais à un
+contrôle du lecteur.
+
+**Entre nos fichiers, importer en relatif** (`./use-player`), jamais via un alias `@/`. Un chemin
+relatif traverse `shadcn build` sans réécriture, et comme tous nos fichiers atterrissent dans le
+même dossier chez le consommateur, il résout correctement chez lui. Les alias `@/registry/...` sont
+réécrits par shadcn selon sa propre convention de monorepo (`@/registry/<style>/ui/...` → alias `ui`
+du consommateur) : notre arborescence n'y correspond pas, ne pas s'y fier.
 
 ## Vérifier une installation réelle
 
@@ -55,7 +73,7 @@ pnpm registry:serve                     # build + sert public/ sur :4000
 
 # dans un projet de test, components.json :
 #   "registries": { "@videocn": "http://localhost:4000/r/{name}.json" }
-npx shadcn@latest add @videocn/<item> --dry-run
+npx shadcn@latest add @videocn/player --dry-run
 ```
 
 Contrôler que les imports ont bien été réécrits vers les alias du projet cible.
