@@ -25,3 +25,9 @@ depuis un dépôt privé distinct ; c'est ce qui garantit que le lecteur reste g
 
 `pnpm typecheck` échoue tant que `next build` n'a pas généré les types de routes (`LayoutProps`,
 `PageProps`). Lancer `pnpm build` d'abord.
+
+Le périmètre du MVP est figé dans `docs/mvp.md`. S'y tenir : ne pas ajouter de feature qui
+n'y figure pas sans le demander.
+
+Après toute modification, lancer `pnpm lint` et corriger les erreurs. `@shadcn/lint` est
+enregistré dans `eslint.config.mjs` ; aucune de ses règles n'est activée pour l'instant.

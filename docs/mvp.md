@@ -1,0 +1,79 @@
+# videoCn — périmètre du MVP
+
+Arrêté le 19 septembre 2026. C'est la référence : tout ce qui n'est pas dans cette liste
+attend, tout ce qui y est doit exister avant de parler de v1.
+
+## Lecture
+
+Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
+`play`/`pause`, `currentTime`, `duration`, `buffered`, `volume`, `playbackRate`,
+état plein écran, état Picture-in-Picture.
+
+## Contrôles
+
+Chaque contrôle est un item de registry installable seul, construit sur les primitives shadcn.
+
+| Contrôle | Primitive |
+| --- | --- |
+| Play / pause | `Button` |
+| Scrubber avec aperçu du buffer | maison — voir note |
+| Volume + bascule muet | `Slider` + `Button` |
+| Vitesse de lecture, 0,5× → 2× | `DropdownMenu` |
+| Plein écran | `Button` |
+| Picture-in-Picture | `Button` |
+
+Note sur le scrubber : le `Slider` shadcn n'expose pas sa piste, ce qui rend impossibles le
+buffer, les chapitres segmentés et le survol. C'est le seul composant qu'on écrit nous-mêmes,
+et c'est une contrainte fonctionnelle, pas un contournement de compatibilité. Le volume, lui,
+utilise bien le `Slider` shadcn.
+
+## Raccourcis clavier
+
+Robustes et cross-browser.
+
+| Touche | Action |
+| --- | --- |
+| `Espace` / `k` | play-pause |
+| `←` / `→` | reculer / avancer de 5 s |
+| `↑` / `↓` | volume |
+| `f` | plein écran, avec gestion des préfixes navigateurs |
+| `m` | muet |
+| `0`–`9` | saut à X0 % de la vidéo |
+
+Désactivation automatique quand le focus est dans un `input`, un `textarea` ou un élément
+`contenteditable` de la page hôte.
+
+## Chapitres
+
+Prop `chapters: { time, label }[]`. Rendu en segments sur le scrubber, plus une liste cliquable.
+
+## Highlights — « most replayed »
+
+Prop `heatmap: { time, value }[]`. Overlay en aire au-dessus du scrubber.
+
+## Sous-titres
+
+Support des `<track>` natifs et de l'API `TextTrack`. Bascule on/off, sélection de piste,
+réglage de la taille et de la position. **Pas de génération automatique** : l'utilisateur
+apporte son VTT.
+
+## Theming
+
+100 % tokens CSS de shadcn hérités du projet hôte. Aucune couleur en dur. Clair et sombre
+fonctionnent sans configuration.
+
+## Distribution
+
+Registry shadcn, `npx shadcn add @videocn/player`. Documentation minimale avec des exemples
+copiables tels quels.
+
+---
+
+## Hors périmètre, et assumé
+
+- **Miniatures au survol du scrubber.** Absentes de ce MVP alors que c'est la feature la plus
+  visible de YouTube et le principal point d'accroche du futur SaaS. Le format cible est le
+  storyboard WebVTT (`#xywh=`). À rouvrir juste après le MVP.
+- **Qualités et adaptatif (HLS).** Un adaptateur optionnel, pas un prérequis.
+- **Toute feature serveur.** Transcodage, sous-titres IA, analytics : dépôt séparé et privé.
+  Le player ne connaît que des formats standard du web et n'appelle aucune API videoCn.
