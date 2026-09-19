@@ -2,5 +2,26 @@
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "videocn",
   "homepage": "https://videocn.dev",
-  "items": []
+  "items": [
+    {
+      "name": "volume-control",
+      "type": "registry:ui",
+      "title": "Volume Control",
+      "description": "Bouton muet et curseur de volume, construits sur les primitives shadcn.",
+      "registryDependencies": [
+        "@shadcn/button",
+        "@shadcn/slider"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "files": [
+        {
+          "path": "registry/videocn/volume-control/volume-control.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/volume-control.tsx"
+        }
+      ]
+    }
+  ]
 }
