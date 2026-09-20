@@ -55,7 +55,7 @@ L'état vit dans un contexte ; les sous-composants le lisent et ne font que du r
    site.
 
 Créer un nouvel item (un sous-dossier `registry/videocn/<item>/` + une entrée dans `items[]`) est
-réservé aux couches réellement optionnelles, comme l'adaptateur HLS ou le storyboard — jamais à un
+réservé aux couches réellement optionnelles, comme le storyboard — jamais à un
 contrôle du lecteur.
 
 **Entre nos fichiers, importer en relatif** (`./use-player`), jamais via un alias `@/`. Un chemin
