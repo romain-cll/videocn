@@ -21,6 +21,10 @@ export interface ControlsOptions {
   /** Inactivité avant masquage, en millisecondes. */
   autoHideDelay?: number;
   play?: boolean;
+  /** La barre de progression. Deviendra un objet en phase 5, pour les chapitres et la heatmap. */
+  scrubber?: boolean;
+  /** L'horodatage `0:42 / 9:56`. */
+  time?: boolean;
   volume?: boolean;
   fullscreen?: boolean;
   pictureInPicture?: boolean;
@@ -36,6 +40,8 @@ export interface ResolvedControlsOptions {
   visibility: "auto" | "always" | "never";
   autoHideDelay: number;
   play: { enabled: boolean };
+  scrubber: { enabled: boolean };
+  time: { enabled: boolean };
   volume: { enabled: boolean };
   fullscreen: { enabled: boolean };
   pictureInPicture: { enabled: boolean };
@@ -49,6 +55,15 @@ export const DEFAULT_PLAYBACK_RATES: readonly number[] = Object.freeze([
 
 /** Trois secondes : le temps de trouver un bouton sans que la barre s'incruste. */
 export const DEFAULT_AUTO_HIDE_DELAY = 3000;
+
+/**
+ * Le pas d'une flèche, en secondes sur le scrubber et en fraction sur le
+ * volume. Déclarés ici parce que deux couches s'en servent — le curseur
+ * focalisé et la keymap de la phase 3 — et qu'elles doivent tomber d'accord :
+ * `→` ne peut pas avancer de 5 s sur le curseur et de 10 s ailleurs.
+ */
+export const DEFAULT_SEEK_STEP = 5;
+export const DEFAULT_VOLUME_STEP = 0.05;
 
 function toggle(value: boolean | undefined): { enabled: boolean } {
   // Seul `false` masque : une clé absente doit donner un lecteur complet.
@@ -72,6 +87,8 @@ export function resolveControlsOptions(options: ControlsOptions = {}): ResolvedC
     visibility: options.visibility ?? "auto",
     autoHideDelay: options.autoHideDelay ?? DEFAULT_AUTO_HIDE_DELAY,
     play: toggle(options.play),
+    scrubber: toggle(options.scrubber),
+    time: toggle(options.time),
     volume: toggle(options.volume),
     fullscreen: toggle(options.fullscreen),
     pictureInPicture: toggle(options.pictureInPicture),

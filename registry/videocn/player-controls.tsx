@@ -7,6 +7,8 @@ import { FullscreenToggle } from "./fullscreen-toggle";
 import { PictureInPictureToggle } from "./picture-in-picture-toggle";
 import { PlaybackRateMenu } from "./playback-rate-menu";
 import { PlayToggle } from "./play-toggle";
+import { PlayerScrubber } from "./player-scrubber";
+import { TimeDisplay } from "./time-display";
 import { VolumeControl } from "./volume-control";
 
 /**
@@ -38,10 +40,14 @@ export function PlayerControls(): ReactElement | null {
       aria-label="Player controls"
       // Masquée en opacité seulement — jamais `hidden`, `inert` ni
       // `aria-hidden` : la barre doit rester atteignable à la tabulation.
-      // Le masquage est conditionné à `not-focus-within` plutôt que corrigé
-      // par une paire `focus-within:*` : à spécificité égale, c'est l'ordre
-      // de génération qui tranche, et `data-hidden` sort après. La barre
-      // revient donc dès la frame où le focus arrive, avant tout rendu React.
+      // Le masquage est conditionné plutôt que corrigé par une paire de
+      // classes inverses : à spécificité égale, c'est l'ordre de génération
+      // qui tranche, et `data-hidden` sort après. La barre revient donc dès la
+      // frame où le focus arrive, avant tout rendu React.
+      //
+      // Seul le focus **clavier** compte (`focus-visible`). Un clic souris
+      // donne aussi le focus au bouton cliqué, et la barre ne se serait plus
+      // jamais masquée après une recherche dans le scrubber.
       data-hidden={visible ? undefined : ""}
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}
@@ -52,13 +58,16 @@ export function PlayerControls(): ReactElement | null {
       className="dark absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 bg-linear-to-t
              from-player-scrim to-transparent px-3 pt-10 pb-3 text-foreground
              transition-opacity duration-200 motion-reduce:transition-none
-             data-hidden:not-focus-within:pointer-events-none
-             data-hidden:not-focus-within:opacity-0"
+             data-hidden:not-has-focus-visible:pointer-events-none
+             data-hidden:not-has-focus-visible:opacity-0"
     >
-      {/* Phase 2 : <PlayerScrubber /> prend cette première rangée. */}
+      <PlayerScrubber />
       <div className="flex items-center gap-1">
         <PlayToggle />
         <VolumeControl />
+        {/* Après le volume et non avant : la largeur du texte change au fil de
+            la lecture, et elle ne doit jamais déplacer une cible cliquable. */}
+        <TimeDisplay />
         <div className="ml-auto flex items-center gap-1">
           <PlaybackRateMenu />
           <PictureInPictureToggle />

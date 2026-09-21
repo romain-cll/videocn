@@ -78,10 +78,31 @@ export function usePlayerActions(): PlayerActions {
 }
 
 /**
- * La tête de lecture, rafraîchie à chaque frame. Réservé à ce qui en a vraiment
- * besoin : le scrubber et l'horodatage.
+ * Lit **une tranche** de la tête de lecture, et ne re-rend que si elle change.
+ *
+ * La tête bouge à chaque frame : c'est le sélecteur qui décide du rythme. Le
+ * scrubber et l'horodatage lisent la seconde entière — un rendu par seconde de
+ * média, pas soixante. Même règle que `usePlayerValue` : une valeur comparable
+ * par `Object.is`, jamais un objet fabriqué dans le sélecteur.
  */
-export function usePlayhead(): PlayheadSnapshot {
+export function usePlayheadValue<T>(select: (snapshot: PlayheadSnapshot) => T): T {
   const { playhead } = usePlayerHandle();
-  return useSyncExternalStore(playhead.subscribe, playhead.getSnapshot, playhead.getServerSnapshot);
+  return useSyncExternalStore(
+    playhead.subscribe,
+    () => select(playhead.getSnapshot()),
+    () => select(playhead.getServerSnapshot()),
+  );
+}
+
+/**
+ * Les stores tels quels, **jamais pour le rendu** : pour s'abonner dans un effet
+ * ou lire une valeur dans un gestionnaire. Le scrubber s'en sert pour dessiner
+ * sa position hors de React, soixante fois par seconde, sans le moindre rendu.
+ */
+export function usePlayheadStore(): PlayheadStore {
+  return usePlayerHandle().playhead;
+}
+
+export function usePlayerStore(): PlayerStateStore {
+  return usePlayerHandle().store;
 }

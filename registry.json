@@ -64,6 +64,11 @@
           "target": "@ui/video-player/player-context.tsx"
         },
         {
+          "path": "registry/videocn/format-time.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/format-time.ts"
+        },
+        {
           "path": "registry/videocn/controls-options.ts",
           "type": "registry:ui",
           "target": "@ui/video-player/controls-options.ts"
@@ -94,6 +99,21 @@
           "target": "@ui/video-player/player-menu.tsx"
         },
         {
+          "path": "registry/videocn/player-slider.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/player-slider.tsx"
+        },
+        {
+          "path": "registry/videocn/use-scrub.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/use-scrub.ts"
+        },
+        {
+          "path": "registry/videocn/player-scrubber.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/player-scrubber.tsx"
+        },
+        {
           "path": "registry/videocn/play-toggle.tsx",
           "type": "registry:ui",
           "target": "@ui/video-player/play-toggle.tsx"
@@ -102,6 +122,11 @@
           "path": "registry/videocn/volume-control.tsx",
           "type": "registry:ui",
           "target": "@ui/video-player/volume-control.tsx"
+        },
+        {
+          "path": "registry/videocn/time-display.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/time-display.tsx"
         },
         {
           "path": "registry/videocn/playback-rate-menu.tsx",
