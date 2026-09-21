@@ -6,7 +6,7 @@ import { MaximizeIcon, MinimizeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { useControlsOptions } from "./controls-context";
-import { usePlayerActions, usePlayerState } from "./player-context";
+import { usePlayerActions, usePlayerValue } from "./player-context";
 
 /**
  * Indisponible, le bouton passe `disabled` — il n'est jamais démonté. C'est la
@@ -15,7 +15,8 @@ import { usePlayerActions, usePlayerState } from "./player-context";
  */
 export const FullscreenToggle = memo(function FullscreenToggle() {
   const { fullscreen } = useControlsOptions();
-  const { canFullscreen, isFullscreen } = usePlayerState();
+  const canFullscreen = usePlayerValue((state) => state.canFullscreen);
+  const isFullscreen = usePlayerValue((state) => state.isFullscreen);
   const { toggleFullscreen } = usePlayerActions();
 
   if (!fullscreen.enabled) return null;

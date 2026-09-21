@@ -6,7 +6,7 @@ import { PictureInPicture2Icon, PictureInPictureIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { useControlsOptions } from "./controls-context";
-import { usePlayerActions, usePlayerState } from "./player-context";
+import { usePlayerActions, usePlayerValue } from "./player-context";
 
 /**
  * Firefox n'implémente pas l'API standard et l'iPhone n'a pas de
@@ -15,7 +15,8 @@ import { usePlayerActions, usePlayerState } from "./player-context";
  */
 export const PictureInPictureToggle = memo(function PictureInPictureToggle() {
   const { pictureInPicture } = useControlsOptions();
-  const { canPictureInPicture, isPictureInPicture } = usePlayerState();
+  const canPictureInPicture = usePlayerValue((state) => state.canPictureInPicture);
+  const isPictureInPicture = usePlayerValue((state) => state.isPictureInPicture);
   const { togglePictureInPicture } = usePlayerActions();
 
   if (!pictureInPicture.enabled) return null;

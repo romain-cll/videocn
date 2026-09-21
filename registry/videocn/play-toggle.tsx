@@ -6,7 +6,7 @@ import { PauseIcon, PlayIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { useControlsOptions } from "./controls-context";
-import { usePlayerActions, usePlayerState } from "./player-context";
+import { usePlayerActions, usePlayerValue } from "./player-context";
 
 /**
  * Un seul bouton, dont le libellé change — et pas d'`aria-pressed`. « Pause »
@@ -15,7 +15,7 @@ import { usePlayerActions, usePlayerState } from "./player-context";
  */
 export const PlayToggle = memo(function PlayToggle() {
   const { play } = useControlsOptions();
-  const { paused } = usePlayerState();
+  const paused = usePlayerValue((state) => state.paused);
   const { togglePlay } = usePlayerActions();
 
   if (!play.enabled) return null;

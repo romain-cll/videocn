@@ -44,9 +44,14 @@
           "target": "@ui/video-player/resolve-engine.ts"
         },
         {
-          "path": "registry/videocn/player-store.ts",
+          "path": "registry/videocn/playhead-store.ts",
           "type": "registry:ui",
-          "target": "@ui/video-player/player-store.ts"
+          "target": "@ui/video-player/playhead-store.ts"
+        },
+        {
+          "path": "registry/videocn/player-state-store.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/player-state-store.ts"
         },
         {
           "path": "registry/videocn/use-player.ts",

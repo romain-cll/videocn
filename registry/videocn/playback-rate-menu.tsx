@@ -1,10 +1,10 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { memo, type ReactElement } from "react";
 import { GaugeIcon } from "lucide-react";
 
 import { useControlsOptions } from "./controls-context";
-import { usePlayerActions, usePlayerState } from "./player-context";
+import { usePlayerActions, usePlayerValue } from "./player-context";
 import {
   PlayerMenu,
   PlayerMenuContent,
@@ -27,9 +27,9 @@ function formatRate(rate: number): string {
  * se rend `null` si la barre ne veut pas de lui. C'est ce qui permet de
  * l'ajouter à la barre sans rien avoir à lui transmettre.
  */
-export function PlaybackRateMenu(): ReactElement | null {
+export const PlaybackRateMenu = memo(function PlaybackRateMenu(): ReactElement | null {
   const { playbackRate: rateOptions } = useControlsOptions();
-  const { playbackRate } = usePlayerState();
+  const playbackRate = usePlayerValue((state) => state.playbackRate);
   const { setPlaybackRate } = usePlayerActions();
 
   if (!rateOptions.enabled) return null;
@@ -60,4 +60,4 @@ export function PlaybackRateMenu(): ReactElement | null {
       </PlayerMenuContent>
     </PlayerMenu>
   );
-}
+});

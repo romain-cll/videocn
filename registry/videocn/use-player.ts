@@ -11,44 +11,17 @@ import {
 } from "react";
 
 import { NO_CAPABILITIES } from "./player-engine";
-import type {
-  EngineCapabilities,
-  EngineStatus,
-  PlayerEngine,
-  PlayerError,
-  SourceType,
-} from "./player-engine";
+import type { PlayerEngine, PlayerError, SourceType } from "./player-engine";
+import {
+  createInitialPlayerState,
+  createPlayerStateStore,
+  type PlayerState,
+  type PlayerStateStore,
+} from "./player-state-store";
 import { createPlayheadStore, type PlayheadStore } from "./playhead-store";
 import { resolveEngine } from "./resolve-engine";
 
-/**
- * Tout l'état du lecteur **sauf la tête de lecture**. `currentTime` et
- * `buffered` changent soixante fois par seconde et vivent dans le store
- * renvoyé par `playhead` ; ce qui reste ici ne bouge qu'à l'occasion d'un
- * événement utilisateur, donc un state React ordinaire suffit.
- */
-export interface PlayerState {
-  paused: boolean;
-  ended: boolean;
-  /**
-   * La vidéo veut avancer et n'a pas de quoi. Distinct de
-   * `engineStatus: "loading"`, qui décrit le moteur et non le flux : l'un se
-   * résout une fois, l'autre peut revenir à chaque trou de réseau.
-   */
-  isBuffering: boolean;
-  duration: number;
-  volume: number;
-  muted: boolean;
-  playbackRate: number;
-  canControlVolume: boolean;
-  canFullscreen: boolean;
-  isFullscreen: boolean;
-  canPictureInPicture: boolean;
-  isPictureInPicture: boolean;
-  engineStatus: EngineStatus;
-  error: PlayerError | null;
-  capabilities: EngineCapabilities;
-}
+export type { PlayerState } from "./player-state-store";
 
 export interface PlayerActions {
   play(): Promise<void>;
@@ -83,7 +56,8 @@ export interface UsePlayerResult {
    * accrochés au nœud mort et le lecteur deviendrait inerte sans rien dire.
    */
   ref: RefCallback<HTMLVideoElement>;
-  state: PlayerState;
+  /** L'état, à lire par tranches. Référence stable pour la vie du composant. */
+  store: PlayerStateStore;
   actions: PlayerActions;
   playhead: PlayheadStore;
 }
@@ -204,18 +178,6 @@ function engineErrorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : "Le moteur vidéo n'a pas pu charger la source.";
 }
 
-/**
- * Renvoie l'objet précédent quand rien n'a bougé. Sans ça, un `volumechange`
- * qui réécrit la même valeur — il y en a à chaque frame sur certains
- * navigateurs — re-rendrait tous les contrôles pour rien.
- */
-function mergeState(previous: PlayerState, next: Partial<PlayerState>): PlayerState {
-  for (const key of Object.keys(next) as (keyof PlayerState)[]) {
-    if (!Object.is(previous[key], next[key])) return { ...previous, ...next };
-  }
-  return previous;
-}
-
 export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
   const { src, type, defaultVolume = DEFAULT_VOLUME, defaultMuted, containerRef } = options;
 
@@ -231,29 +193,16 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     setVideo(node);
   }, []);
 
-  const [state, setState] = useState<PlayerState>(() => ({
-    paused: true,
-    ended: false,
-    isBuffering: false,
-    duration: 0,
-    volume: clamp01(defaultVolume),
-    muted: defaultMuted ?? false,
-    playbackRate: 1,
-    // Optimistes jusqu'au premier effet : aucun accès au DOM pendant le rendu,
-    // le fichier part dans des projets rendus côté serveur.
-    canControlVolume: true,
-    canFullscreen: false,
-    isFullscreen: false,
-    canPictureInPicture: false,
-    isPictureInPicture: false,
-    engineStatus: "idle",
-    error: null,
-    capabilities: NO_CAPABILITIES,
-  }));
-
-  const patch = useCallback((next: Partial<PlayerState>) => {
-    setState((previous) => mergeState(previous, next));
-  }, []);
+  // Les valeurs par défaut n'entrent que dans l'état initial : le lecteur est
+  // non contrôlé, et le store n'est jamais recréé si elles changent ensuite.
+  const [store] = useState(() =>
+    createPlayerStateStore(
+      createInitialPlayerState({
+        volume: clamp01(defaultVolume),
+        muted: defaultMuted ?? false,
+      }),
+    ),
+  );
 
   // Un seul store pour la vie du composant : l'initialiseur paresseux de
   // `useState` est le seul moyen que React garantisse de n'appeler qu'une fois.
@@ -288,7 +237,7 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       };
       // `engineStatus` n'est pas ici : c'est l'effet du moteur qui le tient, et
       // il en sait plus que l'élément — notamment pendant le chargement de Shaka.
-      patch(next);
+      store.patch(next);
     };
 
     const handleError = () => {
@@ -300,7 +249,7 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       // laisse l'élément sans candidat, ce que le navigateur signale comme un
       // format illisible. Il n'y a rien à lire, donc rien qui ait échoué.
       if (!video.currentSrc && !video.getAttribute("src")) return;
-      patch({ error: toPlayerError(video.error), engineStatus: "error" });
+      store.patch({ error: toPlayerError(video.error), engineStatus: "error" });
     };
 
     sync();
@@ -311,7 +260,7 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       for (const event of MEDIA_EVENTS) video.removeEventListener(event, sync);
       video.removeEventListener("error", handleError);
     };
-  }, [patch, video]);
+  }, [store, video]);
 
   useEffect(() => {
     if (!video) return;
@@ -339,11 +288,11 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     const canControlVolume = element.volume === probe;
     element.volume = found;
 
-    // Un rendu de plus au montage, et il n'y a pas d'autre moyen : la capacité
+    // Publié seulement maintenant, et il n'y a pas d'autre moyen : la capacité
     // ne se connaît qu'en essayant, et essayer pendant le rendu casserait le
     // rendu serveur.
-    patch({ canControlVolume, volume: element.volume, muted: element.muted });
-  }, [defaultMuted, defaultVolume, patch, video]);
+    store.patch({ canControlVolume, volume: element.volume, muted: element.muted });
+  }, [defaultMuted, defaultVolume, store, video]);
 
   useEffect(() => {
     if (!video) return;
@@ -353,20 +302,18 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     engineRef.current = engine;
 
     const syncCapabilities = () => {
-      if (active) patch({ capabilities: engine.getCapabilities() });
+      if (active) store.patch({ capabilities: engine.getCapabilities() });
     };
     // `ready` ne vient pas de la promesse du moteur : celle-ci dit seulement
     // que la source est prise en charge. C'est l'élément qui dit quand la
     // lecture devient possible.
     const markReady = () => {
-      if (active) patch({ engineStatus: "ready" });
+      if (active) store.patch({ engineStatus: "ready" });
     };
 
-    // Un rendu de plus au montage et à chaque changement de source : on ne sait
-    // qu'un chargement commence qu'une fois le moteur résolu, ce qui exige
-    // l'élément, qui n'existe qu'après le montage.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    patch({ engineStatus: "loading", error: null, capabilities: engine.getCapabilities() });
+    // On ne sait qu'un chargement commence qu'une fois le moteur résolu, ce qui
+    // exige l'élément, qui n'existe qu'après le montage.
+    store.patch({ engineStatus: "loading", error: null, capabilities: engine.getCapabilities() });
     const unsubscribe = engine.subscribe(syncCapabilities);
     video.addEventListener("loadedmetadata", markReady);
     video.addEventListener("canplay", markReady);
@@ -382,7 +329,7 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       },
       (cause: unknown) => {
         if (!active) return;
-        patch({
+        store.patch({
           engineStatus: "error",
           error: { code: "engine", message: engineErrorMessage(cause) },
         });
@@ -398,9 +345,9 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       if (engineRef.current === engine) engineRef.current = null;
       // La source vient d'être libérée : repartir de zéro plutôt que de laisser
       // l'ancien statut décrire la suivante.
-      patch({ engineStatus: "idle", error: null, capabilities: NO_CAPABILITIES });
+      store.patch({ engineStatus: "idle", error: null, capabilities: NO_CAPABILITIES });
     };
-  }, [patch, src, type, video]);
+  }, [src, store, type, video]);
 
   useEffect(() => {
     if (!video) return;
@@ -410,7 +357,10 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     fullscreenModeRef.current = mode;
 
     const sync = () => {
-      patch({ canFullscreen: mode !== "none", isFullscreen: isFullscreenActive(target, video) });
+      store.patch({
+        canFullscreen: mode !== "none",
+        isFullscreen: isFullscreenActive(target, video),
+      });
     };
     sync();
 
@@ -427,13 +377,13 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       video.removeEventListener("webkitbeginfullscreen", sync);
       video.removeEventListener("webkitendfullscreen", sync);
     };
-  }, [containerRef, patch, video]);
+  }, [containerRef, store, video]);
 
   useEffect(() => {
     if (!video) return;
 
     const sync = () => {
-      patch({
+      store.patch({
         canPictureInPicture:
           Boolean(document.pictureInPictureEnabled) && !video.disablePictureInPicture,
         isPictureInPicture: document.pictureInPictureElement === video,
@@ -452,7 +402,7 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       video.removeEventListener("leavepictureinpicture", sync);
       video.removeEventListener("loadedmetadata", sync);
     };
-  }, [patch, video]);
+  }, [store, video]);
 
   const play = useCallback(() => {
     const video = videoRef.current;
@@ -597,8 +547,10 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     ],
   );
 
+  // Que des références stables : l'objet ne change plus d'identité après le
+  // montage, et le contexte qui le porte ne re-rend donc jamais personne.
   return useMemo(
-    () => ({ ref: attachVideo, state, actions, playhead }),
-    [attachVideo, state, actions, playhead],
+    () => ({ ref: attachVideo, store, actions, playhead }),
+    [attachVideo, store, actions, playhead],
   );
 }

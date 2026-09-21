@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 
 import { useControlsOptions } from "./controls-context";
-import { usePlayerActions, usePlayerState } from "./player-context";
+import { usePlayerActions, usePlayerValue } from "./player-context";
 
 /**
  * `Slider` n'expose pas la même signature selon que le projet est en `radix`
@@ -21,7 +21,9 @@ function firstValue(value: number | readonly number[]): number {
 
 export const VolumeControl = memo(function VolumeControl() {
   const { volume: volumeOptions } = useControlsOptions();
-  const { volume, muted, canControlVolume } = usePlayerState();
+  const volume = usePlayerValue((state) => state.volume);
+  const muted = usePlayerValue((state) => state.muted);
+  const canControlVolume = usePlayerValue((state) => state.canControlVolume);
   const { setVolume, setMuted, toggleMuted } = usePlayerActions();
 
   if (!volumeOptions.enabled) return null;

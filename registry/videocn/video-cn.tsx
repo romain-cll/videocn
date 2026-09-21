@@ -20,7 +20,7 @@ import { cn } from "cn";
 import { ControlsProvider } from "./controls-context";
 import { resolveControlsOptions, type ControlsOptions } from "./controls-options";
 import { PlayerControls } from "./player-controls";
-import { PlayerProvider } from "./player-context";
+import { PlayerProvider, usePlayerStoreValue } from "./player-context";
 import type { SourceType } from "./player-engine";
 import { useControlsVisibility } from "./use-controls-visibility";
 import { usePlayer } from "./use-player";
@@ -89,7 +89,9 @@ export function VideoCn({
     containerRef,
   });
 
-  const { state, actions } = player;
+  const { actions } = player;
+  const paused = usePlayerStoreValue(player.store, (state) => state.paused);
+  const isFullscreen = usePlayerStoreValue(player.store, (state) => state.isFullscreen);
   const { togglePlay, toggleFullscreen } = actions;
 
   // Résolue une fois : l'objet part dans un contexte, et en fabriquer un
@@ -98,7 +100,7 @@ export function VideoCn({
 
   const { visible, holdVisible } = useControlsVisibility({
     containerRef,
-    paused: state.paused,
+    paused,
     visibility: controlsOptions.visibility,
     autoHideDelay: controlsOptions.autoHideDelay,
   });
@@ -169,7 +171,7 @@ export function VideoCn({
 
   // `""` plutôt que `"true"` : seule la présence de l'attribut compte pour les
   // variantes Tailwind, et `undefined` le retire vraiment du DOM.
-  const fullscreenAttribute = state.isFullscreen ? "" : undefined;
+  const fullscreenAttribute = isFullscreen ? "" : undefined;
   const hiddenAttribute = visible ? undefined : "";
 
   return (
