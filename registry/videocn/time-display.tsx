@@ -46,6 +46,10 @@ export const TimeDisplay = memo(function TimeDisplay() {
   return (
     <span
       data-slot="video-player-time"
+      // Des chiffres, comme le scrubber qu'il accompagne : ils se lisent de
+      // gauche à droite dans toutes les langues. Sans ça, l'algorithme bidi
+      // d'un projet RTL affiche `9:56 / 0:00`.
+      dir="ltr"
       // `tabular-nums` : sans chiffres à chasse fixe, le texte change de
       // largeur à chaque seconde et vibre sous les yeux.
       className="mx-2 text-sm whitespace-nowrap tabular-nums"

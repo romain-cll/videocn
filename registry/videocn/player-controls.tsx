@@ -55,11 +55,14 @@ export function PlayerControls(): ReactElement | null {
       // `Button` donnerait sinon du texte sombre sur fond sombre en thème
       // clair. La barre est un îlot qui résout ses tokens sur la palette
       // sombre *de l'utilisateur*, sans une seule couleur en dur.
-      className="dark absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 bg-linear-to-t
-             from-player-scrim to-transparent px-3 pt-10 pb-3 text-foreground
-             transition-opacity duration-200 motion-reduce:transition-none
-             data-hidden:not-has-focus-visible:pointer-events-none
-             data-hidden:not-has-focus-visible:opacity-0"
+      //
+      // Sur une seule ligne, et ce n'est pas du laisser-aller : la conversion
+      // RTL du CLI shadcn ajoute un `\` en fin de chaque ligne d'une chaîne de
+      // classes, caractère qui reste littéral dans un attribut JSX. Écrite sur
+      // plusieurs lignes, cette chaîne perdait quatre classes dans un projet
+      // RTL — le voile et la couleur du texte avec — et les icônes devenaient
+      // presque invisibles sur la vidéo.
+      className="dark absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 bg-linear-to-t from-player-scrim to-transparent px-3 pt-10 pb-3 text-foreground transition-opacity duration-200 motion-reduce:transition-none data-hidden:not-has-focus-visible:pointer-events-none data-hidden:not-has-focus-visible:opacity-0"
     >
       <PlayerScrubber />
       <div className="flex items-center gap-1">

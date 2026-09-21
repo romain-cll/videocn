@@ -111,3 +111,11 @@ classes proscrites dans ses fichiers :
 
 La position passe donc par `left` et `width`. Le CLI réécrit `left-*` en `start-*`, une propriété
 logique : c'est là que `dir="ltr"` sert, elle se résout à gauche sous lui.
+
+L'horodatage est figé en `dir="ltr"` pour la même raison : ce sont des chiffres, et sans ça
+l'algorithme bidi d'une page RTL affiche `9:56 / 0:00`.
+
+**Une chaîne de classes s'écrit sur une seule ligne.** La conversion RTL du CLI ajoute un `\` en fin
+de chaque ligne d'un `className` multiligne, et ce caractère reste littéral dans un attribut JSX : les
+classes touchées meurent. Constaté en conditions réelles sur la barre, qui perdait son voile et la
+couleur de son texte dans un projet RTL — avec `tsc` et `next build` au vert, comme toujours.
