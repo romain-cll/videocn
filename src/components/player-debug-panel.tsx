@@ -83,10 +83,13 @@ export function PlayerDebugPanel({
       </div>
 
       <Section title="Tête de lecture">
-        {/* Les deux seules valeurs qui passent par le store du lecteur, donc
-            par sa boucle `requestAnimationFrame` : elles doivent défiler
-            finement, pas par paliers de 250 ms. */}
+        {/* Les seules valeurs qui passent par le store du lecteur, donc par
+            sa boucle `requestAnimationFrame` : elles doivent défiler finement,
+            pas par paliers de 250 ms. Les bornes du buffer sont celles de la
+            plage qui contient la tête : après un saut, `bufferedStart` doit
+            suivre, et non rester à zéro. */}
         <Row label="currentTime" value={formatSeconds(video.currentTime)} />
+        <Row label="bufferedStart" value={formatSeconds(video.bufferedStart)} />
         <Row label="bufferedEnd" value={formatSeconds(video.bufferedEnd)} />
       </Section>
 

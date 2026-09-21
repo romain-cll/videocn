@@ -15,12 +15,13 @@ import { createPlayheadStore } from "@/registry/videocn/playhead-store";
  * de faire voyager, chez tous les utilisateurs du registry, du code qui
  * n'existe que pour notre page de démo.
  *
- * La tête de lecture réutilise en revanche le vrai `player-store` du lecteur :
+ * La tête de lecture réutilise en revanche le vrai `playhead-store` du lecteur :
  * c'est justement ce qu'on veut voir bouger.
  */
 
 export interface ObservedVideo {
   currentTime: number;
+  bufferedStart: number;
   bufferedEnd: number;
   duration: number;
   paused: boolean;
@@ -38,6 +39,7 @@ export interface ObservedVideo {
 
 const EMPTY: ObservedVideo = {
   currentTime: 0,
+  bufferedStart: 0,
   bufferedEnd: 0,
   duration: 0,
   paused: true,
@@ -117,11 +119,11 @@ export function useObservedVideo(videoRef: React.RefObject<HTMLVideoElement | nu
     };
   }, [videoRef]);
 
-  const { currentTime, bufferedEnd } = useSyncExternalStore(
+  const { currentTime, bufferedStart, bufferedEnd } = useSyncExternalStore(
     playhead.subscribe,
     playhead.getSnapshot,
     playhead.getServerSnapshot,
   );
 
-  return { ...discrete, currentTime, bufferedEnd };
+  return { ...discrete, currentTime, bufferedStart, bufferedEnd };
 }

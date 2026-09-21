@@ -64,6 +64,20 @@ parce qu'il ressemble à une barre.
 - Désactivation quand le focus est dans un `input`, un `textarea` ou un `contenteditable` de
   la page hôte.
 
+**Le contrat de la keymap**, posé dès la phase 2 parce que le curseur en dépend. Un curseur
+focalisé possède ses flèches : il les traite, appelle `preventDefault()` et `stopPropagation()`,
+et la keymap ne doit plus les voir.
+
+- **Un `onKeyDown` React sur le conteneur, pas un écouteur natif.** React délègue ses
+  événements à sa racine, et sous Next App Router la racine est `document`. Un écouteur natif
+  posé sur le conteneur reçoit donc la touche avant même que React ne la distribue, avant le
+  `stopPropagation()` du curseur ; posé sur `document`, il la reçoit de toute façon, puisque
+  `stopPropagation()` n'arrête pas les autres écouteurs du même nœud. Dans les deux cas, un `←`
+  sur le scrubber reculerait deux fois. Un gestionnaire React, lui, est arrêté par le curseur.
+- **La keymap vérifie aussi `event.defaultPrevented`**, et s'abstient si la touche a déjà été
+  traitée : c'est le filet pour tout composant qui empêcherait l'action par défaut sans arrêter
+  la propagation.
+
 ## Phase 4 — Le moteur Shaka
 
 - L'implémentation Shaka derrière l'interface de la phase 0, avec import dynamique.

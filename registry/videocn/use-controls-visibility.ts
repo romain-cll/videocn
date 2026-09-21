@@ -34,6 +34,26 @@ export interface ControlsVisibility {
  */
 const CONTROLS_SELECTOR = '[data-slot="video-player-controls"]';
 
+/**
+ * Seul le focus **clavier** retient la barre : `:focus-visible`, et non `:focus`.
+ * C'est le correctif d'un bug de la phase 1. Sous Chrome, un clic souris sur un
+ * bouton lui donne le focus, qu'il garde jusqu'au prochain clic ailleurs ; en
+ * comptant tout focus, la barre ne se masquait plus d'ici là. Avec le scrubber,
+ * chaque recherche à la souris laisserait le focus sur le curseur, et la barre
+ * resterait affichée en permanence. La classe de masquage de la barre suit la
+ * même règle (`not-has-focus-visible`) : le CSS et ce hook doivent tomber
+ * d'accord.
+ */
+function isKeyboardFocused(element: Element): boolean {
+  return element.matches(":focus-visible");
+}
+
+/** L'élément actif est dans le conteneur, et il y est arrivé au clavier. */
+function hasKeyboardFocusWithin(container: HTMLElement): boolean {
+  const active = document.activeElement;
+  return active !== null && container.contains(active) && isKeyboardFocused(active);
+}
+
 export function useControlsVisibility(options: UseControlsVisibilityOptions): ControlsVisibility {
   const { containerRef, paused, visibility, autoHideDelay } = options;
 
@@ -45,7 +65,8 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
    * doit relancer le minuteur.
    */
   const [holds, setHolds] = useState(0);
-  const [focusWithin, setFocusWithin] = useState(false);
+  /** Le focus clavier est dans le conteneur — voir `isKeyboardFocused`. */
+  const [keyboardFocus, setKeyboardFocus] = useState(false);
 
   /**
    * Ajustement pendant le rendu, et non dans un effet : la barre doit être là
@@ -102,14 +123,19 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
       // La souris a quitté le lecteur : il n'y a plus rien à attendre. Un doigt,
       // lui, « quitte » au relâchement — ce n'est pas un départ.
       if (event.pointerType !== "mouse") return;
-      if (autoHideDelay <= 0 || paused || holds > 0 || focusWithin) return;
-      if (container.contains(document.activeElement)) return;
+      if (autoHideDelay <= 0 || paused || holds > 0 || keyboardFocus) return;
+      if (hasKeyboardFocusWithin(container)) return;
       setAutoVisible(false);
     };
 
-    const handleFocusIn = () => {
-      setFocusWithin(true);
-      show();
+    const handleFocusIn = (event: FocusEvent) => {
+      // Un focus souris remet l'indicateur à faux au lieu d'être ignoré : si le
+      // clavier avait posé le focus sur un bouton et qu'un clic le déplace sur
+      // un autre, aucun `focusout` ne sort du conteneur pour le remettre à
+      // zéro, et la barre resterait retenue par un focus qui n'est plus visible.
+      const keyboard = event.target instanceof Element && isKeyboardFocused(event.target);
+      setKeyboardFocus(keyboard);
+      if (keyboard) show();
     };
 
     const handleFocusOut = (event: FocusEvent) => {
@@ -117,7 +143,7 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
       // `focusin` : sans ce test, le minuteur repartirait à chaque tabulation.
       const next = event.relatedTarget;
       if (next instanceof Node && container.contains(next)) return;
-      setFocusWithin(false);
+      setKeyboardFocus(false);
     };
 
     container.addEventListener("pointermove", handlePointerMove);
@@ -133,7 +159,7 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
       container.removeEventListener("focusin", handleFocusIn);
       container.removeEventListener("focusout", handleFocusOut);
     };
-  }, [autoHideDelay, containerRef, focusWithin, holds, paused, visibility]);
+  }, [autoHideDelay, containerRef, holds, keyboardFocus, paused, visibility]);
 
   useEffect(() => {
     if (visibility !== "auto") return;
@@ -144,19 +170,20 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
     // Une vidéo arrêtée ne cache rien derrière sa barre.
     if (paused) return;
     if (holds > 0) return;
-    if (focusWithin) return;
+    if (keyboardFocus) return;
 
     const timer = setTimeout(() => {
       // Dernier mot au DOM : un focus posé par le code de l'hôte n'est pas
       // passé par `focusin` ici, et masquer un élément focalisé le rendrait
-      // invisible sans le rendre inatteignable — le pire des deux.
+      // invisible sans le rendre inatteignable — le pire des deux. Focus
+      // clavier seulement, là aussi : voir `isKeyboardFocused`.
       const container = containerRef.current;
-      if (container && container.contains(document.activeElement)) return;
+      if (container && hasKeyboardFocusWithin(container)) return;
       setAutoVisible(false);
     }, autoHideDelay);
 
     return () => clearTimeout(timer);
-  }, [autoHideDelay, autoVisible, containerRef, focusWithin, holds, paused, visibility]);
+  }, [autoHideDelay, autoVisible, containerRef, holds, keyboardFocus, paused, visibility]);
 
   return {
     /**

@@ -13,11 +13,21 @@ périmètre. Voir **Contrôles**.
 Amendé le 21 septembre 2026, après la phase 1 : le curseur de volume abandonne lui aussi le
 `Slider` shadcn et rejoint le curseur maison du scrubber. Voir la note sur les curseurs.
 
+Amendé le 21 septembre 2026, pendant la phase 2 : l'horodatage entre au tableau des contrôles,
+le glissement du scrubber prend le modèle de YouTube, un curseur focalisé garde ses flèches, et
+`buffered` se réduit à la plage qui contient la tête de lecture. Voir **Contrôles**,
+**Raccourcis clavier** et **Lecture**.
+
 ## Lecture
 
 Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
 `play`/`pause`, `currentTime`, `duration`, `buffered`, `volume`, `playbackRate`,
 état plein écran, état Picture-in-Picture.
+
+De `buffered`, seule la plage chargée qui contient la tête de lecture est exposée, par ses deux
+bornes. C'est ce que le scrubber dessine, et le début compte : après un saut à 7:00, la plage
+part de 7:00, et la dessiner depuis zéro mentirait. Les plages d'avant le saut ne disent rien de
+ce qui va être lu.
 
 ## Moteur vidéo
 
@@ -62,8 +72,9 @@ publié, voir Distribution.
 | Contrôle | Primitive |
 | --- | --- |
 | Play / pause | `Button` |
-| Scrubber avec aperçu du buffer | maison — voir note |
+| Scrubber avec aperçu du buffer, glissement comme YouTube : pause au premier déplacement, recherche continue limitée, reprise au relâchement | maison — voir note |
 | Volume + bascule muet | maison — voir note — plus `Button` |
+| Horodatage `0:42 / 9:56` | aucune — du texte |
 | Vitesse de lecture, 0,5× → 2× | maison — voir note sur les menus |
 | Qualité | maison — `disabled` si le moteur n'en expose aucune |
 | Plein écran | `Button` |
@@ -75,6 +86,13 @@ rôle de curseur — vérifié dans les deux bases : ni un lecteur d'écran ni l
 alors de prise sur le volume. On écrit donc **un seul curseur maison**, et il sert les deux : le
 scrubber et le volume. C'est une contrainte fonctionnelle et d'accessibilité, pas un
 contournement de compatibilité.
+
+Note sur le glissement : un simple clic cherche sans interrompre la lecture ; la vidéo ne se met
+en pause qu'au premier vrai déplacement, pour que le bouton lecture ne clignote pas au geste le
+plus fréquent. Pendant le glissement, elle cherche en continu, mais pas plus d'une fois toutes
+les 150 ms environ : à la cadence du pointeur, aucune recherche n'aboutirait et l'image resterait
+figée. Au relâchement, la lecture ne reprend que si elle tournait avant — et pas si l'on a lâché
+au bout de la vidéo, où elle repartirait de zéro.
 
 Note sur les menus : le `DropdownMenu` shadcn porte son contenu sur `document.body`, et ce qui
 est porté là n'est plus rendu dès qu'un autre élément est en plein écran — or c'est le conteneur
@@ -107,6 +125,11 @@ Robustes et cross-browser.
 
 Désactivation automatique quand le focus est dans un `input`, un `textarea` ou un élément
 `contenteditable` de la page hôte.
+
+Un curseur focalisé possède ses flèches : `↑` sur le scrubber cherche, il ne monte pas le
+volume. C'est le motif APG du slider, et c'est ce qu'annonce le lecteur d'écran — une flèche qui
+agirait sur un autre contrôle que celui qu'il vient de nommer le contredirait. Le tableau
+ci-dessus vaut donc partout ailleurs dans le lecteur, pas sur un curseur qui a le focus.
 
 ## Chapitres
 

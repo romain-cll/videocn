@@ -89,3 +89,24 @@ pas la seconde comme concurrente d'un `w-20` qu'on lui passerait, les deux survi
 l'emporte et le contrôle s'effondre. D'où la règle : **ne pas imposer de dimension par une
 utilitaire sur une primitive, l'envelopper dans un conteneur dimensionné** et lui laisser ses
 100 %.
+
+## Projets RTL
+
+Le CLI shadcn réécrit les classes directionnelles pour les projets RTL : `ml-*` devient `ms-*`,
+`left-*` devient `start-*`, et ainsi de suite. Avec le `dir="rtl"` de la page, c'est ce qui met
+la barre en miroir sans rien lui demander — le bouton lecture passe à droite, le plein écran à
+gauche. C'est voulu.
+
+**Le curseur fait exception : il est figé en `dir="ltr"`**, parce qu'une timeline ne se met pas
+en miroir. Et `dir="ltr"` ne le protège pas de tout ce que le CLI réécrit, d'où trois familles de
+classes proscrites dans ses fichiers :
+
+- `translate-x-*` gagne une variante `rtl:` inversée. Or `rtl:` vise tout descendant d'un
+  `[dir="rtl"]` : elle s'applique sous notre `dir="ltr"`, et la poignée part du mauvais côté.
+- `origin-*` : `origin-left` devient `origin-start`, qui n'existe pas en Tailwind. La classe
+  disparaît sans erreur.
+- `scale-x-*` : un remplissage dessiné à l'échelle a besoin d'une `origin-left`, et retombe dans
+  le cas précédent.
+
+La position passe donc par `left` et `width`. Le CLI réécrit `left-*` en `start-*`, une propriété
+logique : c'est là que `dir="ltr"` sert, elle se résout à gauche sous lui.
