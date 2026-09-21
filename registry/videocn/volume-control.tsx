@@ -28,32 +28,51 @@ export const VolumeControl = memo(function VolumeControl() {
 
   const effectiveVolume = muted ? 0 : volume;
   const VolumeIcon =
-    effectiveVolume === 0 ? VolumeXIcon : effectiveVolume < 0.5 ? Volume1Icon : Volume2Icon;
+    effectiveVolume === 0
+      ? VolumeXIcon
+      : effectiveVolume < 0.5
+        ? Volume1Icon
+        : Volume2Icon;
 
   return (
     <div className="flex items-center gap-1">
-      <Button variant="ghost" size="icon" onClick={toggleMuted} aria-label={muted ? "Unmute" : "Mute"}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleMuted}
+        aria-label={muted ? "Unmute" : "Mute"}
+      >
         <VolumeIcon />
       </Button>
-      <Slider
-        value={[effectiveVolume]}
-        onValueChange={(value) => {
-          const next = firstValue(value);
-          // Bouger le curseur depuis l'état muet rétablit le son.
-          if (muted && next > 0) {
-            setMuted(false);
-          }
-          setVolume(next);
-        }}
-        min={0}
-        max={1}
-        step={0.01}
-        // Sur iPhone, Safari ignore les écritures sur `video.volume` : le
-        // curseur mentirait. Le bouton muet, lui, fonctionne — il reste actif.
-        disabled={!canControlVolume}
-        aria-label="Volume"
-        className="w-20"
-      />
+      {/*
+        La largeur est portée par cette enveloppe, jamais par une classe `w-*`
+        sur le `Slider`. Les deux primitives contraignent leur racine
+        différemment — `w-full` en radix, `data-horizontal:w-full` en base — et
+        `tailwind-merge` ne voit pas la seconde comme concurrente d'un `w-20` :
+        les deux classes survivent, la variante gagne en spécificité, et le
+        curseur s'effondre à zéro sans la moindre erreur. Une enveloppe laisse
+        chaque racine prendre ses 100 % et ne dépend d'aucune des deux.
+      */}
+      <div className="w-20">
+        <Slider
+          value={[effectiveVolume]}
+          onValueChange={(value) => {
+            const next = firstValue(value);
+            // Bouger le curseur depuis l'état muet rétablit le son.
+            if (muted && next > 0) {
+              setMuted(false);
+            }
+            setVolume(next);
+          }}
+          min={0}
+          max={1}
+          step={0.01}
+          // Sur iPhone, Safari ignore les écritures sur `video.volume` : le
+          // curseur mentirait. Le bouton muet, lui, fonctionne — il reste actif.
+          disabled={!canControlVolume}
+          aria-label="Volume"
+        />
+      </div>
     </div>
   );
 });
