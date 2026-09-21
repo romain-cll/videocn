@@ -8,6 +8,7 @@
       "type": "registry:ui",
       "title": "Video Player",
       "description": "Le lecteur vidéo complet : socle, contrôles, chapitres et sous-titres.",
+      "docs": "Drop it in and it works:\n\n  import { VideoCn } from \"@/components/ui/video-player/video-cn\"\n\n  <VideoCn src=\"/clip.mp4\" />\n\nEverything is tuned through props — never by editing the code you just received:\n\n  <VideoCn\n    src=\"https://example.com/stream.m3u8\"\n    poster=\"/poster.jpg\"\n    defaultVolume={0.5}\n    controls={{\n      pictureInPicture: false,\n      playbackRate: { rates: [1, 1.5, 2] },\n      autoHideDelay: 2000,\n    }}\n  />\n\nThe source type is detected from the URL. Pass type=\"hls\" | \"dash\" | \"native\" when\nthe URL is signed or has no extension. Adjust the import path to match your aliases.",
       "registryDependencies": [
         "@shadcn/button",
         "@shadcn/slider"
@@ -16,6 +17,16 @@
         "cn",
         "lucide-react"
       ],
+      "cssVars": {
+        "light": {
+          "player-scrim": "oklch(0 0 0 / 60%)",
+          "player-backdrop": "oklch(0 0 0)"
+        },
+        "dark": {
+          "player-scrim": "oklch(0 0 0 / 70%)",
+          "player-backdrop": "oklch(0 0 0)"
+        }
+      },
       "files": [
         {
           "path": "registry/videocn/player-engine.ts",
@@ -102,15 +113,7 @@
           "type": "registry:ui",
           "target": "@ui/video-player/fullscreen-toggle.tsx"
         }
-      ],
-      "cssVars": {
-        "light": {
-          "player-scrim": "oklch(0 0 0 / 60%)"
-        },
-        "dark": {
-          "player-scrim": "oklch(0 0 0 / 70%)"
-        }
-      }
+      ]
     }
   ]
 }

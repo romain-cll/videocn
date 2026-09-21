@@ -42,6 +42,9 @@
        son fond est la vidéo, pas la page. Injecté chez le consommateur par
        les `cssVars` de l'item. */
     --color-player-scrim: var(--player-scrim);
+    /* Le cadre du lecteur : noir dans les deux thèmes, parce qu'il
+       encadre une image et non une page. */
+    --color-player-backdrop: var(--player-backdrop);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -85,6 +88,7 @@
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
     --player-scrim: oklch(0 0 0 / 60%);
+    --player-backdrop: oklch(0 0 0);
 }
 
 .dark {
@@ -120,6 +124,7 @@
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
     --player-scrim: oklch(0 0 0 / 70%);
+    --player-backdrop: oklch(0 0 0);
 }
 
 @layer base {

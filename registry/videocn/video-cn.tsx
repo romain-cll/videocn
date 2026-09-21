@@ -181,7 +181,10 @@ export function VideoCn({
         // rien ne doit flotter au-dessus de l'image.
         data-hidden={hiddenAttribute}
         className={cn(
-          "bg-background relative isolate overflow-hidden rounded-lg border",
+          // Le cadre du lecteur est noir, pas thématique : en plein écran,
+          // une vidéo moins haute que l'écran laisse voir ses bandes, et du
+          // blanc y serait aveuglant. Un token, jamais une couleur en dur.
+          "bg-player-backdrop relative isolate overflow-hidden rounded-lg border",
           // En plein écran, le conteneur occupe l'écran entier : sans ça la
           // vidéo reste collée en haut d'un cadre arrondi et bordé.
           "data-fullscreen:flex data-fullscreen:h-full data-fullscreen:items-center data-fullscreen:justify-center data-fullscreen:rounded-none data-fullscreen:border-0",
