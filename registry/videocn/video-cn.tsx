@@ -33,9 +33,11 @@ export interface VideoCnProps {
  * Le composant racine. Il détient l'état, le distribue, et rend le conteneur
  * dans lequel vivront les contrôles.
  *
- * Il n'accepte pas de `children` : la barre est toujours la nôtre. Qui veut la
- * changer édite le code qu'il a reçu — c'est le modèle shadcn, et la raison
- * pour laquelle chaque contrôle est un fichier à part.
+ * Il n'accepte pas de `children` : la barre est toujours la nôtre, et c'est aux
+ * props de la piloter. Le lecteur s'installe et fonctionne — masquer un
+ * contrôle ou changer un comportement doit rester une prop, jamais une
+ * modification à faire à la main dans le code livré. Le découpage en un fichier
+ * par contrôle est là pour la lisibilité, pas pour sous-traiter le travail.
  */
 export function VideoCn({
   src,
@@ -51,9 +53,8 @@ export function VideoCn({
   // Le plein écran est demandé sur le conteneur, pas sur le `<video>` : sinon
   // les contrôles, qui sont à côté de la vidéo et non dedans, disparaîtraient.
   const containerRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const player = usePlayer(videoRef, {
+  const player = usePlayer({
     src,
     type,
     defaultVolume,
@@ -69,15 +70,19 @@ export function VideoCn({
     forwardedRef.current = ref;
   }, [ref]);
 
-  const attachVideo = useCallback((node: HTMLVideoElement | null) => {
-    videoRef.current = node;
-    const forwarded = forwardedRef.current;
-    if (typeof forwarded === "function") {
-      forwarded(node);
-    } else if (forwarded) {
-      forwarded.current = node;
-    }
-  }, []);
+  const attachPlayerVideo = player.ref;
+  const attachVideo = useCallback(
+    (node: HTMLVideoElement | null) => {
+      attachPlayerVideo(node);
+      const forwarded = forwardedRef.current;
+      if (typeof forwarded === "function") {
+        forwarded(node);
+      } else if (forwarded) {
+        forwarded.current = node;
+      }
+    },
+    [attachPlayerVideo],
+  );
 
   return (
     <PlayerProvider value={player}>

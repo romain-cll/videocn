@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefCallback,
+  type RefObject,
+} from "react";
 
 import { NO_CAPABILITIES } from "./player-engine";
 import type {
@@ -67,6 +75,14 @@ export interface UsePlayerOptions {
 }
 
 export interface UsePlayerResult {
+  /**
+   * À poser sur le `<video>`. C'est le hook qui fabrique la ref, et non
+   * l'appelant qui lui en confie une : une callback ref adossée à un état
+   * permet aux effets de suivre l'élément s'il est un jour remplacé — rendu
+   * conditionnel, `key` différente. Avec un objet ref figé, ils resteraient
+   * accrochés au nœud mort et le lecteur deviendrait inerte sans rien dire.
+   */
+  ref: RefCallback<HTMLVideoElement>;
   state: PlayerState;
   actions: PlayerActions;
   playhead: PlayheadStore;
@@ -200,11 +216,20 @@ function mergeState(previous: PlayerState, next: Partial<PlayerState>): PlayerSt
   return previous;
 }
 
-export function usePlayer(
-  videoRef: RefObject<HTMLVideoElement | null>,
-  options: UsePlayerOptions,
-): UsePlayerResult {
+export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
   const { src, type, defaultVolume = DEFAULT_VOLUME, defaultMuted, containerRef } = options;
+
+  // L'élément vit à deux endroits, et c'est voulu. L'état le fait suivre aux
+  // effets, qui doivent se rejouer s'il change. La ref le donne aux actions
+  // sans leur faire changer d'identité, pour que les contrôles qui les
+  // reçoivent en props ne se re-rendent pas pour autant.
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [video, setVideo] = useState<HTMLVideoElement | null>(null);
+
+  const attachVideo = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    setVideo(node);
+  }, []);
 
   const [state, setState] = useState<PlayerState>(() => ({
     paused: true,
@@ -239,13 +264,11 @@ export function usePlayer(
   const defaultsAppliedRef = useRef(false);
 
   useEffect(() => {
-    const video = videoRef.current;
     if (!video) return;
     return playhead.attach(video);
-  }, [playhead, videoRef]);
+  }, [playhead, video]);
 
   useEffect(() => {
-    const video = videoRef.current;
     if (!video) return;
 
     const sync = () => {
@@ -288,34 +311,41 @@ export function usePlayer(
       for (const event of MEDIA_EVENTS) video.removeEventListener(event, sync);
       video.removeEventListener("error", handleError);
     };
-  }, [patch, videoRef]);
+  }, [patch, video]);
 
   useEffect(() => {
-    const video = videoRef.current;
     if (!video) return;
+    // Le nœud repasse par la ref pour être **écrit**. C'est le même élément :
+    // l'état déclenche l'effet, la ref l'autorise à agir. Muter directement
+    // `video`, qui vient de l'état, reviendrait à modifier une valeur issue du
+    // rendu — ce que React interdit, et ce que le compilateur refuse.
+    const element = videoRef.current;
+    if (!element) return;
 
     if (!defaultsAppliedRef.current) {
       defaultsAppliedRef.current = true;
       // Le lecteur est **non contrôlé** : ces valeurs sont un point de départ,
       // pas une source de vérité. Rien ne les réapplique ensuite.
-      video.volume = clamp01(defaultVolume);
-      if (defaultMuted !== undefined) video.muted = defaultMuted;
+      element.volume = clamp01(defaultVolume);
+      if (defaultMuted !== undefined) element.muted = defaultMuted;
     }
 
     // Sur iPhone, Safari ignore les écritures sur `video.volume` : la propriété
     // vaut toujours 1 et le curseur de volume n'aurait aucun effet. Rien ne
     // l'annonce, il faut essayer. La valeur trouvée est restaurée aussitôt.
-    const found = video.volume;
+    const found = element.volume;
     const probe = found === 1 ? 0.5 : 1;
-    video.volume = probe;
-    const canControlVolume = video.volume === probe;
-    video.volume = found;
+    element.volume = probe;
+    const canControlVolume = element.volume === probe;
+    element.volume = found;
 
-    patch({ canControlVolume, volume: video.volume, muted: video.muted });
-  }, [defaultMuted, defaultVolume, patch, videoRef]);
+    // Un rendu de plus au montage, et il n'y a pas d'autre moyen : la capacité
+    // ne se connaît qu'en essayant, et essayer pendant le rendu casserait le
+    // rendu serveur.
+    patch({ canControlVolume, volume: element.volume, muted: element.muted });
+  }, [defaultMuted, defaultVolume, patch, video]);
 
   useEffect(() => {
-    const video = videoRef.current;
     if (!video) return;
 
     let active = true;
@@ -332,6 +362,9 @@ export function usePlayer(
       if (active) patch({ engineStatus: "ready" });
     };
 
+    // Même raison : l'état de départ d'un chargement ne peut être posé qu'une
+    // fois le moteur résolu, donc dans l'effet.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     patch({ engineStatus: "loading", error: null, capabilities: engine.getCapabilities() });
     const unsubscribe = engine.subscribe(syncCapabilities);
     video.addEventListener("loadedmetadata", markReady);
@@ -366,10 +399,9 @@ export function usePlayer(
       // l'ancien statut décrire la suivante.
       patch({ engineStatus: "idle", error: null, capabilities: NO_CAPABILITIES });
     };
-  }, [patch, src, type, videoRef]);
+  }, [patch, src, type, video]);
 
   useEffect(() => {
-    const video = videoRef.current;
     if (!video) return;
     const target = containerRef?.current ?? video;
 
@@ -394,10 +426,9 @@ export function usePlayer(
       video.removeEventListener("webkitbeginfullscreen", sync);
       video.removeEventListener("webkitendfullscreen", sync);
     };
-  }, [containerRef, patch, videoRef]);
+  }, [containerRef, patch, video]);
 
   useEffect(() => {
-    const video = videoRef.current;
     if (!video) return;
 
     const sync = () => {
@@ -420,16 +451,16 @@ export function usePlayer(
       video.removeEventListener("leavepictureinpicture", sync);
       video.removeEventListener("loadedmetadata", sync);
     };
-  }, [patch, videoRef]);
+  }, [patch, video]);
 
   const play = useCallback(() => {
     const video = videoRef.current;
     return video ? video.play() : Promise.resolve();
-  }, [videoRef]);
+  }, []);
 
   const pause = useCallback(() => {
     videoRef.current?.pause();
-  }, [videoRef]);
+  }, []);
 
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
@@ -438,7 +469,7 @@ export function usePlayer(
     // s'être arrêtée d'elle-même, et c'est elle qui a raison.
     if (video.paused || video.ended) ignoreRejection(video.play());
     else video.pause();
-  }, [videoRef]);
+  }, []);
 
   const seek = useCallback(
     (time: number) => {
@@ -449,7 +480,7 @@ export function usePlayer(
       const upperBound = Number.isFinite(video.duration) ? video.duration : time;
       video.currentTime = Math.min(Math.max(time, 0), upperBound);
     },
-    [videoRef],
+    [],
   );
 
   const setVolume = useCallback(
@@ -461,7 +492,7 @@ export function usePlayer(
       // l'écriture n'a aucun effet.
       video.volume = clamp01(volume);
     },
-    [videoRef],
+    [],
   );
 
   const setMuted = useCallback(
@@ -469,13 +500,13 @@ export function usePlayer(
       const video = videoRef.current;
       if (video) video.muted = muted;
     },
-    [videoRef],
+    [],
   );
 
   const toggleMuted = useCallback(() => {
     const video = videoRef.current;
     if (video) video.muted = !video.muted;
-  }, [videoRef]);
+  }, []);
 
   const setPlaybackRate = useCallback(
     (rate: number) => {
@@ -483,7 +514,7 @@ export function usePlayer(
       if (!video || !Number.isFinite(rate) || rate <= 0) return;
       video.playbackRate = rate;
     },
-    [videoRef],
+    [],
   );
 
   const toggleFullscreen = useCallback(() => {
@@ -513,7 +544,7 @@ export function usePlayer(
       default:
         break;
     }
-  }, [containerRef, videoRef]);
+  }, [containerRef]);
 
   const togglePictureInPicture = useCallback(() => {
     const video = videoRef.current;
@@ -525,7 +556,7 @@ export function usePlayer(
     if (typeof video.requestPictureInPicture === "function") {
       ignoreRejection(video.requestPictureInPicture());
     }
-  }, [videoRef]);
+  }, []);
 
   const selectQuality = useCallback((id: string | null) => {
     engineRef.current?.selectQuality(id);
@@ -565,5 +596,8 @@ export function usePlayer(
     ],
   );
 
-  return useMemo(() => ({ state, actions, playhead }), [state, actions, playhead]);
+  return useMemo(
+    () => ({ ref: attachVideo, state, actions, playhead }),
+    [attachVideo, state, actions, playhead],
+  );
 }
