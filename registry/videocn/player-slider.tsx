@@ -144,6 +144,20 @@ function clamp(value: number, range: Range): number {
   return Math.min(Math.max(value, range.min), range.max);
 }
 
+/**
+ * Retire le bruit de l'arithmétique flottante, sans aligner sur une grille.
+ *
+ * `0.8 + 0.05` vaut `0.8500000000000001` : la valeur part telle quelle dans
+ * `aria-valuenow` et dans `video.volume`, et vingt `↓` d'affilée finissent à
+ * `0.4999999999999996`, annoncé « 50 % » quand l'icône du volume a déjà basculé.
+ * On n'arrondit pas au pas pour autant : sur le scrubber, `→` depuis 42,9 s doit
+ * mener à 47,9 s et non à 48. Dix décimales effacent le bruit et laissent tout le
+ * reste — et restent exactes jusqu'à des centaines d'heures de média.
+ */
+function trimFloat(value: number): number {
+  return Math.round(value * 1e10) / 1e10;
+}
+
 function toFraction(value: number, range: Range): number {
   if (!range.valid) return 0;
   const fraction = (value - range.min) / (range.max - range.min);
@@ -365,7 +379,7 @@ export function PlayerSlider({
     // le doigt, et une flèche qui la déplacerait en parallèle se ferait
     // écraser au relâchement.
     if (gestureRef.current || !Number.isFinite(next)) return;
-    onValueChange(clamp(next, range), "key");
+    onValueChange(clamp(trimFloat(next), range), "key");
   };
 
   return (

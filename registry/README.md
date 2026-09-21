@@ -83,7 +83,8 @@ contrôle devenu invisible : la première passe croisée a livré un curseur de 
 dans un projet `base`, sans la moindre erreur nulle part. Le seul juge est le rendu.
 
 Une divergence de plus à garder en tête, qui ne passe ni par les props ni par les imports :
-**les classes internes des primitives diffèrent d'un style à l'autre**. Le `Slider` contraint sa
+**les classes internes des primitives diffèrent d'un style à l'autre**. Le `Slider` — que le lecteur
+n'utilise plus depuis, pour d'autres raisons — contraint sa
 racine en `w-full` côté radix et en `data-horizontal:w-full` côté base ; `tailwind-merge` ne voit
 pas la seconde comme concurrente d'un `w-20` qu'on lui passerait, les deux survivent, la variante
 l'emporte et le contrôle s'effondre. D'où la règle : **ne pas imposer de dimension par une
