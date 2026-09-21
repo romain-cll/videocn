@@ -37,12 +37,30 @@ export function PlayerDemo() {
             l'intérêt de le voir ici tel qu'il arrivera chez l'utilisateur. */}
         <VideoCn ref={videoRef} src={DEMO_SRC} />
         <p className="text-muted-foreground text-xs text-pretty">
-          Contrôles natifs du navigateur : ceux de videoCn arrivent en phase 1. Ils ne changeront
-          rien à ce qu&apos;affiche le panneau, qui lit l&apos;élément et non les contrôles.
+          Le panneau lit l&apos;élément, pas les contrôles : ce qu&apos;il affiche prouve que
+          l&apos;action est bien allée jusqu&apos;à la vidéo.
         </p>
       </div>
       <div className="lg:col-span-2">
         <PlayerDebugPanel videoRef={videoRef} />
+      </div>
+
+      {/* Le même lecteur, réglé par la seule prop `controls` : rien n'a été
+          édité dans le code livré, et c'est tout l'enjeu. */}
+      <div className="flex flex-col gap-3 lg:col-span-5">
+        <h2 className="text-sm font-medium">Réglé par les props</h2>
+        <VideoCn
+          src={DEMO_SRC}
+          controls={{
+            pictureInPicture: false,
+            playbackRate: { rates: [1, 1.5, 2] },
+            autoHideDelay: 1000,
+          }}
+        />
+        <p className="text-muted-foreground text-xs text-pretty">
+          Pas de Picture-in-Picture, trois vitesses au lieu de sept, barre qui s&apos;efface après
+          une seconde.
+        </p>
       </div>
     </div>
   );

@@ -362,8 +362,9 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       if (active) patch({ engineStatus: "ready" });
     };
 
-    // Même raison : l'état de départ d'un chargement ne peut être posé qu'une
-    // fois le moteur résolu, donc dans l'effet.
+    // Un rendu de plus au montage et à chaque changement de source : on ne sait
+    // qu'un chargement commence qu'une fois le moteur résolu, ce qui exige
+    // l'élément, qui n'existe qu'après le montage.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     patch({ engineStatus: "loading", error: null, capabilities: engine.getCapabilities() });
     const unsubscribe = engine.subscribe(syncCapabilities);

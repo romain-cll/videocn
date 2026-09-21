@@ -11,9 +11,9 @@ export default function DemoPage() {
     <main className="mx-auto max-w-5xl px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight">Démo</h1>
       <p className="text-muted-foreground mt-3 max-w-2xl text-pretty">
-        Le socle du lecteur, sans habillage : le composant, le hook d&apos;état et le store de tête
-        de lecture. Les contrôles videoCn arrivent en phase 1 — en attendant, ce sont ceux du
-        navigateur qui pilotent la vidéo, et le panneau lit l&apos;élément sans jamais y toucher.
+        Le lecteur et sa barre de contrôles, tels qu&apos;ils arrivent chez l&apos;utilisateur. Le
+        panneau affiche l&apos;état brut de l&apos;élément, qu&apos;il lit sans jamais y toucher :
+        c&apos;est ce qui permet de vérifier que chaque commande atteint vraiment la vidéo.
       </p>
 
       <div className="mt-10">

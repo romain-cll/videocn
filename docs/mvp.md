@@ -6,6 +6,10 @@ attend, tout ce qui y est doit exister avant de parler de v1.
 Amendé le 20 septembre 2026 : ajout d'un moteur de streaming optionnel, voir **Moteur vidéo**.
 Les qualités et l'adaptatif, jusque-là hors périmètre, y entrent.
 
+Amendé le 21 septembre 2026, pendant la phase 1 : les menus sont écrits à la main et non tirés du
+`DropdownMenu` shadcn, la liste des vitesses devient réglable, et le clic sur l'image entre au
+périmètre. Voir **Contrôles**.
+
 ## Lecture
 
 Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
@@ -57,15 +61,29 @@ publié, voir Distribution.
 | Play / pause | `Button` |
 | Scrubber avec aperçu du buffer | maison — voir note |
 | Volume + bascule muet | `Slider` + `Button` |
-| Vitesse de lecture, 0,5× → 2× | `DropdownMenu` |
-| Qualité | `DropdownMenu` — `disabled` si le moteur n'en expose aucune |
+| Vitesse de lecture, 0,5× → 2× | maison — voir note sur les menus |
+| Qualité | maison — `disabled` si le moteur n'en expose aucune |
 | Plein écran | `Button` |
 | Picture-in-Picture | `Button` |
 
 Note sur le scrubber : le `Slider` shadcn n'expose pas sa piste, ce qui rend impossibles le
-buffer, les chapitres segmentés et le survol. C'est le seul composant qu'on écrit nous-mêmes,
-et c'est une contrainte fonctionnelle, pas un contournement de compatibilité. Le volume, lui,
-utilise bien le `Slider` shadcn.
+buffer, les chapitres segmentés et le survol. C'est une contrainte fonctionnelle, pas un
+contournement de compatibilité. Le volume, lui, utilise bien le `Slider` shadcn.
+
+Note sur les menus : le `DropdownMenu` shadcn porte son contenu sur `document.body`, et ce qui
+est porté là n'est plus rendu dès qu'un autre élément est en plein écran — or c'est le conteneur
+du lecteur qui passe en plein écran, pour que la barre y survive. Les briques pour recomposer le
+menu ne sont pas exportées, et leur structure interne diverge entre `radix` et `base`. Nos menus
+sont donc écrits à la main, rendus **dans** le conteneur, et reprennent les classes et les tokens
+du `DropdownMenu` pour hériter du thème de l'hôte. Ça vaut pour la vitesse, la qualité, les
+chapitres et les sous-titres. Avec le scrubber, ce sont les deux seuls composants qu'on écrit
+nous-mêmes.
+
+La liste des vitesses est réglable par prop, comme tout le reste : `<VideoCn>` s'installe et
+fonctionne, on ne renvoie jamais l'utilisateur éditer le code qu'il a reçu.
+
+Deux gestes sur l'image, hors tableau parce qu'ils n'ont pas de bouton : un clic bascule la
+lecture, un double-clic bascule le plein écran.
 
 ## Raccourcis clavier
 

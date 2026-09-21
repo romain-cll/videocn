@@ -27,7 +27,7 @@ export default function DocsPage() {
 
       <h2 className="mt-12 text-xl font-medium tracking-tight">2. Installer le lecteur</h2>
       <CodeBlock className="mt-4">
-        npx shadcn@latest add {siteConfig.namespace}/video-player
+        npx shadcn@latest add {siteConfig.namespace}/player
       </CodeBlock>
       <p className="text-muted-foreground mt-4 text-sm text-pretty">
         Le CLI copie les sources dans votre projet et installe au passage les primitives shadcn

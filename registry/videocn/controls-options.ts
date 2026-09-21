@@ -1,0 +1,83 @@
+"use client";
+
+/**
+ * Ce que le lecteur expose de réglable, et rien d'autre : `<VideoCn>` s'installe
+ * et fonctionne. Masquer un contrôle, changer une liste de valeurs, tout passe
+ * par ici — jamais par une modification du code livré.
+ *
+ * La forme tient sur la durée grâce à une seule règle : **chaque contrôle vaut
+ * `boolean | objet d'options`**. Absent ou `true`, il est là avec ses défauts ;
+ * `false`, il disparaît ; un objet, il est là et réglé. Les chapitres de la
+ * phase 5 gagneront une clé dans *leur* objet, pas une prop de plus sur le
+ * composant racine.
+ */
+
+export interface ControlsOptions {
+  /**
+   * `auto` — la barre apparaît à l'activité et s'efface pendant la lecture.
+   * `always` — jamais masquée. `never` — pas de barre du tout.
+   */
+  visibility?: "auto" | "always" | "never";
+  /** Inactivité avant masquage, en millisecondes. */
+  autoHideDelay?: number;
+  play?: boolean;
+  volume?: boolean;
+  fullscreen?: boolean;
+  pictureInPicture?: boolean;
+  playbackRate?: boolean | { rates?: readonly number[] };
+}
+
+/**
+ * Tous les contrôles sont des objets, y compris ceux qui n'ont aujourd'hui rien
+ * à régler : le jour où l'un d'eux gagne une option, ce que son lecteur attend
+ * ne change pas.
+ */
+export interface ResolvedControlsOptions {
+  visibility: "auto" | "always" | "never";
+  autoHideDelay: number;
+  play: { enabled: boolean };
+  volume: { enabled: boolean };
+  fullscreen: { enabled: boolean };
+  pictureInPicture: { enabled: boolean };
+  playbackRate: { enabled: boolean; rates: readonly number[] };
+}
+
+/** Les vitesses de YouTube : assez fines pour être utiles, assez peu pour tenir dans un menu. */
+export const DEFAULT_PLAYBACK_RATES: readonly number[] = Object.freeze([
+  0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,
+]);
+
+/** Trois secondes : le temps de trouver un bouton sans que la barre s'incruste. */
+export const DEFAULT_AUTO_HIDE_DELAY = 3000;
+
+function toggle(value: boolean | undefined): { enabled: boolean } {
+  // Seul `false` masque : une clé absente doit donner un lecteur complet.
+  return { enabled: value !== false };
+}
+
+function resolveRates(rates: readonly number[] | undefined): readonly number[] {
+  if (!rates) return DEFAULT_PLAYBACK_RATES;
+  // `playbackRate` n'accepte que des nombres finis strictement positifs ; une
+  // valeur invalide ferait échouer l'écriture sur l'élément, silencieusement.
+  const cleaned = Array.from(new Set(rates.filter((rate) => Number.isFinite(rate) && rate > 0)));
+  if (cleaned.length === 0) return DEFAULT_PLAYBACK_RATES;
+  return Object.freeze(cleaned.sort((a, b) => a - b));
+}
+
+export function resolveControlsOptions(options: ControlsOptions = {}): ResolvedControlsOptions {
+  const { playbackRate } = options;
+  const rateOptions = typeof playbackRate === "object" ? playbackRate : undefined;
+
+  return {
+    visibility: options.visibility ?? "auto",
+    autoHideDelay: options.autoHideDelay ?? DEFAULT_AUTO_HIDE_DELAY,
+    play: toggle(options.play),
+    volume: toggle(options.volume),
+    fullscreen: toggle(options.fullscreen),
+    pictureInPicture: toggle(options.pictureInPicture),
+    playbackRate: {
+      enabled: playbackRate !== false,
+      rates: resolveRates(rateOptions?.rates),
+    },
+  };
+}

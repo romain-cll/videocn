@@ -77,8 +77,8 @@ export function PlayerDebugPanel({
       <div className="px-4 py-3">
         <h2 className="text-sm font-medium">État de l&apos;élément</h2>
         <p className="text-muted-foreground mt-1 text-xs text-pretty">
-          Lecture seule. Jouez, mettez en pause, déplacez la tête de lecture avec les contrôles
-          natifs : tout doit bouger ici.
+          Lecture seule. Jouez, mettez en pause, changez la vitesse avec la barre : tout doit
+          bouger ici.
         </p>
       </div>
 
