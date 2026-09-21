@@ -1,32 +1,31 @@
 "use client";
 
-import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
 
-import type { PlayheadSnapshot, PlayheadStore } from "./player-store";
-import type { PlayerActions, PlayerState, UsePlayerResult } from "./use-player";
+import type { PlayheadSnapshot, PlayheadStore } from "./playhead-store";
+import type { PlayerState, PlayerStateStore } from "./player-state-store";
+import type { PlayerActions, UsePlayerResult } from "./use-player";
 
 /**
  * L'état est détenu une fois, par le composant racine, et distribué ici. Les
  * contrôles lisent et rendent ; aucun d'eux ne détient d'état, sans quoi deux
  * contrôles pourraient afficher deux vérités différentes.
  *
- * Deux contextes et non un seul. `useContext` s'abonne à la valeur entière : un
- * contexte unique re-rendrait le bouton plein écran à chaque cran du curseur de
- * volume, alors qu'il ne lit aucun état. Ce qui ne change jamais — les actions
- * et le store de la tête de lecture — est donc isolé de ce qui change.
- *
- * L'isolation ne porte que sur les composants mémoïsés : un contrôle rendu à
- * chaque rendu de `<VideoCn>` se re-rendra de toute façon. C'est en posant la
- * barre, avec ses contrôles, que la séparation prendra son sens.
+ * **Le contexte ne porte que des références stables** — deux stores et un objet
+ * d'actions, qui ne changent jamais de la vie du lecteur. Rien ne transite par
+ * sa valeur, donc le changer ne re-rend personne. Toute la réactivité passe par
+ * des abonnements, et chaque contrôle ne se réveille que pour la tranche qu'il
+ * lit. C'est ce qui fait qu'un glissement de volume ne re-rend plus le bouton
+ * plein écran.
  */
 
-interface PlayerControls {
+interface PlayerHandle {
+  store: PlayerStateStore;
   actions: PlayerActions;
   playhead: PlayheadStore;
 }
 
-const PlayerStateContext = createContext<PlayerState | null>(null);
-const PlayerControlsContext = createContext<PlayerControls | null>(null);
+const PlayerContext = createContext<PlayerHandle | null>(null);
 
 export interface PlayerProviderProps {
   value: UsePlayerResult;
@@ -34,38 +33,48 @@ export interface PlayerProviderProps {
 }
 
 export function PlayerProvider({ value, children }: PlayerProviderProps) {
-  const { state, actions, playhead } = value;
-  // Stable pour la vie du composant : `actions` est mémoïsé par `usePlayer` et
-  // le store est créé une seule fois.
-  const controls = useMemo(() => ({ actions, playhead }), [actions, playhead]);
+  return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
+}
 
-  return (
-    <PlayerControlsContext.Provider value={controls}>
-      <PlayerStateContext.Provider value={state}>{children}</PlayerStateContext.Provider>
-    </PlayerControlsContext.Provider>
+function usePlayerHandle(): PlayerHandle {
+  const handle = useContext(PlayerContext);
+  if (!handle) {
+    throw new Error("Les contrôles du lecteur doivent être rendus dans <VideoCn>.");
+  }
+  return handle;
+}
+
+/**
+ * Lit **une tranche** de l'état, et ne re-rend que si elle change.
+ *
+ * Le sélecteur doit renvoyer une valeur comparable par `Object.is` : un nombre,
+ * un booléen, une chaîne, ou une référence stable comme `capabilities`.
+ * Fabriquer un objet dans le sélecteur — `(s) => ({ a: s.a })` — rendrait la
+ * comparaison toujours fausse et re-rendrait à chaque notification.
+ */
+export function usePlayerValue<T>(select: (state: PlayerState) => T): T {
+  return usePlayerStoreValue(usePlayerHandle().store, select);
+}
+
+/**
+ * La même chose, sur un store qu'on tient déjà en main. Le composant racine en
+ * a besoin : il lit deux champs *avant* de fournir le contexte, donc il ne peut
+ * pas passer par `usePlayerValue`.
+ */
+export function usePlayerStoreValue<T>(
+  store: PlayerStateStore,
+  select: (state: PlayerState) => T,
+): T {
+  return useSyncExternalStore(
+    store.subscribe,
+    () => select(store.getSnapshot()),
+    () => select(store.getServerSnapshot()),
   );
-}
-
-function useControls(): PlayerControls {
-  const controls = useContext(PlayerControlsContext);
-  if (!controls) {
-    throw new Error("Les contrôles du lecteur doivent être rendus dans <VideoCn>.");
-  }
-  return controls;
-}
-
-/** L'état discret : lecture, durée, volume, plein écran, capacités, erreur. */
-export function usePlayerState(): PlayerState {
-  const state = useContext(PlayerStateContext);
-  if (!state) {
-    throw new Error("Les contrôles du lecteur doivent être rendus dans <VideoCn>.");
-  }
-  return state;
 }
 
 /** Les actions. Leurs références sont stables : les passer en prop ne re-rend rien. */
 export function usePlayerActions(): PlayerActions {
-  return useControls().actions;
+  return usePlayerHandle().actions;
 }
 
 /**
@@ -73,6 +82,6 @@ export function usePlayerActions(): PlayerActions {
  * besoin : le scrubber et l'horodatage.
  */
 export function usePlayhead(): PlayheadSnapshot {
-  const { playhead } = useControls();
+  const { playhead } = usePlayerHandle();
   return useSyncExternalStore(playhead.subscribe, playhead.getSnapshot, playhead.getServerSnapshot);
 }

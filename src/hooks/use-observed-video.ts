@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 
-import { createPlayheadStore } from "@/registry/videocn/player-store";
+import { createPlayheadStore } from "@/registry/videocn/playhead-store";
 
 /**
  * Miroir d'un élément `<video>` piloté par quelqu'un d'autre — ici, par

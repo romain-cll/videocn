@@ -18,7 +18,7 @@ import type {
   PlayerError,
   SourceType,
 } from "./player-engine";
-import { createPlayheadStore, type PlayheadStore } from "./player-store";
+import { createPlayheadStore, type PlayheadStore } from "./playhead-store";
 import { resolveEngine } from "./resolve-engine";
 
 /**
