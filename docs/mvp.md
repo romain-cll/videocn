@@ -10,6 +10,9 @@ Amendé le 21 septembre 2026, pendant la phase 1 : les menus sont écrits à la 
 `DropdownMenu` shadcn, la liste des vitesses devient réglable, et le clic sur l'image entre au
 périmètre. Voir **Contrôles**.
 
+Amendé le 21 septembre 2026, après la phase 1 : le curseur de volume abandonne lui aussi le
+`Slider` shadcn et rejoint le curseur maison du scrubber. Voir la note sur les curseurs.
+
 ## Lecture
 
 Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
@@ -60,15 +63,18 @@ publié, voir Distribution.
 | --- | --- |
 | Play / pause | `Button` |
 | Scrubber avec aperçu du buffer | maison — voir note |
-| Volume + bascule muet | `Slider` + `Button` |
+| Volume + bascule muet | maison — voir note — plus `Button` |
 | Vitesse de lecture, 0,5× → 2× | maison — voir note sur les menus |
 | Qualité | maison — `disabled` si le moteur n'en expose aucune |
 | Plein écran | `Button` |
 | Picture-in-Picture | `Button` |
 
-Note sur le scrubber : le `Slider` shadcn n'expose pas sa piste, ce qui rend impossibles le
-buffer, les chapitres segmentés et le survol. C'est une contrainte fonctionnelle, pas un
-contournement de compatibilité. Le volume, lui, utilise bien le `Slider` shadcn.
+Note sur les curseurs : le `Slider` shadcn n'expose pas sa piste, ce qui rend impossibles le
+buffer, les chapitres segmentés et le survol. Et il ne laisse pas nommer l'élément qui porte le
+rôle de curseur — vérifié dans les deux bases : ni un lecteur d'écran ni le contrôle vocal n'ont
+alors de prise sur le volume. On écrit donc **un seul curseur maison**, et il sert les deux : le
+scrubber et le volume. C'est une contrainte fonctionnelle et d'accessibilité, pas un
+contournement de compatibilité.
 
 Note sur les menus : le `DropdownMenu` shadcn porte son contenu sur `document.body`, et ce qui
 est porté là n'est plus rendu dès qu'un autre élément est en plein écran — or c'est le conteneur
@@ -76,8 +82,9 @@ du lecteur qui passe en plein écran, pour que la barre y survive. Les briques p
 menu ne sont pas exportées, et leur structure interne diverge entre `radix` et `base`. Nos menus
 sont donc écrits à la main, rendus **dans** le conteneur, et reprennent les classes et les tokens
 du `DropdownMenu` pour hériter du thème de l'hôte. Ça vaut pour la vitesse, la qualité, les
-chapitres et les sous-titres. Avec le scrubber, ce sont les deux seuls composants qu'on écrit
-nous-mêmes.
+chapitres et les sous-titres. Avec le curseur, ce sont les deux seuls composants qu'on écrit
+nous-mêmes — et à chaque fois pour la même raison : la primitive ne laisse pas atteindre ce dont
+on a besoin.
 
 La liste des vitesses est réglable par prop, comme tout le reste : `<VideoCn>` s'installe et
 fonctionne, on ne renvoie jamais l'utilisateur éditer le code qu'il a reçu.

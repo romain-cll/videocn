@@ -46,10 +46,14 @@ croisé (voir plus bas).
 
 ## Phase 2 — Le scrubber
 
-Le morceau le plus dur du MVP, et le seul composant écrit à la main.
+Le morceau le plus dur du MVP.
 
 - Piste, aperçu du buffer, glisser-déposer, clavier, tactile.
 - Accessibilité : `role="slider"`, `aria-valuenow`, `aria-valuetext` lisible.
+- **Le curseur de volume bascule sur la même primitive, dans la foulée.** Le concevoir pour deux
+  plages dès le départ coûte presque rien ; l'y porter après coup, quand le buffer, les chapitres
+  et la heatmap y sont encastrés, coûte une refonte. Une fois le scrubber écrit, le volume n'est
+  qu'une plage de 0 à 1 sans buffer ni chapitres.
 
 L'accessibilité et le tactile coûtent nettement plus que le rendu. Ne pas le sous-estimer
 parce qu'il ressemble à une barre.
