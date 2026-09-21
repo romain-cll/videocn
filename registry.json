@@ -17,6 +17,41 @@
       ],
       "files": [
         {
+          "path": "registry/videocn/player-engine.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/player-engine.ts"
+        },
+        {
+          "path": "registry/videocn/native-engine.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/native-engine.ts"
+        },
+        {
+          "path": "registry/videocn/resolve-engine.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/resolve-engine.ts"
+        },
+        {
+          "path": "registry/videocn/player-store.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/player-store.ts"
+        },
+        {
+          "path": "registry/videocn/use-player.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/use-player.ts"
+        },
+        {
+          "path": "registry/videocn/player-context.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/player-context.tsx"
+        },
+        {
+          "path": "registry/videocn/video-cn.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/video-cn.tsx"
+        },
+        {
           "path": "registry/videocn/volume-control.tsx",
           "type": "registry:ui",
           "target": "@ui/video-player/volume-control.tsx"

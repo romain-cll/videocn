@@ -15,6 +15,9 @@ export function SiteHeader() {
           <Link href="/docs" className="hover:text-foreground transition-colors">
             Docs
           </Link>
+          <Link href="/demo" className="hover:text-foreground transition-colors">
+            Démo
+          </Link>
         </nav>
         <div className="ml-auto flex items-center gap-1">
           <Button variant="ghost" size="sm" nativeButton={false} render={<a href={siteConfig.links.github} />}>
