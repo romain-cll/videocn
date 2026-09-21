@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 
 /**
  * Quand la barre se montre, quand elle s'efface. Tout est ici et nulle part
@@ -69,6 +69,23 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
   const [keyboardFocus, setKeyboardFocus] = useState(false);
 
   /**
+   * Réarme le minuteur de masquage sans passer par l'état. Posé par l'effet du
+   * minuteur quand toutes les conditions de masquage sont réunies, `null`
+   * sinon.
+   *
+   * C'est le correctif d'un second bug de la phase 1. Un mouvement de souris
+   * appelait `setAutoVisible(true)` ; quand la barre était déjà visible, la
+   * valeur ne changeait pas, l'effet ne se relançait pas, et le minuteur
+   * n'était **jamais** réarmé : la barre disparaissait trois secondes après être
+   * apparue, même sous une souris qui ne s'arrêtait pas, puis revenait au
+   * mouvement suivant. Un clignotement toutes les trois secondes. Passer par un
+   * compteur d'activité en état l'aurait corrigé au prix d'un rendu du lecteur
+   * entier à chaque mouvement, soixante fois par seconde : le minuteur se
+   * réarme donc hors de React, et l'état ne change qu'aux vraies transitions.
+   */
+  const rearmRef = useRef<(() => void) | null>(null);
+
+  /**
    * Ajustement pendant le rendu, et non dans un effet : la barre doit être là
    * dans la frame où la lecture s'arrête. Un effet la ferait apparaître une
    * frame plus tard, ce qui se voit exactement au moment où l'utilisateur
@@ -99,7 +116,12 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
     const container = containerRef.current;
     if (!container) return;
 
-    const show = () => setAutoVisible(true);
+    const show = () => {
+      // Masquée : l'état change, et l'effet du minuteur repart de lui-même.
+      // Déjà visible : l'état ne bouge pas, et c'est le réarmement qui compte.
+      setAutoVisible(true);
+      rearmRef.current?.();
+    };
 
     const handlePointerMove = (event: PointerEvent) => {
       // Masquer le curseur avec la barre provoque un `pointermove` sans
@@ -172,17 +194,26 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
     if (holds > 0) return;
     if (keyboardFocus) return;
 
-    const timer = setTimeout(() => {
-      // Dernier mot au DOM : un focus posé par le code de l'hôte n'est pas
-      // passé par `focusin` ici, et masquer un élément focalisé le rendrait
-      // invisible sans le rendre inatteignable — le pire des deux. Focus
-      // clavier seulement, là aussi : voir `isKeyboardFocused`.
-      const container = containerRef.current;
-      if (container && hasKeyboardFocusWithin(container)) return;
-      setAutoVisible(false);
-    }, autoHideDelay);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const arm = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        // Dernier mot au DOM : un focus posé par le code de l'hôte n'est pas
+        // passé par `focusin` ici, et masquer un élément focalisé le rendrait
+        // invisible sans le rendre inatteignable — le pire des deux. Focus
+        // clavier seulement, là aussi : voir `isKeyboardFocused`.
+        const container = containerRef.current;
+        if (container && hasKeyboardFocusWithin(container)) return;
+        setAutoVisible(false);
+      }, autoHideDelay);
+    };
+    arm();
+    rearmRef.current = arm;
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (rearmRef.current === arm) rearmRef.current = null;
+    };
   }, [autoHideDelay, autoVisible, containerRef, holds, keyboardFocus, paused, visibility]);
 
   return {
