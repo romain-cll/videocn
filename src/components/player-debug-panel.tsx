@@ -4,21 +4,19 @@
  * Panneau de debug du socle — outil de développement du site, **jamais
  * distribué** : il vit dans `src/`, aucun item du registry ne le référence.
  *
- * Il sert à voir bouger pour de vrai ce que le lecteur expose, tant qu'aucun
- * contrôle n'existe pour le montrer. Il est prévu pour durer jusqu'à la phase 4,
- * où c'est lui qui dira ce que le moteur Shaka remonte comme qualités, comme
- * état live et comme erreurs.
+ * Il sert à voir bouger pour de vrai ce que le lecteur produit, tant qu'aucun
+ * contrôle n'existe pour le montrer.
  *
- * Il observe et ne pilote rien : `usePlayer` est appelé sans `options.src`,
- * donc en mode observation pure. Monter le panneau ne peut pas changer le
- * comportement du lecteur qu'il inspecte — c'est la condition pour lui faire
- * confiance quand on debug.
+ * Il lit l'élément `<video>` directement, par `useObservedVideo`, et n'écrit
+ * jamais rien : monter le panneau ne peut pas changer le comportement du
+ * lecteur qu'il inspecte, ce qui est la condition pour lui faire confiance
+ * quand on debug. Ce que seul le lecteur sait — l'état de son moteur, ses
+ * qualités — n'apparaît donc pas ici : ce sont ses contrôles, en phase 1, qui
+ * le montreront.
  */
 
-import { useSyncExternalStore } from "react";
-
-import { usePlayer } from "@/registry/videocn/use-player";
 import { cn } from "@/lib/utils";
+import { useObservedVideo } from "@/hooks/use-observed-video";
 
 /** `duration` vaut NaN avant les métadonnées et Infinity en live. */
 function formatSeconds(value: number) {
@@ -27,6 +25,21 @@ function formatSeconds(value: number) {
 
 function formatBoolean(value: boolean) {
   return value ? "oui" : "non";
+}
+
+const READY_STATES = [
+  "HAVE_NOTHING",
+  "HAVE_METADATA",
+  "HAVE_CURRENT_DATA",
+  "HAVE_FUTURE_DATA",
+  "HAVE_ENOUGH_DATA",
+];
+
+const NETWORK_STATES = ["EMPTY", "IDLE", "LOADING", "NO_SOURCE"];
+
+function formatError(error: MediaError | null) {
+  if (!error) return "—";
+  return `${error.code} — ${error.message || "sans message"}`;
 }
 
 function Row({ label, value, alert }: { label: string; value: string; alert?: boolean }) {
@@ -57,21 +70,12 @@ export function PlayerDebugPanel({
 }: {
   videoRef: React.RefObject<HTMLVideoElement | null>;
 }) {
-  const { state, playhead } = usePlayer(videoRef);
-
-  // La tête de lecture ne transite pas par `state` : elle avance à chaque frame
-  // et re-rendrait tout le lecteur. Seul ce panneau s'abonne au store, donc seul
-  // ce panneau se re-rend à 60 Hz — c'est exactement ce qu'on vient vérifier ici.
-  const { currentTime, bufferedEnd } = useSyncExternalStore(
-    playhead.subscribe,
-    playhead.getSnapshot,
-    playhead.getServerSnapshot,
-  );
+  const video = useObservedVideo(videoRef);
 
   return (
     <div className="bg-muted/40 divide-y rounded-lg border">
       <div className="px-4 py-3">
-        <h2 className="text-sm font-medium">État du socle</h2>
+        <h2 className="text-sm font-medium">État de l&apos;élément</h2>
         <p className="text-muted-foreground mt-1 text-xs text-pretty">
           Lecture seule. Jouez, mettez en pause, déplacez la tête de lecture avec les contrôles
           natifs : tout doit bouger ici.
@@ -79,43 +83,38 @@ export function PlayerDebugPanel({
       </div>
 
       <Section title="Tête de lecture">
-        <Row label="currentTime" value={formatSeconds(currentTime)} />
-        <Row label="bufferedEnd" value={formatSeconds(bufferedEnd)} />
+        {/* Les deux seules valeurs qui passent par le store du lecteur, donc
+            par sa boucle `requestAnimationFrame` : elles doivent défiler
+            finement, pas par paliers de 250 ms. */}
+        <Row label="currentTime" value={formatSeconds(video.currentTime)} />
+        <Row label="bufferedEnd" value={formatSeconds(video.bufferedEnd)} />
       </Section>
 
       <Section title="Lecture">
-        <Row label="duration" value={formatSeconds(state.duration)} />
-        <Row label="paused" value={formatBoolean(state.paused)} />
-        <Row label="ended" value={formatBoolean(state.ended)} />
-        {/* `isBuffering` décrit le flux, `engineStatus` le moteur : le MVP
-            exige qu'on puisse les distinguer, c'est ici qu'on le vérifie. */}
-        <Row label="isBuffering" value={formatBoolean(state.isBuffering)} />
-        <Row label="volume" value={state.volume.toFixed(2)} />
-        <Row label="muted" value={formatBoolean(state.muted)} />
-        <Row label="playbackRate" value={`${state.playbackRate.toFixed(2)}×`} />
+        <Row label="duration" value={formatSeconds(video.duration)} />
+        <Row label="paused" value={formatBoolean(video.paused)} />
+        <Row label="ended" value={formatBoolean(video.ended)} />
+        <Row label="isBuffering" value={formatBoolean(video.isBuffering)} />
+        <Row label="volume" value={video.volume.toFixed(2)} />
+        <Row label="muted" value={formatBoolean(video.muted)} />
+        <Row label="playbackRate" value={`${video.playbackRate.toFixed(2)}×`} />
       </Section>
 
-      <Section title="Moteur">
-        <Row label="engineStatus" value={state.engineStatus} />
+      <Section title="Chargement">
         <Row
-          label="error"
-          value={state.error ? `${state.error.code} — ${state.error.message}` : "—"}
-          alert={state.error !== null}
+          label="readyState"
+          value={`${video.readyState} — ${READY_STATES[video.readyState] ?? "?"}`}
         />
-        <Row label="qualities" value={String(state.capabilities.qualities.length)} />
-        <Row label="isLive" value={formatBoolean(state.capabilities.isLive)} />
+        <Row
+          label="networkState"
+          value={`${video.networkState} — ${NETWORK_STATES[video.networkState] ?? "?"}`}
+        />
+        <Row label="error" value={formatError(video.error)} alert={video.error !== null} />
       </Section>
 
-      <Section title="Capacités">
-        {/* Réserve : en observation le hook n'écrit rien, donc il ne sonde pas
-            `video.volume` et `canControlVolume` reste à sa valeur optimiste.
-            C'est le lecteur, lui, qui sonde — et qui trouvera `false` sur
-            iPhone, où Safari ignore les écritures de volume. */}
-        <Row label="canControlVolume" value={formatBoolean(state.canControlVolume)} />
-        <Row label="canFullscreen" value={formatBoolean(state.canFullscreen)} />
-        <Row label="isFullscreen" value={formatBoolean(state.isFullscreen)} />
-        <Row label="canPictureInPicture" value={formatBoolean(state.canPictureInPicture)} />
-        <Row label="isPictureInPicture" value={formatBoolean(state.isPictureInPicture)} />
+      <Section title="Affichage">
+        <Row label="isFullscreen" value={formatBoolean(video.isFullscreen)} />
+        <Row label="isPictureInPicture" value={formatBoolean(video.isPictureInPicture)} />
       </Section>
     </div>
   );

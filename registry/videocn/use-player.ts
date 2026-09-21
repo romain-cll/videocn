@@ -57,8 +57,7 @@ export interface PlayerActions {
 }
 
 export interface UsePlayerOptions {
-  /** Absent = mode observation : le hook lit l'élément sans jamais le piloter ni charger de moteur. */
-  src?: string;
+  src: string;
   type?: SourceType;
   /** 0 à 1. Défaut 0,5. */
   defaultVolume?: number;
@@ -185,17 +184,6 @@ function toPlayerError(error: MediaError | null): PlayerError {
   return { code: "unsupported", message };
 }
 
-/**
- * En observation il n'y a pas de moteur, donc rien qui décrive le chargement.
- * Le statut reflète alors l'élément lui-même — sinon il resterait « idle » à
- * vie devant une vidéo manifestement en train de jouer.
- */
-function observedStatus(video: HTMLVideoElement): EngineStatus {
-  if (video.error) return "error";
-  if (!video.currentSrc && !video.getAttribute("src")) return "idle";
-  return video.readyState >= video.HAVE_METADATA ? "ready" : "loading";
-}
-
 function engineErrorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : "Le moteur vidéo n'a pas pu charger la source.";
 }
@@ -214,17 +202,9 @@ function mergeState(previous: PlayerState, next: Partial<PlayerState>): PlayerSt
 
 export function usePlayer(
   videoRef: RefObject<HTMLVideoElement | null>,
-  options?: UsePlayerOptions,
+  options: UsePlayerOptions,
 ): UsePlayerResult {
-  const { src, type, defaultVolume = DEFAULT_VOLUME, defaultMuted, containerRef } = options ?? {};
-
-  /**
-   * Avec une source, le hook possède l'élément : il pose le moteur, applique
-   * les valeurs par défaut, décrit le chargement. Sans source, il n'est qu'un
-   * miroir — c'est ce mode qu'utilise un panneau de debug branché sur un
-   * `<video>` déjà piloté par quelqu'un d'autre.
-   */
-  const owned = src !== undefined;
+  const { src, type, defaultVolume = DEFAULT_VOLUME, defaultMuted, containerRef } = options;
 
   const [state, setState] = useState<PlayerState>(() => ({
     paused: true,
@@ -283,9 +263,8 @@ export function usePlayer(
         muted: video.muted,
         playbackRate: video.playbackRate,
       };
-      // En mode possédé, c'est l'effet du moteur qui tient `engineStatus` : il
-      // en sait plus que l'élément, notamment pendant le chargement de Shaka.
-      if (!owned) next.engineStatus = observedStatus(video);
+      // `engineStatus` n'est pas ici : c'est l'effet du moteur qui le tient, et
+      // il en sait plus que l'élément — notamment pendant le chargement de Shaka.
       patch(next);
     };
 
@@ -309,7 +288,7 @@ export function usePlayer(
       for (const event of MEDIA_EVENTS) video.removeEventListener(event, sync);
       video.removeEventListener("error", handleError);
     };
-  }, [owned, patch, videoRef]);
+  }, [patch, videoRef]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -318,21 +297,9 @@ export function usePlayer(
     if (!defaultsAppliedRef.current) {
       defaultsAppliedRef.current = true;
       // Le lecteur est **non contrôlé** : ces valeurs sont un point de départ,
-      // pas une source de vérité. Rien ne les réapplique ensuite, et en
-      // observation on n'écrit rien du tout.
-      if (owned) {
-        video.volume = clamp01(defaultVolume);
-        if (defaultMuted !== undefined) video.muted = defaultMuted;
-      }
-    }
-
-    if (!owned) {
-      // En observation on n'écrit rien, pas même le temps d'une sonde : deux
-      // `volumechange` parasites sur un élément piloté par quelqu'un d'autre
-      // suffiraient à faire mentir ce que le hook prétend être, un miroir.
-      // `canControlVolume` y reste donc à son optimisme initial.
-      patch({ volume: video.volume, muted: video.muted });
-      return;
+      // pas une source de vérité. Rien ne les réapplique ensuite.
+      video.volume = clamp01(defaultVolume);
+      if (defaultMuted !== undefined) video.muted = defaultMuted;
     }
 
     // Sur iPhone, Safari ignore les écritures sur `video.volume` : la propriété
@@ -345,11 +312,11 @@ export function usePlayer(
     video.volume = found;
 
     patch({ canControlVolume, volume: video.volume, muted: video.muted });
-  }, [defaultMuted, defaultVolume, owned, patch, videoRef]);
+  }, [defaultMuted, defaultVolume, patch, videoRef]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || src === undefined) return;
+    if (!video) return;
 
     let active = true;
     const engine = resolveEngine(src, type);

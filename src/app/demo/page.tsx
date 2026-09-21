@@ -13,7 +13,7 @@ export default function DemoPage() {
       <p className="text-muted-foreground mt-3 max-w-2xl text-pretty">
         Le socle du lecteur, sans habillage : le composant, le hook d&apos;état et le store de tête
         de lecture. Les contrôles videoCn arrivent en phase 1 — en attendant, ce sont ceux du
-        navigateur qui pilotent la vidéo, et le panneau montre ce que le lecteur expose.
+        navigateur qui pilotent la vidéo, et le panneau lit l&apos;élément sans jamais y toucher.
       </p>
 
       <div className="mt-10">
