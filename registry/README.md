@@ -113,7 +113,9 @@ La position passe donc par `left` et `width`. Le CLI réécrit `left-*` en `star
 logique : c'est là que `dir="ltr"` sert, elle se résout à gauche sous lui.
 
 L'horodatage est figé en `dir="ltr"` pour la même raison : ce sont des chiffres, et sans ça
-l'algorithme bidi d'une page RTL affiche `9:56 / 0:00`.
+l'algorithme bidi d'une page RTL affiche `9:56 / 0:00`. Même traitement pour les libellés de
+vitesse, qui deviendraient `×1` : **tout nombre accompagné d'un symbole se fige en `ltr`**, sur le
+texte seul, pas sur le contrôle qui le porte.
 
 **Une chaîne de classes s'écrit sur une seule ligne.** La conversion RTL du CLI ajoute un `\` en fin
 de chaque ligne d'un `className` multiligne, et ce caractère reste littéral dans un attribut JSX : les

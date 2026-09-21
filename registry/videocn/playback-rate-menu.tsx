@@ -42,7 +42,10 @@ export const PlaybackRateMenu = memo(function PlaybackRateMenu(): ReactElement |
           remplacé : ce que l'utilisateur lit doit être ce qu'il peut dire. */}
       <PlayerMenuTrigger aria-label={`Playback speed, ${label}`}>
         <GaugeIcon />
-        {label}
+        {/* `dir="ltr"` sur le nombre seul, comme l'horodatage : sous une page
+            RTL, l'algorithme bidi afficherait `×1` au lieu de `1×`. Le bouton,
+            lui, garde la direction de la page. */}
+        <span dir="ltr">{label}</span>
       </PlayerMenuTrigger>
       <PlayerMenuContent>
         {rateOptions.rates.map((rate) => (
@@ -54,7 +57,7 @@ export const PlaybackRateMenu = memo(function PlaybackRateMenu(): ReactElement |
             checked={rate === playbackRate}
             onSelect={() => setPlaybackRate(rate)}
           >
-            {formatRate(rate)}
+            <span dir="ltr">{formatRate(rate)}</span>
           </PlayerMenuRadioItem>
         ))}
       </PlayerMenuContent>
