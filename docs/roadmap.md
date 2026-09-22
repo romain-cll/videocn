@@ -103,6 +103,10 @@ Dépend entièrement de la phase 2.
 
 - `registry.json` complet : tous les `files[]`, les `dependencies`, les `cssVars`.
 - Documentation du site, avec des exemples copiables tels quels.
+- **Passe d'accessibilité à la main, avant la V1** (décidé le 22 septembre 2026) : VoiceOver sur
+  le scrubber, pour vérifier que la valeur, qui change chaque seconde, n'est pas annoncée en
+  boucle quand il a le focus, et le contrôle vocal macOS (« Click Seek »). Ni l'un ni l'autre ne
+  s'automatise.
 
 ## Deux chantiers hors de l'ordre séquentiel
 
@@ -110,8 +114,9 @@ Dépend entièrement de la phase 2.
   seul test qui compte est l'installation dans un projet tiers, en `radix` *et* en `base`. Le
   faire en phase 7 sur douze fichiers, c'est découvrir trop tard qu'une primitive diverge. Le
   faire sur trois fichiers coûte une heure et protège tout le reste.
-- **Réclamer `@videocn` à l'annuaire shadcn maintenant.** Ça ne dépend d'aucune ligne de code
-  et le délai est chez un tiers. Rien d'autre ne résout un `@videocn` nu.
+- **Réclamer `@videocn` à l'annuaire shadcn.** Ça ne dépend d'aucune ligne de code et le délai
+  est chez un tiers. Rien d'autre ne résout un `@videocn` nu. Reporté le 22 septembre 2026 : la
+  demande part à la sortie de la V1.
 
 ## Durée
 
