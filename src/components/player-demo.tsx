@@ -11,6 +11,7 @@
 
 import { useRef } from "react";
 
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { PlayerDebugPanel } from "@/components/player-debug-panel";
 import { VideoCn } from "@/registry/videocn/video-cn";
 
@@ -40,6 +41,7 @@ export function PlayerDemo() {
           Le panneau lit l&apos;élément, pas les contrôles : ce qu&apos;il affiche prouve que
           l&apos;action est bien allée jusqu&apos;à la vidéo.
         </p>
+        <KeyboardShortcuts />
       </div>
       <div className="lg:col-span-2">
         <PlayerDebugPanel videoRef={videoRef} />
