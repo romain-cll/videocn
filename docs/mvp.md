@@ -18,6 +18,10 @@ le glissement du scrubber prend le modèle de YouTube, un curseur focalisé gard
 `buffered` se réduit à la plage qui contient la tête de lecture. Voir **Contrôles**,
 **Raccourcis clavier** et **Lecture**.
 
+Amendé le 22 septembre 2026, pendant la phase 3 : la keymap se précise (focus au clic, chiffres de
+tout clavier, règle du muet partagée avec le curseur, prop pour la couper), et la barre disparaît
+dès que la souris quitte le lecteur. Voir **Raccourcis clavier** et **Contrôles**.
+
 ## Lecture
 
 Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
@@ -110,6 +114,9 @@ fonctionne, on ne renvoie jamais l'utilisateur éditer le code qu'il a reçu.
 Deux gestes sur l'image, hors tableau parce qu'ils n'ont pas de bouton : un clic bascule la
 lecture, un double-clic bascule le plein écran.
 
+Pendant la lecture, la barre s'efface après quelques secondes d'inactivité, et **tout de suite
+quand la souris quitte le lecteur**. En pause, ou tant qu'un menu est ouvert, elle reste.
+
 ## Raccourcis clavier
 
 Robustes et cross-browser.
@@ -130,6 +137,21 @@ Un curseur focalisé possède ses flèches : `↑` sur le scrubber cherche, il n
 volume. C'est le motif APG du slider, et c'est ce qu'annonce le lecteur d'écran — une flèche qui
 agirait sur un autre contrôle que celui qu'il vient de nommer le contredirait. Le tableau
 ci-dessus vaut donc partout ailleurs dans le lecteur, pas sur un curseur qui a le focus.
+
+Le lecteur prend le focus au clic sur l'image : sans ça, rien ne serait focalisé et aucune touche
+ne lui parviendrait. Il ne s'ajoute pas à l'ordre de tabulation et ne s'entoure d'aucun contour.
+
+- **`↑` depuis le muet rétablit le dernier volume connu, sans l'augmenter** : 65 % coupé redonne
+  65 %, et si l'on était descendu à 0, le son revient à 5 %. `↓` en muet ne fait rien. Le curseur
+  de volume focalisé suit la même règle.
+- **Les chiffres marchent sur tout clavier** : par leur valeur (pavé numérique, QWERTY), sinon par
+  leur position sur la rangée du haut — en AZERTY, sans Maj.
+- **`Espace` sur un bouton focalisé déclenche ce bouton** ; `k` reste lecture-pause partout.
+- Les combinaisons avec Ctrl, Cmd ou Alt restent au navigateur. Une bascule (`Espace`, `k`, `m`,
+  `f`) ne se répète pas quand la touche reste enfoncée.
+- Chaque raccourci fait apparaître la barre. Pas d'icône d'action au centre de l'image.
+- `controls.keyboard: false` coupe les raccourcis, pour un hôte qui a déjà les siens.
+- Les boutons lecture, muet et plein écran annoncent leur raccourci (`aria-keyshortcuts`).
 
 ## Chapitres
 
