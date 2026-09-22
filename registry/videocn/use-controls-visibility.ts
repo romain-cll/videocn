@@ -24,6 +24,12 @@ export interface ControlsVisibility {
   visible: boolean;
   /** Pose un verrou, renvoie sa libération. Référence stable. */
   holdVisible: () => () => void;
+  /**
+   * Signale une activité venue d'ailleurs que du pointeur ou du focus — un
+   * raccourci clavier : la barre apparaît et le minuteur repart. Référence
+   * stable. Sans effet hors du mode `auto`.
+   */
+  reveal: () => void;
 }
 
 /**
@@ -48,10 +54,22 @@ function isKeyboardFocused(element: Element): boolean {
   return element.matches(":focus-visible");
 }
 
-/** L'élément actif est dans le conteneur, et il y est arrivé au clavier. */
+/**
+ * L'élément actif est dans le conteneur, et il y est arrivé au clavier.
+ *
+ * Le conteneur lui-même ne compte pas. Il prend le focus au clic, pour que les
+ * raccourcis lui parviennent, et Chrome le passe en `:focus-visible` à la
+ * première touche frappée — vérifié. Sans cette exclusion, un seul raccourci
+ * empêcherait la barre de se masquer tant que le focus reste là.
+ */
 function hasKeyboardFocusWithin(container: HTMLElement): boolean {
   const active = document.activeElement;
-  return active !== null && container.contains(active) && isKeyboardFocused(active);
+  return (
+    active !== null &&
+    active !== container &&
+    container.contains(active) &&
+    isKeyboardFocused(active)
+  );
 }
 
 export function useControlsVisibility(options: UseControlsVisibilityOptions): ControlsVisibility {
@@ -86,6 +104,24 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
   const rearmRef = useRef<(() => void) | null>(null);
 
   /**
+   * La souris a quitté le lecteur pendant qu'un verrou tenait la barre : elle
+   * disparaîtra dès qu'il tombera, sans attendre le délai.
+   *
+   * C'est le correctif d'un troisième bug de la phase 1. Sortir par le bas,
+   * c'est traverser la barre, et le survol de la barre est un verrou. Le
+   * `pointerleave` du conteneur arrive avant que React n'ait libéré ce verrou —
+   * il le fait dans un effet, après le rendu —, trouvait donc la barre encore
+   * retenue et renonçait ; quand le verrou tombait enfin, c'est le minuteur
+   * complet qui repartait. Mesuré : trois secondes pile entre la sortie et le
+   * masquage. Le même drapeau couvre un glissement relâché hors du lecteur et
+   * un menu refermé une fois la souris partie.
+   *
+   * Une ref et non un état : il ne décide de rien seul, il ne fait que choisir
+   * le délai du prochain minuteur, que la chute du verrou relance déjà.
+   */
+  const hideOnReleaseRef = useRef(false);
+
+  /**
    * Ajustement pendant le rendu, et non dans un effet : la barre doit être là
    * dans la frame où la lecture s'arrête. Un effet la ferait apparaître une
    * frame plus tard, ce qui se voit exactement au moment où l'utilisateur
@@ -96,6 +132,14 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
     setWasPaused(paused);
     if (paused) setAutoVisible(true);
   }
+
+  const reveal = useCallback(() => {
+    hideOnReleaseRef.current = false;
+    // Masquée : l'état change, et l'effet du minuteur repart de lui-même.
+    // Déjà visible : l'état ne bouge pas, et c'est le réarmement qui compte.
+    setAutoVisible(true);
+    rearmRef.current?.();
+  }, []);
 
   const holdVisible = useCallback(() => {
     setHolds((count) => count + 1);
@@ -116,19 +160,12 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
     const container = containerRef.current;
     if (!container) return;
 
-    const show = () => {
-      // Masquée : l'état change, et l'effet du minuteur repart de lui-même.
-      // Déjà visible : l'état ne bouge pas, et c'est le réarmement qui compte.
-      setAutoVisible(true);
-      rearmRef.current?.();
-    };
-
     const handlePointerMove = (event: PointerEvent) => {
       // Masquer le curseur avec la barre provoque un `pointermove` sans
       // déplacement. Sans ce filtre, réafficher le curseur relancerait le cycle
       // tout seul : la barre clignoterait indéfiniment sur une souris immobile.
       if (event.movementX === 0 && event.movementY === 0) return;
-      show();
+      reveal();
     };
 
     const handlePointerDown = (event: PointerEvent) => {
@@ -138,15 +175,19 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
         setAutoVisible((current) => !current);
         return;
       }
-      show();
+      reveal();
     };
 
     const handlePointerLeave = (event: PointerEvent) => {
       // La souris a quitté le lecteur : il n'y a plus rien à attendre. Un doigt,
       // lui, « quitte » au relâchement — ce n'est pas un départ.
       if (event.pointerType !== "mouse") return;
-      if (autoHideDelay <= 0 || paused || holds > 0 || keyboardFocus) return;
+      if (autoHideDelay <= 0 || paused || keyboardFocus) return;
       if (hasKeyboardFocusWithin(container)) return;
+      if (holds > 0) {
+        hideOnReleaseRef.current = true;
+        return;
+      }
       setAutoVisible(false);
     };
 
@@ -155,9 +196,11 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
       // clavier avait posé le focus sur un bouton et qu'un clic le déplace sur
       // un autre, aucun `focusout` ne sort du conteneur pour le remettre à
       // zéro, et la barre resterait retenue par un focus qui n'est plus visible.
-      const keyboard = event.target instanceof Element && isKeyboardFocused(event.target);
+      const target = event.target;
+      // Le conteneur est exclu, pour la raison dite sur `hasKeyboardFocusWithin`.
+      const keyboard = target instanceof Element && target !== container && isKeyboardFocused(target);
       setKeyboardFocus(keyboard);
-      if (keyboard) show();
+      if (keyboard) reveal();
     };
 
     const handleFocusOut = (event: FocusEvent) => {
@@ -181,7 +224,7 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
       container.removeEventListener("focusin", handleFocusIn);
       container.removeEventListener("focusout", handleFocusOut);
     };
-  }, [autoHideDelay, containerRef, holds, keyboardFocus, paused, visibility]);
+  }, [autoHideDelay, containerRef, holds, keyboardFocus, paused, reveal, visibility]);
 
   useEffect(() => {
     if (visibility !== "auto") return;
@@ -197,7 +240,11 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
     let timer: ReturnType<typeof setTimeout> | undefined;
     const arm = () => {
       clearTimeout(timer);
+      // Lu à chaque armement : le drapeau se lève pendant que la barre est
+      // retenue, et c'est la chute du verrou qui relance cet effet.
+      const delay = hideOnReleaseRef.current ? 0 : autoHideDelay;
       timer = setTimeout(() => {
+        hideOnReleaseRef.current = false;
         // Dernier mot au DOM : un focus posé par le code de l'hôte n'est pas
         // passé par `focusin` ici, et masquer un élément focalisé le rendrait
         // invisible sans le rendre inatteignable — le pire des deux. Focus
@@ -205,7 +252,7 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
         const container = containerRef.current;
         if (container && hasKeyboardFocusWithin(container)) return;
         setAutoVisible(false);
-      }, autoHideDelay);
+      }, delay);
     };
     arm();
     rearmRef.current = arm;
@@ -224,5 +271,6 @@ export function useControlsVisibility(options: UseControlsVisibilityOptions): Co
      */
     visible: visibility === "auto" ? autoVisible : true,
     holdVisible,
+    reveal,
   };
 }
