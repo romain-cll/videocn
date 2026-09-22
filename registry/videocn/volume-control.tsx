@@ -32,7 +32,7 @@ export const VolumeControl = memo(function VolumeControl() {
   const volume = usePlayerValue((state) => state.volume);
   const muted = usePlayerValue((state) => state.muted);
   const canControlVolume = usePlayerValue((state) => state.canControlVolume);
-  const { setVolume, setMuted, toggleMuted } = usePlayerActions();
+  const { setVolume, setMuted, stepVolume, toggleMuted } = usePlayerActions();
   const beforeGestureRef = useRef<VolumeSnapshot | null>(null);
 
   if (!volumeOptions.enabled) return null;
@@ -56,6 +56,13 @@ export const VolumeControl = memo(function VolumeControl() {
       beforeGestureRef.current = null;
       setVolume(before.volume);
       setMuted(before.muted);
+      return;
+    }
+    if (reason === "key") {
+      // Une touche passe par la même action que la keymap du lecteur : depuis
+      // le muet, `↑` rend le volume d'avant la coupure au lieu de repartir des
+      // 0 % affichés. Le pas se lit dans l'écart à la valeur affichée.
+      stepVolume(next - effectiveVolume);
       return;
     }
     setVolume(next);

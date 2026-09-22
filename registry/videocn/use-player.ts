@@ -28,7 +28,15 @@ export interface PlayerActions {
   pause(): void;
   togglePlay(): void;
   seek(time: number): void;
+  /** Avance (positif) ou recule (négatif) depuis la position réelle de l'élément. */
+  seekBy(seconds: number): void;
   setVolume(volume: number): void;
+  /**
+   * Monte ou baisse le volume d'un pas, en tenant compte du muet. La keymap et
+   * le curseur de volume passent tous deux par ici : une flèche fait la même
+   * chose des deux côtés.
+   */
+  stepVolume(delta: number): void;
   setMuted(muted: boolean): void;
   toggleMuted(): void;
   setPlaybackRate(rate: number): void;
@@ -434,6 +442,18 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     [],
   );
 
+  const seekBy = useCallback(
+    (seconds: number) => {
+      const video = videoRef.current;
+      if (!video) return;
+      // L'élément et non la tête de lecture du store : `currentTime` est à
+      // jour dès l'écriture, alors que le store attend `seeking`. Deux `←`
+      // rapprochés partiraient sinon du même point, et l'un serait perdu.
+      seek(video.currentTime + seconds);
+    },
+    [seek],
+  );
+
   const setVolume = useCallback(
     (volume: number) => {
       const video = videoRef.current;
@@ -445,6 +465,30 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     },
     [],
   );
+
+  /**
+   * Depuis le muet, un pas vers le haut rend le son au volume d'avant la
+   * coupure, sans l'augmenter : c'est ce qu'on attend en appuyant, et repartir
+   * des 0 % affichés obligerait à remonter pas à pas. Si ce volume était nul,
+   * le pas lui-même sert de volume. Vers le bas, le muet reste muet : baisser un
+   * son qu'on n'entend pas ne veut rien dire, et écraser le volume mémorisé
+   * ferait perdre ce que `m` rétablira.
+   */
+  const stepVolume = useCallback((delta: number) => {
+    const video = videoRef.current;
+    if (!video || !Number.isFinite(delta)) return;
+    if (video.muted) {
+      if (delta <= 0) return;
+      // `max` et non le seul volume mémorisé : `End` sur le curseur arrive ici
+      // avec un pas de 1, et doit mener au maximum.
+      video.volume = Math.max(video.volume, clamp01(delta));
+      video.muted = false;
+      return;
+    }
+    // Arrondi au millième : 0,05 ajouté pas à pas ne tombe pas juste en
+    // virgule flottante, et `aria-valuenow` porterait 0.6000000000000001.
+    video.volume = clamp01(Math.round((video.volume + delta) * 1000) / 1000);
+  }, []);
 
   const setMuted = useCallback(
     (muted: boolean) => {
@@ -524,7 +568,9 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       pause,
       togglePlay,
       seek,
+      seekBy,
       setVolume,
+      stepVolume,
       setMuted,
       toggleMuted,
       setPlaybackRate,
@@ -537,7 +583,9 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       pause,
       togglePlay,
       seek,
+      seekBy,
       setVolume,
+      stepVolume,
       setMuted,
       toggleMuted,
       setPlaybackRate,
