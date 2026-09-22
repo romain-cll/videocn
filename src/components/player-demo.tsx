@@ -55,11 +55,12 @@ export function PlayerDemo() {
             pictureInPicture: false,
             playbackRate: { rates: [1, 1.5, 2] },
             autoHideDelay: 1000,
+            keyboard: false,
           }}
         />
         <p className="text-muted-foreground text-xs text-pretty">
           Pas de Picture-in-Picture, trois vitesses au lieu de sept, barre qui s&apos;efface après
-          une seconde.
+          une seconde, pas de raccourcis clavier.
         </p>
       </div>
     </div>

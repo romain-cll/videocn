@@ -83,6 +83,11 @@
           "target": "@ui/video-player/use-controls-visibility.ts"
         },
         {
+          "path": "registry/videocn/use-keyboard-shortcuts.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/use-keyboard-shortcuts.ts"
+        },
+        {
           "path": "registry/videocn/video-cn.tsx",
           "type": "registry:ui",
           "target": "@ui/video-player/video-cn.tsx"

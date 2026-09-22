@@ -14,7 +14,7 @@ import { usePlayerActions, usePlayerValue } from "./player-context";
  * les deux ensemble se contredisent à l'oreille : « Pause, activé ».
  */
 export const PlayToggle = memo(function PlayToggle() {
-  const { play } = useControlsOptions();
+  const { play, keyboard } = useControlsOptions();
   const paused = usePlayerValue((state) => state.paused);
   const { togglePlay } = usePlayerActions();
 
@@ -26,6 +26,7 @@ export const PlayToggle = memo(function PlayToggle() {
       size="icon"
       onClick={togglePlay}
       aria-label={paused ? "Play" : "Pause"}
+      aria-keyshortcuts={keyboard.enabled ? "k" : undefined}
     >
       {paused ? <PlayIcon /> : <PauseIcon />}
     </Button>

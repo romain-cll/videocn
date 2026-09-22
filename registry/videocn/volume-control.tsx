@@ -28,7 +28,7 @@ interface VolumeSnapshot {
 }
 
 export const VolumeControl = memo(function VolumeControl() {
-  const { volume: volumeOptions } = useControlsOptions();
+  const { volume: volumeOptions, keyboard } = useControlsOptions();
   const volume = usePlayerValue((state) => state.volume);
   const muted = usePlayerValue((state) => state.muted);
   const canControlVolume = usePlayerValue((state) => state.canControlVolume);
@@ -79,6 +79,7 @@ export const VolumeControl = memo(function VolumeControl() {
         size="icon"
         onClick={toggleMuted}
         aria-label={muted ? "Unmute" : "Mute"}
+        aria-keyshortcuts={keyboard.enabled ? "m" : undefined}
       >
         <VolumeIcon />
       </Button>

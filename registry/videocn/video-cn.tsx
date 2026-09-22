@@ -23,6 +23,7 @@ import { PlayerControls } from "./player-controls";
 import { PlayerProvider, usePlayerStoreValue } from "./player-context";
 import type { SourceType } from "./player-engine";
 import { useControlsVisibility } from "./use-controls-visibility";
+import { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
 import { usePlayer } from "./use-player";
 
 export interface VideoCnProps {
@@ -98,11 +99,18 @@ export function VideoCn({
   // nouveau à chaque rendu re-rendrait tous les contrôles pour rien.
   const controlsOptions = useMemo(() => resolveControlsOptions(controls), [controls]);
 
-  const { visible, holdVisible } = useControlsVisibility({
+  const { visible, holdVisible, reveal } = useControlsVisibility({
     containerRef,
     paused,
     visibility: controlsOptions.visibility,
     autoHideDelay: controlsOptions.autoHideDelay,
+  });
+
+  const handleKeyDown = useKeyboardShortcuts({
+    enabled: controlsOptions.keyboard.enabled,
+    store: player.store,
+    actions,
+    reveal,
   });
 
   // La ref du consommateur passe par une ref à nous, jamais par les
@@ -182,11 +190,20 @@ export function VideoCn({
         // Le curseur se masque avec la barre, et pour la même raison : plus
         // rien ne doit flotter au-dessus de l'image.
         data-hidden={hiddenAttribute}
+        // Focalisable au clic, pas à la tabulation : un clic sur l'image donne
+        // le focus au lecteur, et ses raccourcis répondent. Sans raccourcis, le
+        // focus ne servirait à rien.
+        tabIndex={handleKeyDown ? -1 : undefined}
+        onKeyDown={handleKeyDown}
         className={cn(
           // Le cadre du lecteur est noir, pas thématique : en plein écran,
           // une vidéo moins haute que l'écran laisse voir ses bandes, et du
           // blanc y serait aveuglant. Un token, jamais une couleur en dur.
           "bg-player-backdrop relative isolate overflow-hidden rounded-lg border",
+          // Chrome passe le conteneur cliqué en `:focus-visible` à la première
+          // touche frappée, et l'entourerait d'un contour. Il n'est pas dans
+          // l'ordre de tabulation : ce contour ne guiderait personne.
+          "outline-none",
           // En plein écran, le conteneur occupe l'écran entier : sans ça la
           // vidéo reste collée en haut d'un cadre arrondi et bordé.
           "data-fullscreen:flex data-fullscreen:h-full data-fullscreen:items-center data-fullscreen:justify-center data-fullscreen:rounded-none data-fullscreen:border-0",
@@ -211,8 +228,8 @@ export function VideoCn({
           data-fullscreen={fullscreenAttribute}
           // Ni `role` ni `tabIndex` : l'équivalent clavier de ces gestes passe
           // par les boutons de la barre, qui sont déjà dans l'ordre de
-          // tabulation. Un second point focalisable ne ferait qu'allonger le
-          // parcours sans rien apporter.
+          // tabulation, et par les raccourcis. Un second point focalisable ne
+          // ferait qu'allonger le parcours sans rien apporter.
           onPointerDown={handlePointerDown}
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}

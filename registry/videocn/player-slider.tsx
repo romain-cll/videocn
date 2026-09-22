@@ -370,7 +370,7 @@ export function PlayerSlider({
         return;
     }
 
-    // `stopPropagation` en plus du `preventDefault` : la keymap de la phase 3
+    // `stopPropagation` en plus du `preventDefault` : la keymap du lecteur
     // donne aussi `←`/`→` et `↑`/`↓` au lecteur entier, et sans ça une flèche
     // sur le scrubber agirait deux fois.
     event.preventDefault();

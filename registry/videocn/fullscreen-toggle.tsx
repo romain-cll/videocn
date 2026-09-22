@@ -14,7 +14,7 @@ import { usePlayerActions, usePlayerValue } from "./player-context";
  * disparaît déplace tous les autres et laisse croire à une panne.
  */
 export const FullscreenToggle = memo(function FullscreenToggle() {
-  const { fullscreen } = useControlsOptions();
+  const { fullscreen, keyboard } = useControlsOptions();
   const canFullscreen = usePlayerValue((state) => state.canFullscreen);
   const isFullscreen = usePlayerValue((state) => state.isFullscreen);
   const { toggleFullscreen } = usePlayerActions();
@@ -28,6 +28,7 @@ export const FullscreenToggle = memo(function FullscreenToggle() {
       disabled={!canFullscreen}
       onClick={toggleFullscreen}
       aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+      aria-keyshortcuts={keyboard.enabled ? "f" : undefined}
     >
       {isFullscreen ? <MinimizeIcon /> : <MaximizeIcon />}
     </Button>

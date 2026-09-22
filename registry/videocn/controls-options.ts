@@ -29,6 +29,12 @@ export interface ControlsOptions {
   fullscreen?: boolean;
   pictureInPicture?: boolean;
   playbackRate?: boolean | { rates?: readonly number[] };
+  /**
+   * Les raccourcis clavier — `Espace`, `k`, les flèches, `m`, `f`, `0`–`9` —,
+   * actifs quand le focus est dans le lecteur. `false` pour un hôte qui a déjà
+   * les siens.
+   */
+  keyboard?: boolean;
 }
 
 /**
@@ -46,6 +52,7 @@ export interface ResolvedControlsOptions {
   fullscreen: { enabled: boolean };
   pictureInPicture: { enabled: boolean };
   playbackRate: { enabled: boolean; rates: readonly number[] };
+  keyboard: { enabled: boolean };
 }
 
 /** Les vitesses de YouTube : assez fines pour être utiles, assez peu pour tenir dans un menu. */
@@ -59,7 +66,7 @@ export const DEFAULT_AUTO_HIDE_DELAY = 3000;
 /**
  * Le pas d'une flèche, en secondes sur le scrubber et en fraction sur le
  * volume. Déclarés ici parce que deux couches s'en servent — le curseur
- * focalisé et la keymap de la phase 3 — et qu'elles doivent tomber d'accord :
+ * focalisé et la keymap du lecteur — et qu'elles doivent tomber d'accord :
  * `→` ne peut pas avancer de 5 s sur le curseur et de 10 s ailleurs.
  */
 export const DEFAULT_SEEK_STEP = 5;
@@ -96,5 +103,6 @@ export function resolveControlsOptions(options: ControlsOptions = {}): ResolvedC
       enabled: playbackRate !== false,
       rates: resolveRates(rateOptions?.rates),
     },
+    keyboard: toggle(options.keyboard),
   };
 }
