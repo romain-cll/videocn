@@ -14,17 +14,19 @@
 import { writeFileSync } from "node:fs";
 
 const CELL = 12;
-const GAP = 4;
+const GAP = 2;
 const PITCH = CELL + GAP;
 // Assez large pour couvrir le carrousel sans répétition (≈ 1150 × 640 px).
-const COLUMNS = 72;
-const ROWS = 40;
+const COLUMNS = 82;
+const ROWS = 46;
 
-// Les quatre intensités d'un graphe de contributions, sans le niveau vide.
+// Les quatre intensités d'un graphe de contributions, sans le niveau vide. La
+// plus faible reste nettement bleue : plus pâle, elle se lirait comme une case
+// vide.
 const LEVELS = [
-  { opacity: 0.25, weight: 0.35 },
-  { opacity: 0.45, weight: 0.3 },
-  { opacity: 0.7, weight: 0.2 },
+  { opacity: 0.4, weight: 0.35 },
+  { opacity: 0.6, weight: 0.3 },
+  { opacity: 0.8, weight: 0.2 },
   { opacity: 1, weight: 0.15 },
 ];
 
