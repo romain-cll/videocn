@@ -29,6 +29,21 @@ const eslintConfig = defineConfig([
       "shadcn/require-static-classes": "off",
     },
   },
+  // La vitrine du site — landing et exemples — a besoin de liberté de mise en
+  // page : fondus, proportions, grilles de maquette. Les couleurs restent des
+  // tokens (`no-raw-colors` active), pour que le mode sombre suive.
+  {
+    files: [
+      "src/app/page.tsx",
+      "src/app/examples/**",
+      "src/components/landing/**",
+      "src/components/examples/**",
+    ],
+    rules: {
+      "shadcn/no-arbitrary-values": "off",
+      "shadcn/require-static-classes": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

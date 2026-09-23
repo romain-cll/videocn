@@ -22,6 +22,10 @@ Amendé le 22 septembre 2026, pendant la phase 3 : la keymap se précise (focus 
 tout clavier, règle du muet partagée avec le curseur, prop pour la couper), et la barre disparaît
 dès que la souris quitte le lecteur. Voir **Raccourcis clavier** et **Contrôles**.
 
+Amendé le 23 septembre 2026, côté site seulement : la landing présente le lecteur dans trois pages
+d'exemple (plateforme vidéo, documentation, réseau social), aussi servies sous `/examples/<slug>`.
+Tout y est squelette sauf le lecteur. Le lecteur lui-même ne change pas.
+
 ## Lecture
 
 Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
