@@ -42,7 +42,7 @@ export function ExamplesShowcase() {
             <span className="bg-muted-foreground/25 size-2.5 rounded-full" />
             <span className="bg-muted-foreground/25 size-2.5 rounded-full" />
           </div>
-          <div className="bg-background text-muted-foreground mx-auto flex h-7 w-full max-w-sm items-center justify-center truncate rounded-md border px-3 font-mono text-xs">
+          <div className="bg-background text-muted-foreground mx-auto h-7 w-full max-w-sm min-w-0 truncate text-left leading-7 sm:text-center rounded-md border px-3 font-mono text-xs">
             {host}/examples/{slug}
           </div>
           <Link
