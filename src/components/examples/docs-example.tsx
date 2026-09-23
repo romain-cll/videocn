@@ -1,9 +1,9 @@
 import { BookOpenIcon, ChevronRightIcon, InfoIcon, SearchIcon } from "lucide-react";
 
+import { ExamplePlayer } from "@/components/examples/example-player";
 import { EXAMPLE_VIDEOS } from "@/components/examples/videos";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Skeleton } from "@/components/ui/skeleton";
-import { VideoCn } from "@/registry/videocn/video-cn";
 
 /**
  * Un groupe de la nav gauche. Une seule entrée de tout l'arbre est réelle —
@@ -109,7 +109,7 @@ export function DocsExample() {
             </div>
 
             <figure className="my-8">
-              <VideoCn src={video.src} poster={video.poster} className="w-full" />
+              <ExamplePlayer video={video} className="w-full" />
               <figcaption className="mt-3 text-center text-sm text-muted-foreground">
                 Tears of Steel, Blender Foundation. Le lecteur prend le thème de la documentation.
               </figcaption>

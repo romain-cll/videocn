@@ -1,11 +1,11 @@
 import { ClapperboardIcon, SearchIcon } from "lucide-react";
 
+import { ExamplePlayer } from "@/components/examples/example-player";
 import { EXAMPLE_VIDEOS } from "@/components/examples/videos";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { VideoCn } from "@/registry/videocn/video-cn";
 
 /**
  * Largeurs variées pour que les six suggestions ne soient pas des clones
@@ -59,7 +59,7 @@ export function VideoExample() {
 
       <div className="flex flex-col gap-6 p-4 @3xl:p-6 @5xl:flex-row @5xl:items-start @5xl:gap-8">
         <div className="flex min-w-0 flex-col gap-4 @5xl:max-w-4xl @5xl:flex-1">
-          <VideoCn src={video.src} poster={video.poster} className="w-full" />
+          <ExamplePlayer video={video} className="w-full" />
 
           <h1 className="text-lg font-semibold tracking-tight @3xl:text-xl">
             Sintel — court métrage de la Blender Foundation

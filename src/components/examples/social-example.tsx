@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 import type { ComponentType } from "react";
 
+import { ExamplePlayer } from "@/components/examples/example-player";
 import { EXAMPLE_VIDEOS } from "@/components/examples/videos";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { VideoCn } from "@/registry/videocn/video-cn";
 
 const RAIL_ITEMS: { icon: ComponentType<{ className?: string }>; width: string }[] = [
   { icon: HomeIcon, width: "w-14" },
@@ -112,9 +112,8 @@ export function SocialExample() {
                   <p className="mt-1.5 text-sm">
                     Nouveau court métrage en ligne. Le son est coupé, un clic suffit pour l’entendre.
                   </p>
-                  <VideoCn
-                    src={video.src}
-                    poster={video.poster}
+                  <ExamplePlayer
+                    video={video}
                     autoPlay
                     defaultMuted
                     loop
