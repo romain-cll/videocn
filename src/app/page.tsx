@@ -12,9 +12,7 @@ export default function Home() {
   return (
     <>
       <main className="flex flex-col items-center">
-        {/* Les pointillés encadrent le hero et sa scène : un repère de mise en
-            page, pas un contenant — rien ne s'appuie dessus. */}
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center border-x border-dashed px-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6">
           <section className="flex w-full flex-col items-center gap-6 pt-20 pb-14 text-center md:pt-28">
             <Badge variant="secondary" className="rounded-full px-3">
               Raccourcis clavier disponibles

@@ -110,13 +110,10 @@ export function SocialExample() {
                     <Skeleton className="h-3 w-16 animate-none" />
                   </div>
                   <p className="mt-1.5 text-sm">
-                    Nouveau court métrage en ligne. Le son est coupé, un clic suffit pour l’entendre.
+                    Nouveau court métrage en ligne, dix minutes de Big Buck Bunny.
                   </p>
                   <ExamplePlayer
                     video={video}
-                    autoPlay
-                    defaultMuted
-                    loop
                     className="mt-3 w-full rounded-2xl"
                   />
                   <div

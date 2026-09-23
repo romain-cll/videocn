@@ -32,7 +32,7 @@ const ROLES: readonly Role[] = ["center", "right", "left"];
 // Tailwind v4 pose `translate` et `scale` en propriétés CSS distinctes, pas
 // dans `transform` : c'est elles que la transition doit suivre.
 const CARD_BASE =
-  "absolute inset-y-0 left-0 w-full transition-[translate,scale,opacity] duration-700 ease-out motion-reduce:transition-none md:left-[11%] md:w-[78%]";
+  "absolute top-0 -bottom-16 left-0 w-full transition-[translate,scale,opacity] duration-700 ease-out motion-reduce:transition-none md:left-[11%] md:w-[78%]";
 
 // Les cartes latérales disparaissent sous `md` : il n'y a pas la place de les
 // montrer, et une fenêtre réduite de moitié ne se lirait plus.
@@ -90,8 +90,7 @@ export function HeroCarousel() {
 
   return (
     // Les cartes latérales et le halo débordent de la scène. La région s'étend
-    // jusqu'aux pointillés du hero (sa marge intérieure, `px-6`) et coupe là
-    // horizontalement : aucun défilement latéral de la page, quelle que soit
+    // sur la marge intérieure du hero (`px-6`) et coupe là horizontalement : aucun défilement latéral de la page, quelle que soit
     // sa largeur.
     <section
       aria-roledescription="carousel"
@@ -106,10 +105,10 @@ export function HeroCarousel() {
       onPointerDownCapture={() => setStopped(true)}
       onKeyDownCapture={() => setStopped(true)}
     >
-      {/* Le fondu du bas porte sur toute la scène, pas sur chaque fenêtre : un
-          masque par carte laisserait voir les cartes latérales à travers le bas
-          de celle du centre. */}
-      <div className="relative h-[460px] mask-b-from-75% md:h-[560px]">
+      {/* Coupure nette en bas de la scène, sur toute la largeur : les fenêtres
+          s'arrêtent sur une même ligne. `overflow-y-clip` coupe verticalement
+          sans toucher au débordement latéral des cartes et du halo. */}
+      <div className="relative h-[460px] overflow-y-clip md:h-[560px]">
         {/* Le halo : un simple dégradé, sans image à charger. Le masque
             radial en efface les bords avant la coupe de la région. */}
         <div
