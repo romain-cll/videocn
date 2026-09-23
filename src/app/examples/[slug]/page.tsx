@@ -11,7 +11,7 @@ export async function generateMetadata({
   params,
 }: PageProps<"/examples/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  return { title: `Exemple : ${findExample(slug)?.label ?? slug}` };
+  return { title: `Example: ${findExample(slug)?.label ?? slug}` };
 }
 
 export default async function ExamplePage({ params }: PageProps<"/examples/[slug]">) {

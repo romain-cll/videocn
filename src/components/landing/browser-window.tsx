@@ -39,7 +39,7 @@ export function BrowserWindow({
           href={`/examples/${slug}`}
           className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1 text-xs font-medium transition-colors"
         >
-          Ouvrir
+          Open
           <ArrowUpRightIcon className="size-3.5" />
         </Link>
       </div>

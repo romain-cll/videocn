@@ -16,7 +16,7 @@ export function ModeToggle() {
     >
       <SunIcon className="dark:hidden" />
       <MoonIcon className="hidden dark:block" />
-      <span className="sr-only">Changer de thème</span>
+      <span className="sr-only">Toggle theme</span>
     </Button>
   );
 }

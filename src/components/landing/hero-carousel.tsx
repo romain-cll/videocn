@@ -94,7 +94,7 @@ export function HeroCarousel() {
     // aucun défilement latéral de la page, quelle que soit sa largeur.
     <section
       aria-roledescription="carousel"
-      aria-label="Exemples du lecteur"
+      aria-label="Player examples"
       className="isolate -mx-6 overflow-x-clip px-6"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -140,7 +140,7 @@ export function HeroCarousel() {
                   }}
                   role="group"
                   aria-roledescription="slide"
-                  aria-label={`${label}, ${index + 1} sur ${EXAMPLES.length}`}
+                  aria-label={`${label}, ${index + 1} of ${EXAMPLES.length}`}
                   tabIndex={-1}
                   className={cn(CARD_BASE, ROLE_CLASSES[role], "outline-none")}
                 >
@@ -156,7 +156,7 @@ export function HeroCarousel() {
                   {!isCenter && (
                     <button
                       type="button"
-                      aria-label={`Afficher l'exemple ${label}`}
+                      aria-label={`Show the ${label} example`}
                       className="focus-visible:ring-ring/50 absolute inset-0 cursor-pointer rounded-xl outline-none focus-visible:ring-3"
                       onClick={() => bringToCenter(index)}
                     />

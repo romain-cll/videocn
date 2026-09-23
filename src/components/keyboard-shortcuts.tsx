@@ -23,26 +23,26 @@ interface Shortcut {
 }
 
 const SHORTCUTS: readonly Shortcut[] = [
-  { keys: ["Espace", "K"], joiner: "ou", action: "Lecture / pause" },
-  { keys: ["←", "→"], joiner: "/", action: `Reculer / avancer de ${DEFAULT_SEEK_STEP} s` },
+  { keys: ["Space", "K"], joiner: "or", action: "Play / pause" },
+  { keys: ["←", "→"], joiner: "/", action: `Seek back / forward ${DEFAULT_SEEK_STEP} s` },
   {
     keys: ["↑", "↓"],
     joiner: "/",
-    action: `Monter / baisser le volume de ${Math.round(DEFAULT_VOLUME_STEP * 100)} %`,
+    action: `Volume up / down ${Math.round(DEFAULT_VOLUME_STEP * 100)}%`,
   },
-  { keys: ["M"], action: "Couper / rétablir le son" },
-  { keys: ["F"], action: "Plein écran" },
-  { keys: ["0", "9"], joiner: "–", action: "Aller à 0 %, 10 %… 90 % de la vidéo" },
+  { keys: ["M"], action: "Mute / unmute" },
+  { keys: ["F"], action: "Fullscreen" },
+  { keys: ["0", "9"], joiner: "–", action: "Jump to 0%, 10%… 90% of the video" },
 ];
 
 export function KeyboardShortcuts() {
   return (
     <section className="bg-muted/40 divide-y rounded-lg border">
       <div className="px-4 py-3">
-        <h2 className="text-sm font-medium">Raccourcis clavier</h2>
+        <h2 className="text-sm font-medium">Keyboard shortcuts</h2>
         <p className="text-muted-foreground mt-1 text-xs text-pretty">
-          Actifs dès que le lecteur a le focus : un clic sur l&apos;image suffit. Sur un curseur
-          focalisé, progression ou volume, les flèches pilotent ce curseur.
+          Active as soon as the player has focus: one click on the picture is enough. On a
+          focused slider, seek or volume, the arrows drive that slider.
         </p>
       </div>
       <dl className="flex flex-col gap-2 px-4 py-3 text-xs">

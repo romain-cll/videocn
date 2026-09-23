@@ -18,7 +18,7 @@ const NAV_GROUPS: { title: string; items: { width: string; label?: string }[] }[
     title: "w-24",
     items: [
       { width: "w-24" },
-      { width: "w-32", label: "Lecteur vidéo" },
+      { width: "w-32", label: "Video player" },
       { width: "w-28" },
       { width: "w-20" },
     ],
@@ -99,7 +99,7 @@ export function DocsExample() {
             </div>
 
             <h1 className="mt-4 text-3xl font-semibold tracking-tight text-balance">
-              Intégrer une vidéo
+              Embed a video
             </h1>
 
             <div aria-hidden className="mt-6 flex flex-col gap-2.5">
@@ -111,7 +111,7 @@ export function DocsExample() {
             <figure className="my-8">
               <ExamplePlayer video={video} className="w-full" />
               <figcaption className="mt-3 text-center text-sm text-muted-foreground">
-                Tears of Steel, Blender Foundation. Le lecteur prend le thème de la documentation.
+                Tears of Steel, Blender Foundation. The player picks up the docs theme.
               </figcaption>
             </figure>
 
@@ -144,7 +144,7 @@ export function DocsExample() {
           aria-hidden
           className="hidden w-56 shrink-0 flex-col gap-3 border-l border-border px-6 py-10 @5xl:flex"
         >
-          <p className="text-sm font-medium">Sur cette page</p>
+          <p className="text-sm font-medium">On this page</p>
           <div className="flex flex-col gap-2.5">
             {TOC_ITEMS.map((width, index) => (
               <Skeleton key={index} className={`h-3 ${width} animate-none`} />

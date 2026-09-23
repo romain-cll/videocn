@@ -3,17 +3,17 @@ import type { Metadata } from "next";
 import { PlayerDemo } from "@/components/player-demo";
 
 export const metadata: Metadata = {
-  title: "Démo",
+  title: "Demo",
 };
 
 export default function DemoPage() {
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Démo</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Demo</h1>
       <p className="text-muted-foreground mt-3 max-w-2xl text-pretty">
-        Le lecteur et sa barre de contrôles, tels qu&apos;ils arrivent chez l&apos;utilisateur. Le
-        panneau affiche l&apos;état brut de l&apos;élément, qu&apos;il lit sans jamais y toucher :
-        c&apos;est ce qui permet de vérifier que chaque commande atteint vraiment la vidéo.
+        The player and its control bar, exactly as they reach your project. The panel shows the
+        element&apos;s raw state, read without ever touching it: that is how you can check that
+        every control really reaches the video.
       </p>
 
       <div className="mt-10">

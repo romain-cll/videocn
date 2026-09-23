@@ -20,9 +20,9 @@ export interface Example {
 }
 
 export const EXAMPLES: readonly Example[] = [
-  { slug: "video", label: "Vidéo", Component: VideoExample },
-  { slug: "docs", label: "Documentation", Component: DocsExample },
-  { slug: "social", label: "Réseau social", Component: SocialExample },
+  { slug: "video", label: "Video", Component: VideoExample },
+  { slug: "docs", label: "Docs", Component: DocsExample },
+  { slug: "social", label: "Social", Component: SocialExample },
 ];
 
 export function findExample(slug: string): Example | undefined {

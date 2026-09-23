@@ -38,8 +38,8 @@ export function PlayerDemo() {
             l'intérêt de le voir ici tel qu'il arrivera chez l'utilisateur. */}
         <VideoCn ref={videoRef} src={DEMO_SRC} />
         <p className="text-muted-foreground text-xs text-pretty">
-          Le panneau lit l&apos;élément, pas les contrôles : ce qu&apos;il affiche prouve que
-          l&apos;action est bien allée jusqu&apos;à la vidéo.
+          The panel reads the element, not the controls: what it shows proves the action really
+          reached the video.
         </p>
         <KeyboardShortcuts />
       </div>
@@ -50,7 +50,7 @@ export function PlayerDemo() {
       {/* Le même lecteur, réglé par la seule prop `controls` : rien n'a été
           édité dans le code livré, et c'est tout l'enjeu. */}
       <div className="flex flex-col gap-3 lg:col-span-5">
-        <h2 className="text-sm font-medium">Réglé par les props</h2>
+        <h2 className="text-sm font-medium">Configured through props</h2>
         <VideoCn
           src={DEMO_SRC}
           controls={{
@@ -61,8 +61,8 @@ export function PlayerDemo() {
           }}
         />
         <p className="text-muted-foreground text-xs text-pretty">
-          Pas de Picture-in-Picture, trois vitesses au lieu de sept, barre qui s&apos;efface après
-          une seconde, pas de raccourcis clavier.
+          No Picture-in-Picture, three speeds instead of seven, a bar that hides after one second,
+          no keyboard shortcuts.
         </p>
       </div>
     </div>

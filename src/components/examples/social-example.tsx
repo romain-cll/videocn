@@ -97,8 +97,8 @@ export function SocialExample() {
               variant="line"
               className="h-12 w-full justify-start rounded-none border-b border-border px-4"
             >
-              <TabsTrigger value="for-you">Pour vous</TabsTrigger>
-              <TabsTrigger value="subscriptions">Abonnements</TabsTrigger>
+              <TabsTrigger value="for-you">For you</TabsTrigger>
+              <TabsTrigger value="subscriptions">Following</TabsTrigger>
             </TabsList>
 
             <TabsContent value="for-you" className="flex flex-col">
@@ -110,7 +110,7 @@ export function SocialExample() {
                     <Skeleton className="h-3 w-16 animate-none" />
                   </div>
                   <p className="mt-1.5 text-sm">
-                    Nouveau court métrage en ligne, dix minutes de Big Buck Bunny.
+                    New short film just dropped: ten minutes of Big Buck Bunny.
                   </p>
                   <ExamplePlayer
                     video={video}
@@ -156,7 +156,7 @@ export function SocialExample() {
         aria-hidden
         className="hidden w-72 shrink-0 flex-col gap-4 p-4 @5xl:flex"
       >
-        <p className="text-sm font-semibold">Tendances</p>
+        <p className="text-sm font-semibold">Trending</p>
         <div className="flex flex-col gap-4">
           {TRENDS.map((trend, index) => (
             <div key={index} className="flex flex-col gap-1.5">

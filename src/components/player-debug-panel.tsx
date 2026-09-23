@@ -24,7 +24,7 @@ function formatSeconds(value: number) {
 }
 
 function formatBoolean(value: boolean) {
-  return value ? "oui" : "non";
+  return value ? "yes" : "no";
 }
 
 const READY_STATES = [
@@ -39,7 +39,7 @@ const NETWORK_STATES = ["EMPTY", "IDLE", "LOADING", "NO_SOURCE"];
 
 function formatError(error: MediaError | null) {
   if (!error) return "—";
-  return `${error.code} — ${error.message || "sans message"}`;
+  return `${error.code} — ${error.message || "no message"}`;
 }
 
 function Row({ label, value, alert }: { label: string; value: string; alert?: boolean }) {
@@ -75,14 +75,13 @@ export function PlayerDebugPanel({
   return (
     <div className="bg-muted/40 divide-y rounded-lg border">
       <div className="px-4 py-3">
-        <h2 className="text-sm font-medium">État de l&apos;élément</h2>
+        <h2 className="text-sm font-medium">Element state</h2>
         <p className="text-muted-foreground mt-1 text-xs text-pretty">
-          Lecture seule. Jouez, mettez en pause, changez la vitesse avec la barre : tout doit
-          bouger ici.
+          Read-only. Play, pause, change the speed from the bar: everything here should move.
         </p>
       </div>
 
-      <Section title="Tête de lecture">
+      <Section title="Playhead">
         {/* Les seules valeurs qui passent par le store du lecteur, donc par
             sa boucle `requestAnimationFrame` : elles doivent défiler finement,
             pas par paliers de 250 ms. Les bornes du buffer sont celles de la
@@ -93,7 +92,7 @@ export function PlayerDebugPanel({
         <Row label="bufferedEnd" value={formatSeconds(video.bufferedEnd)} />
       </Section>
 
-      <Section title="Lecture">
+      <Section title="Playback">
         <Row label="duration" value={formatSeconds(video.duration)} />
         <Row label="paused" value={formatBoolean(video.paused)} />
         <Row label="ended" value={formatBoolean(video.ended)} />
@@ -103,7 +102,7 @@ export function PlayerDebugPanel({
         <Row label="playbackRate" value={`${video.playbackRate.toFixed(2)}×`} />
       </Section>
 
-      <Section title="Chargement">
+      <Section title="Loading">
         <Row
           label="readyState"
           value={`${video.readyState} — ${READY_STATES[video.readyState] ?? "?"}`}
@@ -115,7 +114,7 @@ export function PlayerDebugPanel({
         <Row label="error" value={formatError(video.error)} alert={video.error !== null} />
       </Section>
 
-      <Section title="Affichage">
+      <Section title="Display">
         <Row label="isFullscreen" value={formatBoolean(video.isFullscreen)} />
         <Row label="isPictureInPicture" value={formatBoolean(video.isPictureInPicture)} />
       </Section>

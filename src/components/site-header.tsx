@@ -16,7 +16,7 @@ export function SiteHeader() {
             Docs
           </Link>
           <Link href="/demo" className="hover:text-foreground transition-colors">
-            Démo
+            Demo
           </Link>
         </nav>
         <div className="ml-auto flex items-center gap-1">

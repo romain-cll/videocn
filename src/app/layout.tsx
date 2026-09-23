@@ -9,16 +9,16 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: {
-    default: "videoCn — un lecteur vidéo pour shadcn/ui",
+    default: "videoCn — a video player for shadcn/ui",
     template: "%s — videoCn",
   },
   description:
-    "Un lecteur vidéo complet, construit sur la balise <video> native et les composants shadcn/ui. Installable via le CLI, thémé par votre propre design system.",
+    "A complete video player built on the native <video> element and shadcn/ui components. Installed with the CLI, themed by your own design system.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="fr" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
+    <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
       <body className="bg-background text-foreground min-h-svh antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           <div className="flex min-h-svh flex-col">

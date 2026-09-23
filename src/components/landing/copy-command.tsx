@@ -29,7 +29,7 @@ export function CopyCommand({ command }: { command: string }) {
         }}
       >
         {copied ? <CheckIcon /> : <CopyIcon />}
-        <span className="sr-only">{copied ? "Commande copiée" : "Copier la commande"}</span>
+        <span className="sr-only">{copied ? "Command copied" : "Copy command"}</span>
       </Button>
     </div>
   );

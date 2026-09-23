@@ -9,7 +9,7 @@ export const siteConfig = {
   url: "https://videocn.dev",
   registryUrl: "https://videocn.dev/r/{name}.json",
   description:
-    "Un lecteur vidéo complet, construit sur la balise <video> native et les composants shadcn/ui.",
+    "A complete video player built on the native <video> element and shadcn/ui components.",
   links: {
     github: "https://github.com/rcaille/videocn",
   },

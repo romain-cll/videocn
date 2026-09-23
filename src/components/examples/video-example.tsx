@@ -48,8 +48,8 @@ export function VideoExample() {
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             disabled
-            placeholder="Rechercher"
-            aria-label="Rechercher"
+            placeholder="Search"
+            aria-label="Search"
             className="rounded-full pl-9"
           />
         </div>
@@ -62,7 +62,7 @@ export function VideoExample() {
           <ExamplePlayer video={video} className="w-full" />
 
           <h1 className="text-lg font-semibold tracking-tight @3xl:text-xl">
-            Sintel — court métrage de la Blender Foundation
+            Sintel — a Blender Foundation short film
           </h1>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -74,7 +74,7 @@ export function VideoExample() {
                 <Skeleton className="h-3.5 w-28 rounded-full animate-none" />
                 <Skeleton className="h-3 w-20 rounded-full animate-none" />
               </div>
-              <Button className="ml-2 rounded-full">S&apos;abonner</Button>
+              <Button className="ml-2 rounded-full">Subscribe</Button>
             </div>
 
             <div className="flex flex-wrap gap-2">
