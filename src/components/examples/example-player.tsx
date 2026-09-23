@@ -5,14 +5,13 @@
  *
  * Sur la landing, les trois exemples sont montés à la fois, mais seul celui du
  * centre doit charger sa vidéo. Les deux autres lisent `ExampleLiveContext` à
- * `false` et n'affichent que le poster, dans le même cadre que le lecteur :
- * aucun `<video>`, donc aucune requête.
+ * `false` et n'affichent qu'un cadre en dégradé, aux proportions du film :
+ * aucun `<video>`, aucune image, donc aucune requête.
  *
  * Hors du carrousel — les pages `/examples/<slug>` — le contexte vaut `true`
  * par défaut et le lecteur est toujours vivant.
  */
 
-import Image from "next/image";
 import { createContext, useContext } from "react";
 
 import type { ExampleVideo } from "@/components/examples/videos";
@@ -37,12 +36,10 @@ export function ExamplePlayer({ video, className, ...props }: ExamplePlayerProps
   return (
     <div
       className={cn(
-        "bg-player-backdrop relative overflow-hidden rounded-lg border",
+        "from-muted-foreground/40 to-player-backdrop relative overflow-hidden rounded-lg border bg-linear-to-br",
         video.aspectClassName,
         className,
       )}
-    >
-      <Image src={video.poster} alt="" fill sizes="50vw" className="object-cover" />
-    </div>
+    />
   );
 }

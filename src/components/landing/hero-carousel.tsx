@@ -6,14 +6,13 @@
  * Les trois cartes restent montées en permanence ; seule leur position change.
  * Changer d'exemple ne démonte donc rien, sauf le lecteur : seule la carte du
  * centre passe `ExampleLiveContext` à `true`, les deux autres n'affichent que
- * leur poster. Il n'y a jamais qu'un `<video>` dans la page.
+ * un cadre figé. Il n'y a jamais qu'un `<video>` dans la page.
  *
  * La rotation automatique s'arrête pour de bon à la première interaction
  * (pointeur ou clavier) dans la région : on n'arrache jamais une vidéo à
  * quelqu'un qui la regarde.
  */
 
-import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { EXAMPLES } from "@/components/examples";
@@ -111,27 +110,12 @@ export function HeroCarousel() {
           masque par carte laisserait voir les cartes latérales à travers le bas
           de celle du centre. */}
       <div className="relative h-[460px] mask-b-from-75% md:h-[560px]">
-        {/* Le halo : le poster de l'exemple actif, flouté jusqu'à n'être plus
-            qu'une lueur colorée derrière les fenêtres. Le masque radial en
-            efface les bords avant la coupe de la région. */}
+        {/* Le halo : un simple dégradé, sans image à charger. Le masque
+            radial en efface les bords avant la coupe de la région. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -inset-x-16 top-16 bottom-0 -z-10 mask-radial-from-35% mask-radial-to-75%"
-        >
-          {EXAMPLES.map((example, index) => (
-            <Image
-              key={example.slug}
-              src={example.video.poster}
-              alt=""
-              fill
-              sizes="100vw"
-              className={cn(
-                "object-cover blur-3xl saturate-150 transition-opacity duration-1000 motion-reduce:transition-none",
-                index === active ? "opacity-70 dark:opacity-45" : "opacity-0",
-              )}
-            />
-          ))}
-        </div>
+          className="from-hero-glow via-hero-glow/40 pointer-events-none absolute -inset-x-16 top-16 bottom-0 -z-10 bg-linear-to-t to-transparent mask-radial-from-50% mask-radial-to-90%"
+        />
 
         <div aria-live={rotating ? "off" : "polite"}>
           {EXAMPLES.map(({ slug, label, Component }, index) => {
