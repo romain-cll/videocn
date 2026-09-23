@@ -32,14 +32,14 @@ const ROLES: readonly Role[] = ["center", "right", "left"];
 // Tailwind v4 pose `translate` et `scale` en propriétés CSS distinctes, pas
 // dans `transform` : c'est elles que la transition doit suivre.
 const CARD_BASE =
-  "absolute top-0 -bottom-16 left-0 w-full transition-[translate,scale,opacity] duration-700 ease-out motion-reduce:transition-none md:left-[14%] md:w-[72%]";
+  "absolute top-0 -bottom-16 left-0 w-full transition-[translate,scale] duration-700 ease-out motion-reduce:transition-none md:left-[14%] md:w-[72%]";
 
 // Les cartes latérales disparaissent sous `md` : il n'y a pas la place de les
 // montrer, et une fenêtre réduite de moitié ne se lirait plus.
 const ROLE_CLASSES: Record<Role, string> = {
-  center: "z-20 opacity-100",
-  right: "z-10 translate-x-[22%] translate-y-6 scale-[0.86] opacity-60 hover:opacity-80 max-md:hidden",
-  left: "z-10 -translate-x-[22%] translate-y-6 scale-[0.86] opacity-60 hover:opacity-80 max-md:hidden",
+  center: "z-20",
+  right: "z-10 translate-x-[22%] translate-y-6 scale-[0.86] max-md:hidden",
+  left: "z-10 -translate-x-[22%] translate-y-6 scale-[0.86] max-md:hidden",
 };
 
 // `prefers-reduced-motion` lu comme un store externe : la valeur suit les

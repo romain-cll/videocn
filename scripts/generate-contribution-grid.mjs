@@ -3,8 +3,8 @@
  * landing, façon graphe de contributions.
  *
  * Le SVG ne porte aucune couleur : il sert de masque. Chaque carreau n'a qu'une
- * opacité, et c'est l'élément masqué qui apporte la couleur, par un token. Les
- * cases vides n'existent pas : elles restent transparentes.
+ * opacité, et c'est l'élément masqué qui apporte la couleur, par un token. Pas
+ * de case vide : la mosaïque est pleine, seule l'intensité varie.
  *
  * Tirage déterministe (graine fixe) : relancer le script redonne le même
  * fichier. À relancer seulement pour changer la mosaïque :
@@ -20,13 +20,12 @@ const PITCH = CELL + GAP;
 const COLUMNS = 72;
 const ROWS = 40;
 
-// Les niveaux d'un graphe de contributions : vide, puis quatre intensités.
+// Les quatre intensités d'un graphe de contributions, sans le niveau vide.
 const LEVELS = [
-  { opacity: null, weight: 0.3 },
-  { opacity: 0.25, weight: 0.25 },
-  { opacity: 0.45, weight: 0.2 },
-  { opacity: 0.7, weight: 0.15 },
-  { opacity: 1, weight: 0.1 },
+  { opacity: 0.25, weight: 0.35 },
+  { opacity: 0.45, weight: 0.3 },
+  { opacity: 0.7, weight: 0.2 },
+  { opacity: 1, weight: 0.15 },
 ];
 
 // mulberry32 : petit générateur à graine, pour un tirage reproductible.
@@ -48,7 +47,7 @@ function pickLevel() {
     roll -= level.weight;
     if (roll < 0) return level;
   }
-  return LEVELS[0];
+  return LEVELS.at(-1);
 }
 
 const width = COLUMNS * PITCH - GAP;
@@ -58,7 +57,6 @@ const rects = [];
 for (let row = 0; row < ROWS; row++) {
   for (let column = 0; column < COLUMNS; column++) {
     const { opacity } = pickLevel();
-    if (opacity === null) continue;
     const x = column * PITCH;
     const y = row * PITCH;
     const fill = opacity === 1 ? "" : ` fill-opacity="${opacity}"`;
