@@ -106,12 +106,13 @@ export function HeroCarousel() {
       onKeyDownCapture={() => setStopped(true)}
     >
       <div className="relative">
-        {/* Le halo : un dégradé elliptique, sans image à charger, qui part du
-            bas de la scène et remonte au-dessus des fenêtres. Il vit hors de la
-            scène, sinon la coupure du bas le rognerait aussi en haut. */}
+        {/* Le halo : un dégradé droit, sans image à charger. Il part de la
+            coupure du bas et s'efface en montant, jusqu'à mi-chemin entre le
+            haut des fenêtres et la commande. Il vit hors de la scène, sinon
+            celle-ci le rognerait en haut. */}
         <div
           aria-hidden
-          className="from-hero-glow via-hero-glow/40 pointer-events-none absolute inset-x-0 -top-48 bottom-0 -z-10 bg-radial-[ellipse_at_bottom] to-transparent to-70%"
+          className="from-hero-glow pointer-events-none absolute inset-x-0 -top-7 bottom-0 -z-10 bg-linear-to-t to-transparent"
         />
 
         {/* Coupure nette en bas de la scène, sur toute la largeur : les fenêtres
