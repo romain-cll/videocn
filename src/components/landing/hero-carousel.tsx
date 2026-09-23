@@ -118,7 +118,7 @@ export function HeroCarousel() {
             sombre. Voir `scripts/generate-contribution-grid.mjs`. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-72 bottom-0 -z-10 mask-[radial-gradient(ellipse_50.5%_25.7%_at_50%_0,transparent_100%,var(--hero-glow)_220%)]"
+          className="pointer-events-none absolute inset-x-0 -top-96 bottom-0 -z-10 mask-[radial-gradient(ellipse_50.2%_33.3%_at_50%_0,transparent_100%,var(--hero-glow)_200%)]"
         >
           <div className="bg-hero-glow size-full mask-[url(/landing/contribution-grid.svg)] mask-bottom mask-no-repeat" />
         </div>

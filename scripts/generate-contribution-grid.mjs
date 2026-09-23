@@ -16,10 +16,10 @@ import { writeFileSync } from "node:fs";
 const CELL = 12;
 const GAP = 2;
 const PITCH = CELL + GAP;
-// Assez grand pour couvrir la zone du hero sans répétition (≈ 1150 × 900 px) :
+// Assez grand pour couvrir la zone du hero sans répétition (≈ 1150 × 980 px) :
 // la mosaïque remonte jusqu'à hauteur du titre sur les côtés.
 const COLUMNS = 82;
-const ROWS = 64;
+const ROWS = 70;
 
 // Les quatre intensités d'un graphe de contributions, sans le niveau vide. La
 // plus faible reste nettement bleue : plus pâle, elle se lirait comme une case
