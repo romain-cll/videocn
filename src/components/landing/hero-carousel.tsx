@@ -90,8 +90,8 @@ export function HeroCarousel() {
 
   return (
     // Les cartes latérales et le halo débordent de la scène. La région s'étend
-    // sur la marge intérieure du hero (`px-6`) et coupe là horizontalement : aucun défilement latéral de la page, quelle que soit
-    // sa largeur.
+    // sur la marge intérieure du hero (`px-6`) et coupe là horizontalement :
+    // aucun défilement latéral de la page, quelle que soit sa largeur.
     <section
       aria-roledescription="carousel"
       aria-label="Exemples du lecteur"
@@ -105,54 +105,57 @@ export function HeroCarousel() {
       onPointerDownCapture={() => setStopped(true)}
       onKeyDownCapture={() => setStopped(true)}
     >
-      {/* Coupure nette en bas de la scène, sur toute la largeur : les fenêtres
-          s'arrêtent sur une même ligne. `overflow-y-clip` coupe verticalement
-          sans toucher au débordement latéral des cartes et du halo. */}
-      <div className="relative h-[460px] overflow-y-clip md:h-[560px]">
-        {/* Le halo : un simple dégradé, sans image à charger. Le masque
-            radial en efface les bords avant la coupe de la région. */}
+      <div className="relative">
+        {/* Le halo : un dégradé elliptique, sans image à charger, qui part du
+            bas de la scène et remonte au-dessus des fenêtres. Il vit hors de la
+            scène, sinon la coupure du bas le rognerait aussi en haut. */}
         <div
           aria-hidden
-          className="from-hero-glow via-hero-glow/40 pointer-events-none absolute -inset-x-16 top-16 bottom-0 -z-10 bg-linear-to-t to-transparent mask-radial-from-50% mask-radial-to-90%"
+          className="from-hero-glow via-hero-glow/40 pointer-events-none absolute inset-x-0 -top-48 bottom-0 -z-10 bg-radial-[ellipse_at_bottom] to-transparent to-70%"
         />
 
-        <div aria-live={rotating ? "off" : "polite"}>
-          {EXAMPLES.map(({ slug, label, Component }, index) => {
-            const role = ROLES[(index - active + EXAMPLES.length) % EXAMPLES.length];
-            const isCenter = role === "center";
+        {/* Coupure nette en bas de la scène, sur toute la largeur : les fenêtres
+            s'arrêtent sur une même ligne. `overflow-y-clip` coupe verticalement
+            sans toucher au débordement latéral des cartes. */}
+        <div className="relative h-[460px] overflow-y-clip md:h-[560px]">
+          <div aria-live={rotating ? "off" : "polite"}>
+            {EXAMPLES.map(({ slug, label, Component }, index) => {
+              const role = ROLES[(index - active + EXAMPLES.length) % EXAMPLES.length];
+              const isCenter = role === "center";
 
-            return (
-              <div
-                key={slug}
-                ref={(node) => {
-                  slideRefs.current[index] = node;
-                }}
-                role="group"
-                aria-roledescription="slide"
-                aria-label={`${label}, ${index + 1} sur ${EXAMPLES.length}`}
-                tabIndex={-1}
-                className={cn(CARD_BASE, ROLE_CLASSES[role], "outline-none")}
-              >
-                <div inert={!isCenter} aria-hidden={!isCenter} className="size-full">
-                  <ExampleLiveContext value={isCenter}>
-                    <BrowserWindow slug={slug} className="h-full">
-                      <ScaledFrame>
-                        <Component />
-                      </ScaledFrame>
-                    </BrowserWindow>
-                  </ExampleLiveContext>
+              return (
+                <div
+                  key={slug}
+                  ref={(node) => {
+                    slideRefs.current[index] = node;
+                  }}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${label}, ${index + 1} sur ${EXAMPLES.length}`}
+                  tabIndex={-1}
+                  className={cn(CARD_BASE, ROLE_CLASSES[role], "outline-none")}
+                >
+                  <div inert={!isCenter} aria-hidden={!isCenter} className="size-full">
+                    <ExampleLiveContext value={isCenter}>
+                      <BrowserWindow slug={slug} className="h-full">
+                        <ScaledFrame>
+                          <Component />
+                        </ScaledFrame>
+                      </BrowserWindow>
+                    </ExampleLiveContext>
+                  </div>
+                  {!isCenter && (
+                    <button
+                      type="button"
+                      aria-label={`Afficher l'exemple ${label}`}
+                      className="focus-visible:ring-ring/50 absolute inset-0 cursor-pointer rounded-xl outline-none focus-visible:ring-3"
+                      onClick={() => bringToCenter(index)}
+                    />
+                  )}
                 </div>
-                {!isCenter && (
-                  <button
-                    type="button"
-                    aria-label={`Afficher l'exemple ${label}`}
-                    className="focus-visible:ring-ring/50 absolute inset-0 cursor-pointer rounded-xl outline-none focus-visible:ring-3"
-                    onClick={() => bringToCenter(index)}
-                  />
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
