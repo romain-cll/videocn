@@ -16,9 +16,10 @@ import { writeFileSync } from "node:fs";
 const CELL = 12;
 const GAP = 2;
 const PITCH = CELL + GAP;
-// Assez large pour couvrir le carrousel sans répétition (≈ 1150 × 640 px).
+// Assez grand pour couvrir la zone du hero sans répétition (≈ 1150 × 900 px) :
+// la mosaïque remonte jusqu'à hauteur du titre sur les côtés.
 const COLUMNS = 82;
-const ROWS = 46;
+const ROWS = 64;
 
 // Les quatre intensités d'un graphe de contributions, sans le niveau vide. La
 // plus faible reste nettement bleue : plus pâle, elle se lirait comme une case

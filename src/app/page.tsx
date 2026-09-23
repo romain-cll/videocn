@@ -13,7 +13,8 @@ export default function Home() {
     <>
       <main className="flex flex-col items-center">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6">
-          <section className="flex w-full flex-col items-center gap-6 pt-20 pb-14 text-center md:pt-28">
+          {/* Au-dessus de la mosaïque du carrousel, qui remonte derrière le texte. */}
+          <section className="relative z-10 flex w-full flex-col items-center gap-6 pt-20 pb-14 text-center md:pt-28">
             <Badge variant="secondary" className="rounded-full px-3">
               Raccourcis clavier disponibles
             </Badge>

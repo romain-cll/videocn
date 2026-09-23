@@ -106,18 +106,19 @@ export function HeroCarousel() {
       onKeyDownCapture={() => setStopped(true)}
     >
       <div className="relative">
-        {/* Le halo : une mosaïque façon graphe de contributions, qui part de
-            la coupure du bas et s'efface en montant, jusqu'à mi-chemin entre
-            le haut des fenêtres et la commande. Il vit hors de la scène, sinon
-            celle-ci le rognerait en haut.
+        {/* Le halo : une mosaïque façon graphe de contributions, pleine en
+            bas, qui s'efface en montant jusqu'à un arc : haut sur les côtés, à
+            hauteur du titre, bas au centre, où il effleure la commande. Il vit
+            hors de la scène, sinon celle-ci le rognerait en haut.
 
-            Deux masques empilés : le parent porte le fondu vertical, l'enfant
-            découpe les carreaux dans `bg-hero-glow` — le SVG ne donne que des
-            opacités, la couleur reste un token et suit le mode sombre. Voir
-            `scripts/generate-contribution-grid.mjs`. */}
+            Deux masques empilés : le parent porte le fondu en arc — l'ellipse
+            transparente creuse le haut, et le dégradé radial en fait le
+            bord —, l'enfant découpe les carreaux dans `bg-hero-glow`. Le SVG ne
+            donne que des opacités : la couleur reste un token et suit le mode
+            sombre. Voir `scripts/generate-contribution-grid.mjs`. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-7 bottom-0 -z-10 mask-t-from-0% mask-t-to-100%"
+          className="pointer-events-none absolute inset-x-0 -top-72 bottom-0 -z-10 mask-[radial-gradient(ellipse_50.5%_25.7%_at_50%_0,transparent_100%,var(--hero-glow)_220%)]"
         >
           <div className="bg-hero-glow size-full mask-[url(/landing/contribution-grid.svg)] mask-bottom mask-no-repeat" />
         </div>
