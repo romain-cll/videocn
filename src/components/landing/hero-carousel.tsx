@@ -106,14 +106,21 @@ export function HeroCarousel() {
       onKeyDownCapture={() => setStopped(true)}
     >
       <div className="relative">
-        {/* Le halo : un dégradé droit, sans image à charger. Il part de la
-            coupure du bas et s'efface en montant, jusqu'à mi-chemin entre le
-            haut des fenêtres et la commande. Il vit hors de la scène, sinon
-            celle-ci le rognerait en haut. */}
+        {/* Le halo : une mosaïque façon graphe de contributions, qui part de
+            la coupure du bas et s'efface en montant, jusqu'à mi-chemin entre
+            le haut des fenêtres et la commande. Il vit hors de la scène, sinon
+            celle-ci le rognerait en haut.
+
+            Deux masques empilés : le parent porte le fondu vertical, l'enfant
+            découpe les carreaux dans `bg-hero-glow` — le SVG ne donne que des
+            opacités, la couleur reste un token et suit le mode sombre. Voir
+            `scripts/generate-contribution-grid.mjs`. */}
         <div
           aria-hidden
-          className="from-hero-glow pointer-events-none absolute inset-x-0 -top-7 bottom-0 -z-10 bg-linear-to-t to-transparent"
-        />
+          className="pointer-events-none absolute inset-x-0 -top-7 bottom-0 -z-10 mask-t-from-0% mask-t-to-100%"
+        >
+          <div className="bg-hero-glow size-full mask-[url(/landing/contribution-grid.svg)] mask-bottom mask-no-repeat" />
+        </div>
 
         {/* Coupure nette en bas de la scène, sur toute la largeur : les fenêtres
             s'arrêtent sur une même ligne. `overflow-y-clip` coupe verticalement
