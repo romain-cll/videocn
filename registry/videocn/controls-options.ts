@@ -78,6 +78,22 @@ export const DEFAULT_AUTO_HIDE_DELAY = 3000;
 export const DEFAULT_SEEK_STEP = 5;
 export const DEFAULT_VOLUME_STEP = 0.05;
 
+/**
+ * La marge au-delà de laquelle on se considère en retard sur le direct.
+ *
+ * Ici pour la même raison que les pas ci-dessus : trois couches s'en servent —
+ * la pastille, l'horodatage et le scrubber — et elles doivent tomber d'accord.
+ * Deux seuils différents feraient dire « Live » à la pastille pendant que
+ * l'horodatage annoncerait un retard.
+ *
+ * Le bord bouge par bonds : en HLS natif, la fin de `seekable` n'avance qu'au
+ * rafraîchissement de la playlist, d'un segment à la fois — six secondes chez
+ * Apple. Un seuil plus court ferait clignoter la pastille alors que rien n'a
+ * changé pour celui qui regarde. Dix secondes couvrent un segment standard et
+ * la marge d'une seconde que `goToLive` s'accorde.
+ */
+export const LIVE_EDGE_THRESHOLD = 10;
+
 function toggle(value: boolean | undefined): { enabled: boolean } {
   // Seul `false` masque : une clé absente doit donner un lecteur complet.
   return { enabled: value !== false };

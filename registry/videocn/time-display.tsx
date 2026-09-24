@@ -3,10 +3,11 @@
 import { memo } from "react";
 
 import { useControlsOptions } from "./controls-context";
+import { LIVE_EDGE_THRESHOLD } from "./controls-options";
 import { formatSpokenTime, formatTime } from "./format-time";
 import { usePlayerValue, usePlayheadValue } from "./player-context";
 import { displayedTime, type PlayheadSnapshot } from "./playhead-store";
-import type { PlayerState } from "./player-state-store";
+import { selectIsLive, type PlayerState } from "./player-state-store";
 
 /**
  * La seconde entière et non le temps exact : c'est tout ce que l'horodatage
@@ -21,12 +22,76 @@ function selectDisplayedSecond(snapshot: PlayheadSnapshot): number {
   return Math.floor(displayedTime(snapshot));
 }
 
+/**
+ * Le retard sur le bord du direct, à la seconde. Arrondi et non tronqué : c'est
+ * un écart et non une position, et 41,6 s de retard s'annoncent « 42 » ;
+ * arrondi tout court, pour la même raison que la seconde ci-dessus — la tête de
+ * lecture avance soixante fois par seconde et le bord glisse avec elle.
+ *
+ * Hors direct, la valeur n'est pas lue : elle change au même rythme que la
+ * seconde affichée, donc elle ne provoque aucun rendu de plus.
+ */
+function selectLiveDelay(snapshot: PlayheadSnapshot): number {
+  return Math.round(snapshot.seekableEnd - displayedTime(snapshot));
+}
+
 function selectDuration(state: PlayerState): number {
   return state.duration;
 }
 
 /**
- * L'horodatage `0:42 / 9:56`. Aucune prop, comme les autres contrôles.
+ * Le vrai signe moins (U+2212) et non le trait d'union : avec `tabular-nums`,
+ * il a la chasse d'un chiffre et l'horodatage ne se déhanche pas quand le
+ * retard apparaît. Il n'est jamais prononcé — le lecteur d'écran reçoit la
+ * forme parlée, en toutes lettres.
+ */
+const MINUS_SIGN = "−";
+
+/**
+ * Au bord du direct, un tiret cadratin plutôt qu'un vide : la place reste
+ * prise, et tomber en retard ne fait pas naître un bloc de texte au milieu de
+ * la barre.
+ */
+const NO_DELAY = "—";
+
+/**
+ * Les deux écritures d'un même instant. `spoken` est vide quand il n'y a rien à
+ * annoncer, au bord du direct : la pastille « Live » porte déjà l'information,
+ * et la répéter ne ferait qu'allonger la lecture de la barre.
+ */
+interface TimeLabels {
+  visual: string;
+  spoken: string;
+}
+
+function vodLabels(current: number, duration: number): TimeLabels {
+  // En direct, la durée vaut `Infinity` ; avant les métadonnées, zéro. Dans les
+  // deux cas il n'y a pas de total à afficher, seulement le temps courant.
+  const hasDuration = Number.isFinite(duration) && duration > 0;
+  return {
+    visual: hasDuration
+      ? `${formatTime(current, duration)} / ${formatTime(duration, duration)}`
+      : formatTime(current, duration),
+    spoken: hasDuration
+      ? `${formatSpokenTime(current)} of ${formatSpokenTime(duration)}`
+      : formatSpokenTime(current),
+  };
+}
+
+function liveLabels(delay: number): TimeLabels {
+  // Le même seuil que la pastille, et pour la même raison : le bord avance par
+  // bonds d'un segment. Deux seuils différents feraient dire « Live » à l'une
+  // pendant que l'autre affiche un retard.
+  if (delay <= LIVE_EDGE_THRESHOLD) return { visual: NO_DELAY, spoken: "" };
+  return {
+    visual: `${MINUS_SIGN}${formatTime(delay)}`,
+    spoken: `${formatSpokenTime(delay)} behind live`,
+  };
+}
+
+/**
+ * L'horodatage `0:42 / 9:56`, ou le retard sur le direct — `−0:42` — sur un
+ * flux sans fin. Aucune prop, comme les autres contrôles.
  *
  * Pas de région live : une annonce par seconde rendrait le lecteur d'écran
  * inutilisable. Le texte se lit quand on vient le chercher, et c'est le
@@ -35,13 +100,13 @@ function selectDuration(state: PlayerState): number {
 export const TimeDisplay = memo(function TimeDisplay() {
   const { time } = useControlsOptions();
   const current = usePlayheadValue(selectDisplayedSecond);
+  const liveDelay = usePlayheadValue(selectLiveDelay);
   const duration = usePlayerValue(selectDuration);
+  const isLive = usePlayerValue(selectIsLive);
 
   if (!time.enabled) return null;
 
-  // En direct, la durée vaut `Infinity` ; avant les métadonnées, zéro. Dans les
-  // deux cas il n'y a pas de total à afficher, seulement le temps courant.
-  const hasDuration = Number.isFinite(duration) && duration > 0;
+  const { visual, spoken } = isLive ? liveLabels(liveDelay) : vodLabels(current, duration);
 
   return (
     <span
@@ -59,15 +124,8 @@ export const TimeDisplay = memo(function TimeDisplay() {
           yeux reçoivent la forme compacte, le lecteur d'écran la forme parlée.
           Aucune des deux n'est une région live, le texte se lit quand on vient
           le chercher. */}
-      <span aria-hidden="true">
-        {formatTime(current, duration)}
-        {hasDuration && ` / ${formatTime(duration, duration)}`}
-      </span>
-      <span className="sr-only">
-        {hasDuration
-          ? `${formatSpokenTime(current)} of ${formatSpokenTime(duration)}`
-          : formatSpokenTime(current)}
-      </span>
+      <span aria-hidden="true">{visual}</span>
+      {spoken ? <span className="sr-only">{spoken}</span> : null}
     </span>
   );
 });

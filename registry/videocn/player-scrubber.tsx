@@ -3,7 +3,7 @@
 import { memo, useEffect, useMemo, useRef } from "react";
 
 import { useControlsOptions } from "./controls-context";
-import { DEFAULT_SEEK_STEP } from "./controls-options";
+import { DEFAULT_SEEK_STEP, LIVE_EDGE_THRESHOLD } from "./controls-options";
 import { formatSpokenTime } from "./format-time";
 import { usePlayerValue, usePlayheadStore, usePlayheadValue } from "./player-context";
 import {
@@ -12,7 +12,8 @@ import {
   PlayerSliderTrack,
   type SliderPosition,
 } from "./player-slider";
-import { displayedTime } from "./playhead-store";
+import { selectIsLive } from "./player-state-store";
+import { displayedTime, type PlayheadSnapshot } from "./playhead-store";
 import { useScrub } from "./use-scrub";
 
 /**
@@ -23,15 +24,48 @@ import { useScrub } from "./use-scrub";
  * bouge plus vite — la position, le buffer — est écrit hors de React, en
  * propriétés CSS, chacune par un seul écrivain : le curseur pour sa fraction,
  * ce composant pour les bornes du buffer.
+ *
+ * En direct, la plage n'est plus `0 → durée` mais la fenêtre encore diffusée,
+ * qui glisse en permanence. Tout ce que le curseur reçoit — bornes, pas de
+ * page, aperçu du buffer — est exprimé dans cette plage ; en vidéo à la
+ * demande, rien ne change.
  */
 
 const BUFFER_START_PROPERTY = "--player-buffer-start";
 const BUFFER_END_PROPERTY = "--player-buffer-end";
 
-/** Un instant rapporté à la durée. Durée nulle ou non finie : zéro, rien de travers. */
-function toFraction(time: number, duration: number): number {
-  if (!Number.isFinite(duration) || duration <= 0) return 0;
-  const fraction = time / duration;
+/**
+ * En dessous de cette fenêtre, le curseur reste inerte en direct.
+ *
+ * Un direct sans DVR expose quand même quelques segments — une playlist HLS en
+ * garde trois, soit une vingtaine de secondes —, mais cette fenêtre n'est pas
+ * un historique : c'est la réserve de lecture, elle glisse aussi vite qu'on la
+ * parcourt, et toute la largeur de la barre n'y vaudrait qu'une poignée de
+ * secondes. Trente secondes séparent les flux qu'on peut réellement remonter
+ * de ceux où chercher ne ferait que provoquer un recalage.
+ */
+const MIN_LIVE_SEEKABLE_WINDOW = 30;
+
+/**
+ * Les bornes de la fenêtre cherchable, arrondies **vers l'intérieur** : elles
+ * ne changent alors qu'une fois par seconde, et le scrubber garde sa propriété
+ * de ne se re-rendre qu'à ce rythme — les passer brutes le re-rendrait soixante
+ * fois par seconde. Vers l'intérieur, pour qu'on ne puisse jamais viser un
+ * instant que le flux n'a pas.
+ */
+function selectSeekableStart(snapshot: PlayheadSnapshot): number {
+  return Math.ceil(snapshot.seekableStart);
+}
+
+function selectSeekableEnd(snapshot: PlayheadSnapshot): number {
+  return Math.floor(snapshot.seekableEnd);
+}
+
+/** Un instant rapporté à la plage du curseur. Plage vide : zéro, rien de travers. */
+function toFraction(time: number, min: number, max: number): number {
+  const span = max - min;
+  if (!Number.isFinite(span) || span <= 0) return 0;
+  const fraction = (time - min) / span;
   if (!Number.isFinite(fraction)) return 0;
   return Math.min(Math.max(fraction, 0), 1);
 }
@@ -42,6 +76,9 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
   // pas soixante. Elle ne sert qu'à l'annonce ; le dessin passe par `position`.
   const second = usePlayheadValue((snapshot) => Math.floor(displayedTime(snapshot)));
   const duration = usePlayerValue((state) => state.duration);
+  const isLive = usePlayerValue(selectIsLive);
+  const seekableStart = usePlayheadValue(selectSeekableStart);
+  const seekableEnd = usePlayheadValue(selectSeekableEnd);
   const playhead = usePlayheadStore();
   const onValueChange = useScrub();
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -57,6 +94,15 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
   );
 
   const enabled = scrubber.enabled;
+  const finite = Number.isFinite(duration) && duration > 0;
+
+  // En direct, la fenêtre encore diffusée ; sinon la vidéo entière, telle
+  // qu'elle a toujours été. `seekable` n'est pas consulté en vidéo à la
+  // demande : il s'y confond avec la durée, et une fenêtre qui n'arriverait
+  // qu'après les métadonnées ferait sauter les bornes pour rien.
+  const min = isLive ? seekableStart : 0;
+  const max = isLive ? seekableEnd : duration;
+  const span = max - min;
 
   // Le buffer, par abonnement et jamais par un rendu : la plage chargée grossit
   // au fil des `progress`, et chaque pas re-rendrait le scrubber pour rien.
@@ -75,10 +121,10 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
 
     const paintBuffer = () => {
       const { bufferedStart, bufferedEnd } = playhead.getSnapshot();
-      const start = toFraction(bufferedStart, duration);
+      const start = toFraction(bufferedStart, min, max);
       // Jamais de largeur négative, même si les deux bornes se croisent le
       // temps d'une mesure.
-      const end = Math.max(toFraction(bufferedEnd, duration), start);
+      const end = Math.max(toFraction(bufferedEnd, min, max), start);
       if (start !== paintedStart) {
         paintedStart = start;
         wrapper.style.setProperty(BUFFER_START_PROPERTY, String(start));
@@ -91,31 +137,49 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
 
     paintBuffer();
     return playhead.subscribe(paintBuffer);
-  }, [duration, enabled, playhead]);
+    // Les bornes changent au plus une fois par seconde, y compris en direct :
+    // ce réabonnement ne coûte rien, et il garde l'aperçu du buffer dans la
+    // même plage que la poignée.
+  }, [enabled, max, min, playhead]);
 
   if (!enabled) return null;
 
-  const finite = Number.isFinite(duration) && duration > 0;
+  // En direct, une fenêtre trop courte ne se cherche pas ; ailleurs, c'est la
+  // durée qui doit être connue.
+  const seekable = isLive ? span >= MIN_LIVE_SEEKABLE_WINDOW : finite;
 
-  // « 42 seconds of 9 minutes 56 seconds ». Sans durée connue — un direct —,
-  // la position seule : « of 0 seconds » serait faux.
-  const getValueText = (value: number) =>
-    finite ? `${formatSpokenTime(value)} of ${formatSpokenTime(duration)}` : formatSpokenTime(value);
+  // « 42 seconds of 9 minutes 56 seconds ». En direct, la durée totale n'existe
+  // pas : c'est le retard sur le bord qu'on annonce, la seule mesure qui ait un
+  // sens sur un flux sans fin. Sans durée ni fenêtre — les métadonnées ne sont
+  // pas arrivées —, la position seule : « of 0 seconds » serait faux.
+  const getValueText = (value: number) => {
+    if (isLive) {
+      const delay = max - value;
+      return delay <= LIVE_EDGE_THRESHOLD ? "Live" : `${formatSpokenTime(delay)} behind live`;
+    }
+    return finite
+      ? `${formatSpokenTime(value)} of ${formatSpokenTime(duration)}`
+      : formatSpokenTime(value);
+  };
+
+  // Un dixième de la plage parcourue — la vidéo entière, ou la fenêtre du
+  // direct —, jamais moins qu'une flèche. Fini même quand la durée ne l'est
+  // pas : `PageUp` ne doit pas envoyer à l'infini.
+  const pageStep =
+    Number.isFinite(span) && span > 0 ? Math.max(span * 0.1, DEFAULT_SEEK_STEP) : DEFAULT_SEEK_STEP;
 
   return (
     <div ref={wrapperRef} data-slot="video-player-scrubber">
       <PlayerSlider
         aria-label="Seek"
-        min={0}
-        max={duration}
+        min={min}
+        max={max}
         value={second}
         position={position}
         step={DEFAULT_SEEK_STEP}
-        // Un dixième de la vidéo, jamais moins qu'une flèche. Fini même quand
-        // la durée ne l'est pas : `PageUp` ne doit pas envoyer à l'infini.
-        pageStep={finite ? Math.max(duration * 0.1, DEFAULT_SEEK_STEP) : DEFAULT_SEEK_STEP}
+        pageStep={pageStep}
         getValueText={getValueText}
-        disabled={!finite}
+        disabled={!seekable}
         onValueChange={onValueChange}
       >
         <PlayerSliderTrack>
