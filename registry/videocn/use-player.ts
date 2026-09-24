@@ -222,6 +222,12 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
   const [playhead] = useState(createPlayheadStore);
 
   const engineRef = useRef<PlayerEngine | null>(null);
+  /**
+   * Le démontage du moteur précédent, tant qu'il n'a pas rendu l'élément. Une
+   * ref et non un état : personne ne se rend pour ça, et c'est le prochain
+   * effet qui doit la lire.
+   */
+  const teardownRef = useRef<Promise<void> | null>(null);
   const fullscreenModeRef = useRef<FullscreenMode>("none");
   const defaultsAppliedRef = useRef(false);
 
@@ -331,30 +337,45 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     video.addEventListener("loadedmetadata", markReady);
     video.addEventListener("canplay", markReady);
 
-    engine.attach(video);
-    void engine.load(src).then(
-      () => {
+    const start = async () => {
+      // Le moteur précédent peut être encore en train de rendre l'élément : un
+      // changement de `src` démonte l'un et monte l'autre dans la même frame,
+      // alors que Shaka détache de façon asynchrone. Attacher sans attendre
+      // laisse la balise à deux maîtres, et elle reste muette — mesuré :
+      // « chargement » perpétuel, `readyState 0`, aucune erreur pour le dire.
+      const teardown = teardownRef.current;
+      if (teardown) {
+        await teardown;
+        if (teardownRef.current === teardown) teardownRef.current = null;
+        if (!active) return;
+      }
+
+      engine.attach(video);
+      try {
+        await engine.load(src);
         if (!active) return;
         syncCapabilities();
         // Un élément qui portait déjà cette source a émis `loadedmetadata`
         // avant qu'on écoute : l'événement ne reviendra pas.
         if (video.readyState >= video.HAVE_METADATA) markReady();
-      },
-      (cause: unknown) => {
+      } catch (cause: unknown) {
         if (!active) return;
         store.patch({
           engineStatus: "error",
           error: { code: "engine", message: engineErrorMessage(cause) },
         });
-      },
-    );
+      }
+    };
+    void start();
 
     return () => {
       active = false;
       unsubscribe();
       video.removeEventListener("loadedmetadata", markReady);
       video.removeEventListener("canplay", markReady);
-      engine.destroy();
+      // La promesse, quand il y en a une, dit quand l'élément est réellement
+      // rendu. C'est elle qu'attendra le moteur suivant.
+      teardownRef.current = Promise.resolve(engine.destroy());
       if (engineRef.current === engine) engineRef.current = null;
       // La source vient d'être libérée : repartir de zéro plutôt que de laisser
       // l'ancien statut décrire la suivante.

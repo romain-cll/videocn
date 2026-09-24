@@ -95,10 +95,12 @@ export function PlayerDemo() {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-        {/* `key` sur la source : changer de moteur repart d'un élément neuf,
-            plutôt que de laisser le suivant hériter d'un `<video>` qui porte
-            encore l'état du précédent. */}
-        <VideoCn key={source.id} ref={videoRef} src={source.src} />
+        {/* Pas de `key` : c'est le lecteur qui change de moteur sous la même
+            balise, exactement comme chez un utilisateur qui changerait sa prop
+            `src`. Remonter le composant masquerait ce chemin-là — et le panneau
+            d'observation, qui s'accroche à l'élément une fois pour toutes,
+            resterait sur l'ancien. */}
+        <VideoCn ref={videoRef} src={source.src} />
         <p className="text-muted-foreground text-xs text-pretty">{source.note}</p>
         <p className="text-muted-foreground text-xs text-pretty">
           The panel reads the element, not the controls: what it shows proves the action really

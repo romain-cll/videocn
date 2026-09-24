@@ -81,7 +81,14 @@ export interface PlayerEngine {
    * `<video>` qui le disent.
    */
   load(src: string): Promise<void>;
-  destroy(): void;
+  /**
+   * Libère l'élément. **Peut rendre une promesse** : Shaka détache l'élément et
+   * démonte `MediaSource` de façon asynchrone, et tant que ce n'est pas fini,
+   * l'élément ne peut pas être confié à un autre moteur. Le lecteur attend donc
+   * cette promesse avant de brancher le suivant — sans quoi un simple
+   * changement de `src` laisse la balise muette.
+   */
+  destroy(): void | Promise<void>;
   getCapabilities(): EngineCapabilities;
   /** `null` rend la sélection automatique. Sans effet si `qualities` est vide. */
   selectQuality(id: string | null): void;

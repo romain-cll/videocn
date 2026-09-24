@@ -153,17 +153,6 @@ function engineErrorMessage(namespace: ShakaNamespace | null, cause: unknown): s
   return cause instanceof Error ? cause.message : "Le moteur vidéo n'a pas pu charger la source.";
 }
 
-/**
- * Le même geste que le moteur natif : retirer l'attribut puis recharger est le
- * seul moyen de faire lâcher le flux au navigateur, et `src = ""` déclencherait
- * une requête vers l'URL de la page.
- */
-function clearElement(element: HTMLVideoElement | null): void {
-  if (!element) return;
-  element.removeAttribute("src");
-  element.load();
-}
-
 export function createShakaEngine(source: SourceType): PlayerEngine {
   let video: HTMLVideoElement | null = null;
   let player: shaka.Player | null = null;
@@ -287,7 +276,6 @@ export function createShakaEngine(source: SourceType): PlayerEngine {
       listeners.clear();
       capabilities = NO_CAPABILITIES;
 
-      const element = video;
       video = null;
 
       unsubscribeFallback?.();
@@ -303,20 +291,22 @@ export function createShakaEngine(source: SourceType): PlayerEngine {
         return;
       }
 
-      if (!instance) {
-        // Démontage pendant l'import dynamique : il n'y a jamais eu de lecteur
-        // Shaka, mais l'élément a pu garder une source d'un chargement d'avant.
-        clearElement(element);
-        return;
-      }
+      // Démontage pendant l'import dynamique : il n'y a jamais eu de lecteur, et
+      // Shaka n'a donc rien posé sur la balise. Rien à nettoyer.
+      if (!instance) return;
 
-      // `destroy()` est asynchrone : il détache l'élément et libère
-      // `MediaSource`. Toucher à la balise avant qu'il ait fini ferait se
-      // marcher dessus les deux nettoyages, et laisserait le flux ouvert.
-      const clear = () => {
-        clearElement(element);
-      };
-      void instance.destroy().then(clear, clear);
+      // On laisse `destroy()` faire, et **on ne touche plus à la balise
+      // ensuite** : il détache l'élément et libère `MediaSource` lui-même.
+      //
+      // Sa promesse est rendue au lecteur, qui attendra avant de brancher le
+      // moteur suivant. Les deux moitiés de cette règle ont été mesurées :
+      // nettoyer la balise après coup la vidait sous le moteur déjà en place
+      // (`emptied`, `readyState 0`), et attacher le suivant sans attendre le
+      // laissait bloqué sur « chargement », sans erreur, indéfiniment.
+      return instance.destroy().then(
+        () => undefined,
+        () => undefined,
+      );
     },
 
     getCapabilities() {
