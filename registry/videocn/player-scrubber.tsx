@@ -9,12 +9,7 @@ import { useControlsOptions } from "./controls-context";
 import { DEFAULT_SEEK_STEP, LIVE_EDGE_TOLERANCE } from "./controls-options";
 import { formatSpokenTime } from "./format-time";
 import { usePlayerValue, usePlayheadStore, usePlayheadValue } from "./player-context";
-import {
-  PlayerSlider,
-  PlayerSliderRange,
-  PlayerSliderTrack,
-  type SliderPosition,
-} from "./player-slider";
+import { PlayerSlider, PlayerSliderRange, type SliderPosition } from "./player-slider";
 import { selectIsLive } from "./player-state-store";
 import { displayedTime, type PlayheadSnapshot } from "./playhead-store";
 import { useScrub } from "./use-scrub";
@@ -33,11 +28,11 @@ import { useScrub } from "./use-scrub";
  * page, aperçu du buffer — est exprimé dans cette plage ; en vidéo à la
  * demande, rien ne change.
  *
- * Les couches qu'il compose ne sont pas rendues directement dans la piste mais
- * confiées à `ChapterSegments`, qui les réplique dans chaque chapitre. Le
- * partage est net : le scrubber décide de ce qui est dessiné, le découpage
- * décide d'où. Sans chapitres, le découpage rend un segment unique et le
- * résultat est celui d'avant, au pixel près.
+ * Les couches qu'il compose ne sont pas rendues directement dans une piste mais
+ * confiées à `ChapterSegments`, qui **est** la piste et les réplique dans chaque
+ * chapitre. Le partage est net : le scrubber décide de ce qui est dessiné, le
+ * découpage décide d'où. Sans chapitres, le découpage rend un segment unique et
+ * le résultat est celui d'avant, au pixel près.
  */
 
 const BUFFER_START_PROPERTY = "--player-buffer-start";
@@ -206,21 +201,19 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
         onValueChange={onValueChange}
       >
         {/*
-          La piste perd son fond : ce sont les segments qui le portent, sans
-          quoi l'écart entre deux chapitres laisserait voir le rail derrière et
-          ne se verrait pas. Elle garde en revanche son `overflow-hidden` et ses
-          coins, qui continuent de découper l'ensemble.
+          Pas de `PlayerSliderTrack` ici, et c'est la seule différence avec le
+          curseur de volume : la piste du scrubber est faite de segments, et une
+          piste haute de quatre pixels ne pourrait pas en laisser un dépasser au
+          survol. `ChapterSegments` la remplace et tient toute la hauteur.
         */}
-        <PlayerSliderTrack className="bg-transparent">
-          <ChapterSegments>
-            {/* Avant la partie jouée, pour passer dessous. */}
-            <div
-              data-slot="video-player-scrubber-buffer"
-              className="absolute inset-y-0 left-[calc(var(--player-buffer-start,0)*100%)] w-[calc((var(--player-buffer-end,0)_-_var(--player-buffer-start,0))*100%)] bg-foreground/40"
-            />
-            <PlayerSliderRange />
-          </ChapterSegments>
-        </PlayerSliderTrack>
+        <ChapterSegments>
+          {/* Avant la partie jouée, pour passer dessous. */}
+          <div
+            data-slot="video-player-scrubber-buffer"
+            className="absolute inset-y-0 left-[calc(var(--player-buffer-start,0)*100%)] w-[calc((var(--player-buffer-end,0)_-_var(--player-buffer-start,0))*100%)] bg-foreground/40"
+          />
+          <PlayerSliderRange />
+        </ChapterSegments>
       </PlayerSlider>
     </div>
   );
