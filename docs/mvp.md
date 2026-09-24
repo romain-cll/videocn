@@ -205,8 +205,9 @@ Trois règles de normalisation, appliquées une fois pour toutes :
 - **Aucun chapitre en direct.** Sans durée, un chapitre n'a pas de fin, et une fenêtre qui glisse
   ne se découpe pas. Une liste passée à un flux en direct reste donc sans effet.
 
-**Le chapitre survolé s'épaissit** — quatre pixels au repos, six au survol de la barre, huit pour
-celui qu'on vise. Chaque chapitre est une zone de la hauteur du curseur, invisible : une barre de
+**Le chapitre survolé s'épaissit** — quatre pixels au repos, six au survol de la barre, dix pour
+celui qu'on vise. L'écart est volontairement franc : à deux pixels près, on ne voyait pas lequel
+on visait. Chaque chapitre est une zone de la hauteur du curseur, invisible : une barre de
 quatre pixels ne se vise pas. Les zones se touchent, l'écart n'étant pris que sur la barre, pour
 que l'épaisseur ne retombe pas quand on balaie. Une vidéo sans chapitres garde ses six pixels : un
 segment unique ne se distingue pas de lui-même.

@@ -93,7 +93,7 @@ export function ChapterSegments({ children }: ChapterSegmentsProps) {
 
   // Un seul chapitre ne se distingue pas de lui-même : sans découpage, survoler
   // la barre l'épaissit une fois, comme avant les chapitres. Sans cette
-  // réserve, une vidéo sans chapitres verrait sa barre monter à huit pixels.
+  // réserve, une vidéo sans chapitres verrait sa barre monter à dix pixels.
   const distinguishable = segments.length > 1;
 
   // Un seul effet plutôt qu'une ref par segment : la liste ne change qu'avec la
@@ -140,7 +140,7 @@ export function ChapterSegments({ children }: ChapterSegmentsProps) {
           data-slot="video-player-scrubber-chapter"
           className={
             distinguishable
-              ? "absolute inset-y-0 left-[calc(var(--chapter-start,0)*100%)] flex w-[calc(var(--chapter-span,1)*100%)] items-center hover:[--chapter-lift:0.125rem]"
+              ? "absolute inset-y-0 left-[calc(var(--chapter-start,0)*100%)] flex w-[calc(var(--chapter-span,1)*100%)] items-center hover:[--chapter-lift:0.25rem]"
               : "absolute inset-y-0 left-[calc(var(--chapter-start,0)*100%)] flex w-[calc(var(--chapter-span,1)*100%)] items-center"
           }
         >
@@ -155,8 +155,9 @@ export function ChapterSegments({ children }: ChapterSegmentsProps) {
             // `group-hover/…`, c'est l'ordre de génération qui tranche — une
             // loterie dont dépendrait l'épaisseur de la barre. La piste pose la
             // sienne, le chapitre visé pose la sienne, et l'addition n'a plus
-            // rien à départager : 4 px au repos, 6 px sur la barre, 8 px sur le
-            // chapitre survolé.
+            // rien à départager : 4 px au repos, 6 px sur la barre, 10 px sur
+            // le chapitre survolé. L'écart entre 6 et 10 est voulu large : à
+            // deux pixels près, on ne voyait pas lequel on visait.
             className="relative h-[calc(0.25rem_+_var(--scrubber-lift,0rem)_+_var(--chapter-lift,0rem))] w-[max(calc(100%_-_var(--chapter-gap,0px)),2px)] shrink-0 overflow-hidden rounded-full bg-foreground/20 transition-[height] duration-150 motion-reduce:transition-none"
           >
             {/*
