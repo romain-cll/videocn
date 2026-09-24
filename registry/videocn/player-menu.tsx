@@ -451,7 +451,18 @@ function PlayerMenuPopup({ children, className }: PlayerMenuContentProps) {
         // Vers le haut et aligné à droite : seule direction possible pour une
         // barre en bas. `max-h-64` est un garde-fou — le conteneur du lecteur
         // est `overflow-hidden`, un popup plus haut que la vidéo serait coupé.
-        "absolute right-0 bottom-full mb-2 max-h-64",
+        //
+        // `w-max` n'est pas une coquetterie. Un élément `absolute` sans `left`
+        // se dimensionne en « shrink-to-fit », borné par la largeur disponible
+        // dans son bloc conteneur — ici le cadre du menu, large comme son seul
+        // bouton. Sans lui, le popup s'effondre donc sur son **min-content**,
+        // c'est-à-dire sur le mot le plus long de sa liste : « Big Buck Bunny
+        // wakes up » s'écrivait sur cinq lignes. Les menus de vitesse et de
+        // qualité ne le montraient pas, leurs libellés étant si courts que le
+        // `min-w-32` couvrait le défaut. `max-w-64` prend alors le relais du
+        // repli, pour qu'un titre à rallonge ne pousse pas le popup hors de la
+        // vidéo — le pendant horizontal de `max-h-64`.
+        "absolute right-0 bottom-full mb-2 max-h-64 w-max max-w-64",
         className,
       )}
       onKeyDown={handleKeyDown}

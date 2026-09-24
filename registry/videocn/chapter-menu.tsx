@@ -60,11 +60,7 @@ export const ChapterMenu = memo(function ChapterMenu(): ReactElement | null {
       <PlayerMenuTrigger aria-label={active ? `Chapters, ${active.label}` : "Chapters"}>
         <ListIcon />
       </PlayerMenuTrigger>
-      {/* Le pendant du `max-h-64` du popup : le conteneur du lecteur est
-          `overflow-hidden`, et un titre de chapitre un peu long pousserait le
-          menu au-delà du bord de la vidéo, où il serait coupé. Borné, le titre
-          se replie sur deux lignes et reste entier. */}
-      <PlayerMenuContent className="max-w-64">
+      <PlayerMenuContent>
         {chapters.map((chapter, index) => (
           // `PlayerMenuRadioItem` et non un item simple : le chapitre courant
           // est un état, il se coche — et le menu s'ouvre alors tout seul sur
