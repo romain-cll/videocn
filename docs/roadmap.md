@@ -112,6 +112,26 @@ Rien du dessin existant n'a été recalculé, et le curseur n'a pas été touch�
   le scrubber, pour vérifier que la valeur, qui change chaque seconde, n'est pas annoncée en
   boucle quand il a le focus, et le contrôle vocal macOS (« Click Seek »). Ni l'un ni l'autre ne
   s'automatise.
+- **Servir un build par famille de style** (décidé le 24 septembre 2026, pendant la phase 5).
+  L'URL d'un registry accepte le placeholder `{style}` en plus de `{name}` : le CLI y injecte le
+  style du projet consommateur, et c'est le mécanisme officiel pour servir une variante par style.
+  Notre URL n'utilise que `{name}`, donc tout le monde reçoit le même code.
+
+  Ce que ça change, aujourd'hui, se réduit au **rayon**. Sur les huit styles, six sont arrondis
+  (vega, nova, maia, mira, luma, rhea) et **deux sont anguleux** : **lyra** et **sera**. Ces
+  deux-là codent `rounded-none` en dur dans la source de chaque composant et ne touchent pas
+  `--radius`, qui y garde sa valeur par défaut — rien dans le CSS ne permet donc de les détecter.
+  Un utilisateur de ces styles reçoit un lecteur arrondi dans un projet carré, et doit écrire
+  `--radius: 0` lui-même. C'est sans effet de bord chez lui, vérifié sur douze composants sera :
+  aucun ne lit ce token.
+
+  **Deux builds suffisent** — arrondi et anguleux —, plus une table des styles, en
+  post-traitement de `shadcn build`. Une trentaine de lignes. Ne pas partir sur les huit comme
+  le fait Shadcnblocks : on n'a qu'une dimension qui varie.
+
+  Deux réserves à lever au moment de le faire : la liste des styles bouge (huit aujourd'hui), et
+  un bug ouvert côté CLI (`shadcn-ui/ui#10496`) lui fait écraser le style de `components.json`
+  pour les registries tiers.
 
 ## Deux chantiers hors de l'ordre séquentiel
 
