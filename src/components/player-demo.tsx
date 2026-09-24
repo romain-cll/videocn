@@ -28,6 +28,22 @@ const DEMO_SRC =
   "https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4";
 
 /**
+ * Big Buck Bunny découpé, pour voir les segments et le menu sur une vidéo dont
+ * on connaît le déroulé. Les temps sont ceux du film ; rien ici ne vient d'une
+ * API, c'est une liste écrite à la main comme celle qu'écrirait un
+ * intégrateur.
+ */
+const BUNNY_CHAPTERS = [
+  { time: 0, label: "Morning in the meadow" },
+  { time: 70, label: "Big Buck Bunny wakes up" },
+  { time: 150, label: "The butterfly" },
+  { time: 230, label: "Frank, Rinky and Gamera" },
+  { time: 330, label: "The ambush" },
+  { time: 460, label: "Revenge" },
+  { time: 560, label: "Credits" },
+] as const;
+
+/**
  * Les quatre sources du périmètre, servies par le même `<VideoCn>` : c'est tout
  * l'intérêt de l'interface moteur. Le MP4 ne charge pas une ligne de Shaka ; le
  * HLS et le DASH le chargent à la volée ; le direct ouvre une fenêtre glissante
@@ -41,24 +57,31 @@ const SOURCES = [
     id: "mp4",
     label: "MP4",
     src: DEMO_SRC,
-    note: "Native engine. Nothing to pick: the browser says nothing about what is inside a progressive file, so the quality button stays disabled.",
+    chapters: BUNNY_CHAPTERS,
+    note: "Native engine. Nothing to pick: the browser says nothing about what is inside a progressive file, so the quality button stays disabled. Seven chapters, cutting the bar and filling a menu.",
   },
   {
     id: "hls",
     label: "HLS",
     src: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    chapters: undefined,
     note: "Shaka, loaded on demand. Five qualities, from 184p to 1080p, and adaptive picks for you until you pick yourself.",
   },
   {
     id: "dash",
     label: "DASH",
     src: "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd",
+    chapters: BUNNY_CHAPTERS,
     note: "Same player, same engine, another manifest. Nothing changes in the interface.",
   },
   {
     id: "live",
     label: "Live",
     src: "https://demo.unified-streaming.com/k8s/live/stable/scte35.isml/.m3u8",
+    // Volontaire, et le seul cas de cette page qui ne sert pas la vitrine :
+    // une liste passée à un direct doit rester sans effet — ni segments, ni
+    // bouton. Un clic sur « Live » suffit alors à le vérifier.
+    chapters: BUNNY_CHAPTERS,
     note: "A live stream with about fifteen minutes of window: you can seek back inside it, and the badge brings you back to the edge.",
   },
 ] as const;
@@ -100,7 +123,7 @@ export function PlayerDemo() {
             `src`. Remonter le composant masquerait ce chemin-là — et le panneau
             d'observation, qui s'accroche à l'élément une fois pour toutes,
             resterait sur l'ancien. */}
-        <VideoCn ref={videoRef} src={source.src} />
+        <VideoCn ref={videoRef} src={source.src} chapters={source.chapters} />
         <p className="text-muted-foreground text-xs text-pretty">{source.note}</p>
         <p className="text-muted-foreground text-xs text-pretty">
           The panel reads the element, not the controls: what it shows proves the action really
@@ -118,16 +141,19 @@ export function PlayerDemo() {
         <h2 className="text-sm font-medium">Configured through props</h2>
         <VideoCn
           src={DEMO_SRC}
+          chapters={BUNNY_CHAPTERS}
           controls={{
             pictureInPicture: false,
             playbackRate: { rates: [1, 1.5, 2] },
             autoHideDelay: 1000,
             keyboard: false,
+            scrubber: { chapters: false },
           }}
         />
         <p className="text-muted-foreground text-xs text-pretty">
           No Picture-in-Picture, three speeds instead of seven, a bar that hides after one second,
-          no keyboard shortcuts.
+          no keyboard shortcuts. Same chapters as above, but kept out of the bar: cutting it up is
+          a matter of looks, not of content.
         </p>
       </div>
     </div>

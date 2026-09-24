@@ -2,6 +2,7 @@
 
 import { useState, type ReactElement } from "react";
 
+import { ChapterMenu } from "./chapter-menu";
 import { useControlsOptions, useControlsVisible, useHoldControlsVisible } from "./controls-context";
 import { FullscreenToggle } from "./fullscreen-toggle";
 import { LiveBadge } from "./live-badge";
@@ -77,6 +78,10 @@ export function PlayerControls(): ReactElement | null {
             la lecture, et elle ne doit jamais déplacer une cible cliquable. */}
         <TimeDisplay />
         <div className="ml-auto flex items-center gap-1">
+          {/* En tête des menus : c'est le seul qui parle du contenu et non du
+              rendu, et c'est celui qu'on vient chercher le plus souvent.
+              Rendu `null` quand la vidéo n'a pas de chapitres. */}
+          <ChapterMenu />
           <PlaybackRateMenu />
           <QualityMenu />
           <PictureInPictureToggle />

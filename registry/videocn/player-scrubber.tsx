@@ -2,6 +2,9 @@
 
 import { memo, useEffect, useMemo, useRef } from "react";
 
+import { ChapterSegments } from "./chapter-segments";
+import { findChapterIndex } from "./chapters";
+import { useChapters } from "./chapters-context";
 import { useControlsOptions } from "./controls-context";
 import { DEFAULT_SEEK_STEP, LIVE_EDGE_TOLERANCE } from "./controls-options";
 import { formatSpokenTime } from "./format-time";
@@ -29,6 +32,12 @@ import { useScrub } from "./use-scrub";
  * qui glisse en permanence. Tout ce que le curseur reçoit — bornes, pas de
  * page, aperçu du buffer — est exprimé dans cette plage ; en vidéo à la
  * demande, rien ne change.
+ *
+ * Les couches qu'il compose ne sont pas rendues directement dans la piste mais
+ * confiées à `ChapterSegments`, qui les réplique dans chaque chapitre. Le
+ * partage est net : le scrubber décide de ce qui est dessiné, le découpage
+ * décide d'où. Sans chapitres, le découpage rend un segment unique et le
+ * résultat est celui d'avant, au pixel près.
  */
 
 const BUFFER_START_PROPERTY = "--player-buffer-start";
@@ -79,6 +88,9 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
   const isLive = usePlayerValue(selectIsLive);
   const seekableStart = usePlayheadValue(selectSeekableStart);
   const seekableEnd = usePlayheadValue(selectSeekableEnd);
+  // Une lecture de contexte, pas un abonnement : la liste ne change qu'avec la
+  // durée, donc le scrubber garde son rendu par seconde de média.
+  const chapters = useChapters();
   const playhead = usePlayheadStore();
   const onValueChange = useScrub();
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -148,10 +160,17 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
   // durée qui doit être connue.
   const seekable = isLive ? span >= MIN_LIVE_SEEKABLE_WINDOW : finite;
 
-  // « 42 seconds of 9 minutes 56 seconds ». En direct, la durée totale n'existe
-  // pas : c'est le retard sur le bord qu'on annonce, la seule mesure qui ait un
-  // sens sur un flux sans fin. Sans durée ni fenêtre — les métadonnées ne sont
-  // pas arrivées —, la position seule : « of 0 seconds » serait faux.
+  // « 42 seconds of 9 minutes 56 seconds, Installation ». En direct, la durée
+  // totale n'existe pas : c'est le retard sur le bord qu'on annonce, la seule
+  // mesure qui ait un sens sur un flux sans fin. Sans durée ni fenêtre — les
+  // métadonnées ne sont pas arrivées —, la position seule : « of 0 seconds »
+  // serait faux.
+  //
+  // Le libellé du chapitre en dernier, après le temps : c'est la seule partie
+  // qui ne change pas à chaque seconde, et un lecteur d'écran qui réannonce en
+  // continu doit donner d'abord ce qu'on lui demande. Le chapitre de la valeur
+  // annoncée, et non celui de la lecture : au clavier comme sous le doigt, ce
+  // qu'on entend doit décrire là où on va.
   const getValueText = (value: number) => {
     if (isLive) {
       // Ici c'est la valeur annoncée qu'on qualifie, et non l'état du lecteur :
@@ -159,9 +178,11 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
       const delay = max - value;
       return delay <= LIVE_EDGE_TOLERANCE ? "Live" : `${formatSpokenTime(delay)} behind live`;
     }
-    return finite
+    const time = finite
       ? `${formatSpokenTime(value)} of ${formatSpokenTime(duration)}`
       : formatSpokenTime(value);
+    const index = findChapterIndex(chapters, value);
+    return index === -1 ? time : `${time}, ${chapters[index].label}`;
   };
 
   // Un dixième de la plage parcourue — la vidéo entière, ou la fenêtre du
@@ -184,13 +205,21 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
         disabled={!seekable}
         onValueChange={onValueChange}
       >
-        <PlayerSliderTrack>
-          {/* Avant la partie jouée, pour passer dessous. */}
-          <div
-            data-slot="video-player-scrubber-buffer"
-            className="absolute inset-y-0 left-[calc(var(--player-buffer-start,0)*100%)] w-[calc((var(--player-buffer-end,0)_-_var(--player-buffer-start,0))*100%)] bg-foreground/40"
-          />
-          <PlayerSliderRange />
+        {/*
+          La piste perd son fond : ce sont les segments qui le portent, sans
+          quoi l'écart entre deux chapitres laisserait voir le rail derrière et
+          ne se verrait pas. Elle garde en revanche son `overflow-hidden` et ses
+          coins, qui continuent de découper l'ensemble.
+        */}
+        <PlayerSliderTrack className="bg-transparent">
+          <ChapterSegments>
+            {/* Avant la partie jouée, pour passer dessous. */}
+            <div
+              data-slot="video-player-scrubber-buffer"
+              className="absolute inset-y-0 left-[calc(var(--player-buffer-start,0)*100%)] w-[calc((var(--player-buffer-end,0)_-_var(--player-buffer-start,0))*100%)] bg-foreground/40"
+            />
+            <PlayerSliderRange />
+          </ChapterSegments>
         </PlayerSliderTrack>
       </PlayerSlider>
     </div>

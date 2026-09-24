@@ -37,3 +37,21 @@ export const EXAMPLE_VIDEOS = {
 } as const;
 
 export type ExampleVideo = (typeof EXAMPLE_VIDEOS)[keyof typeof EXAMPLE_VIDEOS];
+
+/**
+ * Le découpage de Sintel, pour la page type plateforme vidéo.
+ *
+ * À part, et non dans l'entrée du film : une seule des trois vidéos en a, et
+ * la donner à une seule branche de `EXAMPLE_VIDEOS` rendrait `ExampleVideo`
+ * inutilisable — le champ manquerait aux deux autres.
+ */
+export const SINTEL_CHAPTERS = [
+  { time: 0, label: "Prologue" },
+  { time: 100, label: "The village" },
+  { time: 210, label: "Searching for Scales" },
+  { time: 350, label: "The shaman's tale" },
+  { time: 490, label: "Crossing the mountains" },
+  { time: 640, label: "The lair" },
+  { time: 770, label: "The duel" },
+  { time: 830, label: "Credits" },
+] as const;
