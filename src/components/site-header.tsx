@@ -20,7 +20,7 @@ export function SiteHeader() {
           </Link>
         </nav>
         <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="sm" nativeButton={false} render={<a href={siteConfig.links.github} />}>
+          <Button variant="ghost" size="sm" nativeButton={false} render={<a href={siteConfig.links.github} target="_blank" rel="noreferrer" />}>
             GitHub
           </Button>
           <ModeToggle />

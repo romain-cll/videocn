@@ -58,7 +58,7 @@ export default function Home() {
 
       <footer className="text-muted-foreground border-t py-6 text-center text-sm">
         videoCn, a video player for shadcn/ui. The source code is on{" "}
-        <a href={siteConfig.links.github} className="text-foreground underline underline-offset-4">
+        <a href={siteConfig.links.github} target="_blank" rel="noreferrer" className="text-foreground underline underline-offset-4">
           GitHub
         </a>
         .
