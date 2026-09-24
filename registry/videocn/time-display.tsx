@@ -3,7 +3,6 @@
 import { memo } from "react";
 
 import { useControlsOptions } from "./controls-context";
-import { LIVE_EDGE_THRESHOLD } from "./controls-options";
 import { formatSpokenTime, formatTime } from "./format-time";
 import { usePlayerValue, usePlayheadValue } from "./player-context";
 import { displayedTime, type PlayheadSnapshot } from "./playhead-store";
@@ -33,6 +32,21 @@ function selectDisplayedSecond(snapshot: PlayheadSnapshot): number {
  */
 function selectLiveDelay(snapshot: PlayheadSnapshot): number {
   return Math.round(snapshot.seekableEnd - displayedTime(snapshot));
+}
+
+/**
+ * Hors direct, le retard sur le bord n'a aucun sens — et s'y abonner coûterait
+ * un rendu de plus par seconde : il change à contretemps de la seconde
+ * affichée, si bien que l'horodatage se réveillait deux fois par seconde de
+ * média au lieu d'une. Mesuré. Un sélecteur constant coupe l'abonnement.
+ */
+function selectNoDelay(): number {
+  return 0;
+}
+
+/** Au bord, c'est la tête de lecture qui tranche : voir `atLiveEdge`. */
+function selectAtLiveEdge(snapshot: PlayheadSnapshot): boolean {
+  return snapshot.atLiveEdge;
 }
 
 function selectDuration(state: PlayerState): number {
@@ -78,11 +92,11 @@ function vodLabels(current: number, duration: number): TimeLabels {
   };
 }
 
-function liveLabels(delay: number): TimeLabels {
-  // Le même seuil que la pastille, et pour la même raison : le bord avance par
-  // bonds d'un segment. Deux seuils différents feraient dire « Live » à l'une
-  // pendant que l'autre affiche un retard.
-  if (delay <= LIVE_EDGE_THRESHOLD) return { visual: NO_DELAY, spoken: "" };
+function liveLabels(delay: number, atEdge: boolean): TimeLabels {
+  // La même décision que la pastille, prise au même endroit : deux calculs
+  // séparés feraient dire « Live » à l'une pendant que l'autre affiche un
+  // retard.
+  if (atEdge) return { visual: NO_DELAY, spoken: "" };
   return {
     visual: `${MINUS_SIGN}${formatTime(delay)}`,
     spoken: `${formatSpokenTime(delay)} behind live`,
@@ -100,13 +114,16 @@ function liveLabels(delay: number): TimeLabels {
 export const TimeDisplay = memo(function TimeDisplay() {
   const { time } = useControlsOptions();
   const current = usePlayheadValue(selectDisplayedSecond);
-  const liveDelay = usePlayheadValue(selectLiveDelay);
   const duration = usePlayerValue(selectDuration);
   const isLive = usePlayerValue(selectIsLive);
+  const liveDelay = usePlayheadValue(isLive ? selectLiveDelay : selectNoDelay);
+  const atLiveEdge = usePlayheadValue(selectAtLiveEdge);
 
   if (!time.enabled) return null;
 
-  const { visual, spoken } = isLive ? liveLabels(liveDelay) : vodLabels(current, duration);
+  const { visual, spoken } = isLive
+    ? liveLabels(liveDelay, atLiveEdge)
+    : vodLabels(current, duration);
 
   return (
     <span

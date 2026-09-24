@@ -1,5 +1,7 @@
 "use client";
 
+import { LIVE_EDGE_TOLERANCE } from "./controls-options";
+
 /**
  * La tête de lecture ne passe pas par l'état React.
  *
@@ -16,6 +18,16 @@
  */
 
 export interface PlayheadSnapshot {
+  /**
+   * Au bord du direct, ou aussi près qu'on puisse l'être de ce flux-là. Décidé
+   * ici et nulle part ailleurs : la pastille, l'horodatage et le scrubber
+   * doivent en dire la même chose, et un booléen ne les réveille qu'aux
+   * bascules au lieu d'une fois par frame.
+   *
+   * Sans objet en vidéo à la demande, où le bord n'est que la fin du fichier :
+   * les contrôles ne le lisent qu'en direct.
+   */
+  readonly atLiveEdge: boolean;
   readonly currentTime: number;
   /**
    * Bornes de la plage chargée qui contient la tête de lecture, ce que le
@@ -64,6 +76,7 @@ export function displayedTime(snapshot: PlayheadSnapshot): number {
 }
 
 const EMPTY_PLAYHEAD: PlayheadSnapshot = Object.freeze({
+  atLiveEdge: true,
   currentTime: 0,
   bufferedStart: 0,
   bufferedEnd: 0,
@@ -107,6 +120,14 @@ export function createPlayheadStore(): PlayheadStore {
   let snapshot: PlayheadSnapshot = EMPTY_PLAYHEAD;
   let video: HTMLVideoElement | null = null;
   let frame = 0;
+  /**
+   * Le retard de croisière du flux : le plus petit écart au bord jamais observé
+   * depuis le chargement. Mesuré et non supposé, comme les capacités du moteur
+   * — il vaut trois secondes sur un flux à basse latence et une trentaine sur
+   * un HLS classique, et c'est par rapport à **lui** qu'on juge si l'on est au
+   * bord. `Infinity` tant qu'on n'a rien vu : tout écart fait alors référence.
+   */
+  let liveLatency = Number.POSITIVE_INFINITY;
 
   /**
    * `getSnapshot` doit renvoyer la même référence tant que rien ne change,
@@ -121,6 +142,7 @@ export function createPlayheadStore(): PlayheadStore {
       next.bufferedEnd === snapshot.bufferedEnd &&
       next.seekableStart === snapshot.seekableStart &&
       next.seekableEnd === snapshot.seekableEnd &&
+      next.atLiveEdge === snapshot.atLiveEdge &&
       next.scrubTime === snapshot.scrubTime
     ) {
       return;
@@ -134,7 +156,26 @@ export function createPlayheadStore(): PlayheadStore {
     const currentTime = video.currentTime;
     const [bufferedStart, bufferedEnd] = bufferedRangeAt(video, currentTime);
     const [seekableStart, seekableEnd] = seekableWindow(video, currentTime);
-    return { currentTime, bufferedStart, bufferedEnd, seekableStart, seekableEnd, scrubTime };
+
+    // La référence se prend sur la vidéo et non sur le doigt : pendant un
+    // glissement, la position affichée n'est pas celle qu'on lit.
+    if (!video.paused) {
+      liveLatency = Math.min(liveLatency, seekableEnd - currentTime);
+    }
+    // Le doigt, lui, décide de l'affichage : la pastille s'éteint dès qu'on
+    // quitte le bord, sans attendre que la vidéo ait cherché.
+    const delay = seekableEnd - (scrubTime ?? currentTime);
+    const atLiveEdge = delay <= liveLatency + LIVE_EDGE_TOLERANCE;
+
+    return {
+      atLiveEdge,
+      currentTime,
+      bufferedStart,
+      bufferedEnd,
+      seekableStart,
+      seekableEnd,
+      scrubTime,
+    };
   }
 
   function read() {
@@ -162,6 +203,10 @@ export function createPlayheadStore(): PlayheadStore {
   }
 
   function reset() {
+    // Le retard de croisière appartient au flux qu'on quitte : le suivant aura
+    // le sien, et garder l'ancien ferait juger le nouveau sur une référence
+    // qui n'est pas la sienne.
+    liveLatency = Number.POSITIVE_INFINITY;
     if (snapshot === EMPTY_PLAYHEAD) return;
     snapshot = EMPTY_PLAYHEAD;
     for (const listener of listeners) listener();

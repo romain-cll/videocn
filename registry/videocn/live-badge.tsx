@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "cn";
 
 import { useControlsOptions } from "./controls-context";
-import { LIVE_EDGE_THRESHOLD } from "./controls-options";
 import { usePlayerActions, usePlayerValue, usePlayheadValue } from "./player-context";
 import { selectIsLive } from "./player-state-store";
-import { displayedTime, type PlayheadSnapshot } from "./playhead-store";
+import type { PlayheadSnapshot } from "./playhead-store";
 
 /**
  * La pastille « Live » : elle dit si l'on regarde le bord du direct, et permet
@@ -20,23 +19,18 @@ import { displayedTime, type PlayheadSnapshot } from "./playhead-store";
  */
 
 /**
- * Au bord du direct, à quelques secondes près.
- *
- * Un booléen et non un nombre de secondes : la tête de lecture avance soixante
- * fois par seconde, et un sélecteur qui renverrait le retard réveillerait la
- * pastille à ce rythme. Ici elle ne se re-rend qu'aux deux traversées du seuil.
- *
- * `displayedTime` plutôt que `currentTime` : pendant un glissement, la pastille
- * s'éteint dès que le doigt quitte le bord, en même temps que l'horodatage.
+ * Un booléen, décidé par la tête de lecture : elle seule connaît le retard de
+ * croisière du flux, et elle ne réveille la pastille qu'aux bascules — un
+ * sélecteur qui renverrait des secondes la rendrait soixante fois par seconde.
  */
-function isAtLiveEdge(snapshot: PlayheadSnapshot): boolean {
-  return snapshot.seekableEnd - displayedTime(snapshot) <= LIVE_EDGE_THRESHOLD;
+function selectAtLiveEdge(snapshot: PlayheadSnapshot): boolean {
+  return snapshot.atLiveEdge;
 }
 
 export const LiveBadge = memo(function LiveBadge(): ReactElement | null {
   const { live } = useControlsOptions();
   const isLive = usePlayerValue(selectIsLive);
-  const atEdge = usePlayheadValue(isAtLiveEdge);
+  const atEdge = usePlayheadValue(selectAtLiveEdge);
   const { goToLive } = usePlayerActions();
 
   if (!live.enabled || !isLive) return null;

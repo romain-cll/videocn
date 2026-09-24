@@ -3,7 +3,7 @@
 import { memo, useEffect, useMemo, useRef } from "react";
 
 import { useControlsOptions } from "./controls-context";
-import { DEFAULT_SEEK_STEP, LIVE_EDGE_THRESHOLD } from "./controls-options";
+import { DEFAULT_SEEK_STEP, LIVE_EDGE_TOLERANCE } from "./controls-options";
 import { formatSpokenTime } from "./format-time";
 import { usePlayerValue, usePlayheadStore, usePlayheadValue } from "./player-context";
 import {
@@ -154,8 +154,10 @@ export const PlayerScrubber = memo(function PlayerScrubber() {
   // pas arrivées —, la position seule : « of 0 seconds » serait faux.
   const getValueText = (value: number) => {
     if (isLive) {
+      // Ici c'est la valeur annoncée qu'on qualifie, et non l'état du lecteur :
+      // la tolérance suffit, à un segment près du bout de la fenêtre.
       const delay = max - value;
-      return delay <= LIVE_EDGE_THRESHOLD ? "Live" : `${formatSpokenTime(delay)} behind live`;
+      return delay <= LIVE_EDGE_TOLERANCE ? "Live" : `${formatSpokenTime(delay)} behind live`;
     }
     return finite
       ? `${formatSpokenTime(value)} of ${formatSpokenTime(duration)}`

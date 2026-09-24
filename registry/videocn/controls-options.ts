@@ -79,20 +79,24 @@ export const DEFAULT_SEEK_STEP = 5;
 export const DEFAULT_VOLUME_STEP = 0.05;
 
 /**
- * La marge au-delà de laquelle on se considère en retard sur le direct.
+ * Ce qu'on tolère **au-delà du retard naturel du flux** avant de se dire en
+ * retard sur le direct.
+ *
+ * Ce n'est pas un retard absolu, et c'est tout l'enjeu : le bord n'avance pas
+ * régulièrement — la fin de `seekable` saute d'un segment à chaque
+ * rafraîchissement de playlist —, et le retard de croisière dépend du flux, de
+ * trois secondes en basse latence à une trentaine sur un HLS classique. Un
+ * seuil absolu ferait donc clignoter la pastille sur les flux dont la latence
+ * tombe juste dessus : mesuré sur un direct de démonstration, l'écart oscillait
+ * entre 8,6 s et 10,7 s et un seuil à 10 s basculait onze fois en dix secondes.
+ * Le retard naturel est donc **mesuré** par la tête de lecture, et c'est de lui
+ * qu'on s'écarte — dix secondes, soit un segment de large, jamais moins que le
+ * saut qui fait osciller l'écart.
  *
  * Ici pour la même raison que les pas ci-dessus : trois couches s'en servent —
  * la pastille, l'horodatage et le scrubber — et elles doivent tomber d'accord.
- * Deux seuils différents feraient dire « Live » à la pastille pendant que
- * l'horodatage annoncerait un retard.
- *
- * Le bord bouge par bonds : en HLS natif, la fin de `seekable` n'avance qu'au
- * rafraîchissement de la playlist, d'un segment à la fois — six secondes chez
- * Apple. Un seuil plus court ferait clignoter la pastille alors que rien n'a
- * changé pour celui qui regarde. Dix secondes couvrent un segment standard et
- * la marge d'une seconde que `goToLive` s'accorde.
  */
-export const LIVE_EDGE_THRESHOLD = 10;
+export const LIVE_EDGE_TOLERANCE = 10;
 
 function toggle(value: boolean | undefined): { enabled: boolean } {
   // Seul `false` masque : une clé absente doit donner un lecteur complet.
