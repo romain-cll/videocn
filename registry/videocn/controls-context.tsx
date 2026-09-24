@@ -47,7 +47,7 @@ export function ControlsProvider({
 }
 
 function missing(): never {
-  throw new Error("Les contrôles du lecteur doivent être rendus dans <VideoCn>.");
+  throw new Error("The player controls must be rendered inside <VideoCn>.");
 }
 
 export function useControlsOptions(): ResolvedControlsOptions {

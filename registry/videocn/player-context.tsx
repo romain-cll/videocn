@@ -39,7 +39,7 @@ export function PlayerProvider({ value, children }: PlayerProviderProps) {
 function usePlayerHandle(): PlayerHandle {
   const handle = useContext(PlayerContext);
   if (!handle) {
-    throw new Error("Les contrôles du lecteur doivent être rendus dans <VideoCn>.");
+    throw new Error("The player controls must be rendered inside <VideoCn>.");
   }
   return handle;
 }

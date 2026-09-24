@@ -175,7 +175,7 @@ function clamp01(value: number): number {
 function toPlayerError(error: MediaError | null): PlayerError {
   // Les navigateurs remplissent rarement `message`, et jamais dans la langue de
   // l'hôte : c'est le `code` qui porte l'information exploitable.
-  const message = error?.message || "La lecture a échoué.";
+  const message = error?.message || "Playback failed.";
   if (error) {
     if (error.code === error.MEDIA_ERR_ABORTED) return { code: "aborted", message };
     if (error.code === error.MEDIA_ERR_NETWORK) return { code: "network", message };
@@ -188,7 +188,7 @@ function toPlayerError(error: MediaError | null): PlayerError {
 }
 
 function engineErrorMessage(cause: unknown): string {
-  return cause instanceof Error ? cause.message : "Le moteur vidéo n'a pas pu charger la source.";
+  return cause instanceof Error ? cause.message : "The video engine could not load the source.";
 }
 
 export function usePlayer(options: UsePlayerOptions): UsePlayerResult {

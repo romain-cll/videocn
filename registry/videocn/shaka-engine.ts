@@ -175,11 +175,11 @@ function isShakaError(cause: unknown): cause is ShakaErrorLike {
 function engineErrorMessage(namespace: ShakaNamespace | null, cause: unknown): string {
   if (isShakaError(cause)) {
     if (namespace && cause.category === namespace.util.Error.Category.NETWORK) {
-      return `Le manifeste ou un segment n'a pas pu être téléchargé (erreur réseau ${cause.code}).`;
+      return `The manifest or a segment could not be downloaded (network error ${cause.code}).`;
     }
-    return `Cette source n'a pas pu être lue (erreur Shaka ${cause.category}.${cause.code}).`;
+    return `This source could not be played (Shaka error ${cause.category}.${cause.code}).`;
   }
-  return cause instanceof Error ? cause.message : "Le moteur vidéo n'a pas pu charger la source.";
+  return cause instanceof Error ? cause.message : "The video engine could not load the source.";
 }
 
 export function createShakaEngine(source: SourceType): PlayerEngine {
@@ -222,7 +222,7 @@ export function createShakaEngine(source: SourceType): PlayerEngine {
     async load(src) {
       const element = video;
       if (!element) {
-        throw new Error("Le moteur Shaka n'a pas d'élément : appeler attach() avant load().");
+        throw new Error("The Shaka engine has no element: call attach() before load().");
       }
 
       let namespace: ShakaNamespace | null = null;

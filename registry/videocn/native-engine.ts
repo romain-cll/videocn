@@ -22,7 +22,7 @@ export function createNativeEngine(source: SourceType): PlayerEngine {
     load(src) {
       if (!video) {
         return Promise.reject(
-          new Error("Le moteur natif n'a pas d'élément : appeler attach() avant load()."),
+          new Error("The native engine has no element: call attach() before load()."),
         );
       }
       video.src = src;

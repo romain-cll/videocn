@@ -104,7 +104,7 @@ const PlayerMenuContext = createContext<PlayerMenuContextValue | null>(null);
 function useMenu(): PlayerMenuContextValue {
   const context = useContext(PlayerMenuContext);
   if (!context) {
-    throw new Error("Les pièces du menu doivent être rendues dans <PlayerMenu>.");
+    throw new Error("The menu parts must be rendered inside <PlayerMenu>.");
   }
   return context;
 }
