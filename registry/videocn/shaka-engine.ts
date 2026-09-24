@@ -45,6 +45,35 @@ function importShaka(): Promise<ShakaNamespace> {
 const HIGH_FRAME_RATE = 30;
 
 /**
+ * Ce qu'on garde devant la tête de lecture en changeant de qualité.
+ *
+ * Tout vider fait apparaître la nouvelle qualité dans la seconde sur un
+ * navigateur de bureau — deux cents millisecondes mesurées —, mais laisse la
+ * balise sans une seule image à jouer le temps que le premier segment arrive.
+ * Sur iPhone, où `ManagedMediaSource` gouverne le tampon, elle reste alors
+ * figée sur la dernière image et ne repart pas. La documentation de Shaka le
+ * dit sans détour : en dessous de deux segments, le changement « provoque des
+ * hoquets sur certains navigateurs ».
+ *
+ * On garde donc un segment, mesuré sur le flux lui-même plutôt que supposé, et
+ * borné : deux secondes au moins pour qu'il reste quelque chose à jouer,
+ * quatre au plus pour que le changement se voie encore comme une réponse au
+ * clic. Un flux à segments de dix secondes ne fera donc pas attendre dix
+ * secondes.
+ */
+const MIN_SWITCH_MARGIN = 2;
+const MAX_SWITCH_MARGIN = 4;
+
+function switchSafeMargin(player: shaka.Player): number {
+  const { maxSegmentDuration } = player.getStats();
+  const segment =
+    Number.isFinite(maxSegmentDuration) && maxSegmentDuration > 0
+      ? maxSegmentDuration
+      : MIN_SWITCH_MARGIN;
+  return Math.min(Math.max(segment, MIN_SWITCH_MARGIN), MAX_SWITCH_MARGIN);
+}
+
+/**
  * Le libellé sert aussi de clé de regroupement, et c'est voulu : deux pistes
  * qui s'afficheraient pareil sont la même entrée pour l'utilisateur, quel que
  * soit leur débit. La cadence n'entre dans la clé que par « haute ou non »,
@@ -339,7 +368,9 @@ export function createShakaEngine(source: SourceType): PlayerEngine {
       // `clearBuffer` à vrai : le changement doit se voir tout de suite, comme
       // sur YouTube. Sans lui, la nouvelle qualité n'arrive qu'une fois épuisé
       // ce qui est déjà téléchargé — plusieurs dizaines de secondes de retard.
-      instance.selectVariantTrack(track, true);
+      // La marge, elle, évite de laisser la balise sans image : voir
+      // `switchSafeMargin`.
+      instance.selectVariantTrack(track, true, switchSafeMargin(instance));
       refresh();
     },
 
