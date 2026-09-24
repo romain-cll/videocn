@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/lib/site-config";
 
-const INSTALL_COMMAND = `pnpm dlx shadcn@latest add ${siteConfig.namespace}/player`;
+// L'URL directe plutôt que `@videocn/player` : le namespace nu ne se résout
+// que si le visiteur a déclaré le registry, ou quand l'annuaire shadcn l'aura
+// accepté. D'ici là, c'est la seule commande qui marche du premier coup.
+const INSTALL_COMMAND = `pnpm dlx shadcn@latest add ${siteConfig.registryUrl.replace("{name}", "player")}`;
 
 export default function Home() {
   return (
@@ -16,7 +19,7 @@ export default function Home() {
           {/* Au-dessus de la mosaïque du carrousel, qui remonte derrière le texte. */}
           <section className="relative z-10 flex w-full flex-col items-center gap-6 pt-20 pb-14 text-center md:pt-28">
             <Badge variant="secondary" className="rounded-full px-3">
-              Keyboard shortcuts are here
+              Chapters are here
             </Badge>
             <h1 className="max-w-3xl text-5xl font-semibold tracking-tighter text-balance md:text-6xl">
               A video player for shadcn/ui

@@ -88,6 +88,14 @@ const SOURCES = [
 
 type SourceId = (typeof SOURCES)[number]["id"];
 
+/**
+ * Le panneau de debug sert à développer le lecteur, pas au visiteur : il n'est
+ * rendu qu'en `next dev`. Next remplace `process.env.NODE_ENV` par une
+ * constante au build, donc en production le panneau et son import disparaissent
+ * du bundle, pas seulement de l'affichage.
+ */
+const SHOW_DEBUG_PANEL = process.env.NODE_ENV === "development";
+
 export function PlayerDemo() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [sourceId, setSourceId] = useState<SourceId>("mp4");
@@ -97,7 +105,7 @@ export function PlayerDemo() {
   const source = SOURCES.find((candidate) => candidate.id === sourceId) ?? SOURCES[0];
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-5">
+    <div className={SHOW_DEBUG_PANEL ? "grid items-start gap-6 lg:grid-cols-5" : "flex flex-col gap-6"}>
       {/* Trois cinquièmes pour la vidéo, deux pour le panneau : au-dessous de
           `lg`, la grille retombe sur une colonne et l'un passe sous l'autre. */}
       <div className="flex flex-col gap-3 lg:col-span-3">
@@ -125,15 +133,19 @@ export function PlayerDemo() {
             resterait sur l'ancien. */}
         <VideoCn ref={videoRef} src={source.src} chapters={source.chapters} />
         <p className="text-muted-foreground text-xs text-pretty">{source.note}</p>
-        <p className="text-muted-foreground text-xs text-pretty">
-          The panel reads the element, not the controls: what it shows proves the action really
-          reached the video.
-        </p>
+        {SHOW_DEBUG_PANEL && (
+          <p className="text-muted-foreground text-xs text-pretty">
+            The panel reads the element, not the controls: what it shows proves the action really
+            reached the video.
+          </p>
+        )}
         <KeyboardShortcuts />
       </div>
-      <div className="lg:col-span-2">
-        <PlayerDebugPanel videoRef={videoRef} />
-      </div>
+      {SHOW_DEBUG_PANEL && (
+        <div className="lg:col-span-2">
+          <PlayerDebugPanel videoRef={videoRef} />
+        </div>
+      )}
 
       {/* Le même lecteur, réglé par la seule prop `controls` : rien n'a été
           édité dans le code livré, et c'est tout l'enjeu. */}

@@ -11,6 +11,6 @@ export const siteConfig = {
   description:
     "A complete video player built on the native <video> element and shadcn/ui components.",
   links: {
-    github: "https://github.com/rcaille/videocn",
+    github: "https://github.com/romain-cll/videocn",
   },
 } as const;

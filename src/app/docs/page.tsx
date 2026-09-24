@@ -27,7 +27,7 @@ export default function DocsPage() {
 
       <h2 className="mt-12 text-xl font-medium tracking-tight">2. Install the player</h2>
       <CodeBlock className="mt-4">
-        npx shadcn@latest add {siteConfig.namespace}/player
+        pnpm dlx shadcn@latest add {siteConfig.namespace}/player
       </CodeBlock>
       <p className="text-muted-foreground mt-4 text-sm text-pretty">
         The CLI copies the source into your project and adds any missing shadcn primitives along
@@ -36,10 +36,11 @@ export default function DocsPage() {
 
       <div className="bg-muted/40 mt-12 rounded-lg border p-6">
         <p className="text-muted-foreground text-sm text-pretty">
-          The player is not published yet. This page describes the target; the registry is live
-          and already serves its catalog at{" "}
-          <code className="text-foreground font-mono text-xs">/r/registry.json</code>.
+          In a hurry? Skip step 1 and install straight from the URL:
         </p>
+        <CodeBlock className="mt-4">
+          pnpm dlx shadcn@latest add {siteConfig.registryUrl.replace("{name}", "player")}
+        </CodeBlock>
       </div>
     </main>
   );
