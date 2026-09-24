@@ -2,6 +2,7 @@
 
 import { createNativeEngine } from "./native-engine";
 import type { PlayerEngine, SourceType } from "./player-engine";
+import { createShakaEngine } from "./shaka-engine";
 
 /**
  * Le seul endroit où un moteur est choisi, et le seul qui connaisse les
@@ -22,10 +23,13 @@ export function detectSourceType(src: string): SourceType {
 }
 
 /**
- * Phase 0 : seule l'implémentation native existe, elle sert donc tout, y
- * compris le HLS que Safari lit nativement. Shaka prendra sa place ici sans que
- * le reste du lecteur bouge.
+ * Le HLS et le DASH passent par Shaka — adaptatif, live et DVR, et surtout
+ * l'absorption des divergences MSE d'un navigateur à l'autre. Tout le reste
+ * demeure sur la balise seule : Shaka sait retomber sur `src=` là où MSE
+ * manque, ce n'est pas une raison de lui faire passer les fichiers
+ * progressifs, qui n'ont besoin d'aucun JavaScript de streaming.
  */
 export function resolveEngine(src: string, type?: SourceType): PlayerEngine {
-  return createNativeEngine(type ?? detectSourceType(src));
+  const source = type ?? detectSourceType(src);
+  return source === "native" ? createNativeEngine(source) : createShakaEngine(source);
 }
