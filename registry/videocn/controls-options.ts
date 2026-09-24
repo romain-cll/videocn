@@ -7,9 +7,12 @@
  *
  * La forme tient sur la durée grâce à une seule règle : **chaque contrôle vaut
  * `boolean | objet d'options`**. Absent ou `true`, il est là avec ses défauts ;
- * `false`, il disparaît ; un objet, il est là et réglé. Les chapitres de la
- * phase 5 gagneront une clé dans *leur* objet, pas une prop de plus sur le
- * composant racine.
+ * `false`, il disparaît ; un objet, il est là et réglé.
+ *
+ * La frontière avec les props de `<VideoCn>` : ici on règle **ce qui s'affiche**,
+ * là-bas on fournit **ce qu'il y a à afficher**. Les chapitres tombent des deux
+ * côtés — une prop racine `chapters` porte la liste, deux clés d'ici décident du
+ * menu et du découpage de la barre.
  */
 
 export interface ControlsOptions {
@@ -21,13 +24,25 @@ export interface ControlsOptions {
   /** Inactivité avant masquage, en millisecondes. */
   autoHideDelay?: number;
   play?: boolean;
-  /** La barre de progression. Deviendra un objet en phase 5, pour les chapitres et la heatmap. */
-  scrubber?: boolean;
+  /**
+   * La barre de progression. `{ chapters: false }` la garde d'un seul tenant
+   * sans rien retirer au menu : découper la barre est un choix d'apparence, pas
+   * de contenu.
+   */
+  scrubber?: boolean | { chapters?: boolean };
   /** L'horodatage `0:42 / 9:56`. */
   time?: boolean;
   volume?: boolean;
   fullscreen?: boolean;
   pictureInPicture?: boolean;
+  /**
+   * Le menu des chapitres. Contrairement au sélecteur de qualité, il
+   * **disparaît** quand la vidéo n'a pas de chapitres au lieu de rester grisé :
+   * la qualité existe pour toute vidéo, les chapitres sont une donnée que la
+   * plupart n'auront jamais, et un bouton mort sur chaque lecteur serait du
+   * bruit.
+   */
+  chapters?: boolean;
   playbackRate?: boolean | { rates?: readonly number[] };
   /** Le sélecteur de qualité. Grisé, et non masqué, quand le moteur n'expose rien. */
   quality?: boolean;
@@ -50,11 +65,12 @@ export interface ResolvedControlsOptions {
   visibility: "auto" | "always" | "never";
   autoHideDelay: number;
   play: { enabled: boolean };
-  scrubber: { enabled: boolean };
+  scrubber: { enabled: boolean; chapters: boolean };
   time: { enabled: boolean };
   volume: { enabled: boolean };
   fullscreen: { enabled: boolean };
   pictureInPicture: { enabled: boolean };
+  chapters: { enabled: boolean };
   playbackRate: { enabled: boolean; rates: readonly number[] };
   quality: { enabled: boolean };
   live: { enabled: boolean };
@@ -113,18 +129,23 @@ function resolveRates(rates: readonly number[] | undefined): readonly number[] {
 }
 
 export function resolveControlsOptions(options: ControlsOptions = {}): ResolvedControlsOptions {
-  const { playbackRate } = options;
+  const { playbackRate, scrubber } = options;
   const rateOptions = typeof playbackRate === "object" ? playbackRate : undefined;
+  const scrubberOptions = typeof scrubber === "object" ? scrubber : undefined;
 
   return {
     visibility: options.visibility ?? "auto",
     autoHideDelay: options.autoHideDelay ?? DEFAULT_AUTO_HIDE_DELAY,
     play: toggle(options.play),
-    scrubber: toggle(options.scrubber),
+    scrubber: {
+      enabled: scrubber !== false,
+      chapters: scrubberOptions?.chapters !== false,
+    },
     time: toggle(options.time),
     volume: toggle(options.volume),
     fullscreen: toggle(options.fullscreen),
     pictureInPicture: toggle(options.pictureInPicture),
+    chapters: toggle(options.chapters),
     playbackRate: {
       enabled: playbackRate !== false,
       rates: resolveRates(rateOptions?.rates),

@@ -17,6 +17,8 @@ import {
  */
 import { cn } from "cn";
 
+import type { Chapter } from "./chapters";
+import { ChaptersProvider } from "./chapters-context";
 import { ControlsProvider } from "./controls-context";
 import { resolveControlsOptions, type ControlsOptions } from "./controls-options";
 import { PlayerControls } from "./player-controls";
@@ -34,6 +36,15 @@ export interface VideoCnProps {
    */
   type?: SourceType;
   poster?: string;
+  /**
+   * Les chapitres, un début et un titre par entrée, le temps en secondes.
+   *
+   * L'ordre n'a pas d'importance, les doublons et les valeurs hors de la vidéo
+   * sont écartés, et le premier chapitre est ramené à zéro — un trou en tête de
+   * barre ne voudrait rien dire. Sans effet sur un flux en direct, où un
+   * chapitre n'aurait ni fin ni place fixe.
+   */
+  chapters?: readonly Chapter[];
   autoPlay?: boolean;
   loop?: boolean;
   /**
@@ -70,6 +81,7 @@ export function VideoCn({
   src,
   type,
   poster,
+  chapters,
   autoPlay,
   loop,
   defaultVolume,
@@ -235,9 +247,13 @@ export function VideoCn({
           onDoubleClick={handleDoubleClick}
           className="block h-auto w-full data-fullscreen:h-full data-fullscreen:object-contain"
         />
-        <ControlsProvider options={controlsOptions} visible={visible} holdVisible={holdVisible}>
-          <PlayerControls />
-        </ControlsProvider>
+        {/* Autour des contrôles et non du lecteur entier : les chapitres ne
+            servent qu'à la barre, et ce fournisseur s'abonne à la durée. */}
+        <ChaptersProvider chapters={chapters}>
+          <ControlsProvider options={controlsOptions} visible={visible} holdVisible={holdVisible}>
+            <PlayerControls />
+          </ControlsProvider>
+        </ChaptersProvider>
       </div>
     </PlayerProvider>
   );
