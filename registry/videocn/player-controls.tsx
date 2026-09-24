@@ -4,8 +4,10 @@ import { useState, type ReactElement } from "react";
 
 import { useControlsOptions, useControlsVisible, useHoldControlsVisible } from "./controls-context";
 import { FullscreenToggle } from "./fullscreen-toggle";
+import { LiveBadge } from "./live-badge";
 import { PictureInPictureToggle } from "./picture-in-picture-toggle";
 import { PlaybackRateMenu } from "./playback-rate-menu";
+import { QualityMenu } from "./quality-menu";
 import { PlayToggle } from "./play-toggle";
 import { PlayerScrubber } from "./player-scrubber";
 import { TimeDisplay } from "./time-display";
@@ -67,12 +69,16 @@ export function PlayerControls(): ReactElement | null {
       <PlayerScrubber />
       <div className="flex items-center gap-1">
         <PlayToggle />
+        {/* Juste après la lecture : sur un direct, savoir si l'on est au bord
+            vaut autant que savoir si ça joue. Rendue `null` ailleurs. */}
+        <LiveBadge />
         <VolumeControl />
         {/* Après le volume et non avant : la largeur du texte change au fil de
             la lecture, et elle ne doit jamais déplacer une cible cliquable. */}
         <TimeDisplay />
         <div className="ml-auto flex items-center gap-1">
           <PlaybackRateMenu />
+          <QualityMenu />
           <PictureInPictureToggle />
           <FullscreenToggle />
         </div>

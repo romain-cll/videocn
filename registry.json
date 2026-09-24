@@ -14,6 +14,7 @@
       ],
       "dependencies": [
         "cn",
+        "shaka-player",
         "lucide-react"
       ],
       "cssVars": {
@@ -36,6 +37,11 @@
           "path": "registry/videocn/native-engine.ts",
           "type": "registry:ui",
           "target": "@ui/video-player/native-engine.ts"
+        },
+        {
+          "path": "registry/videocn/shaka-engine.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/shaka-engine.ts"
         },
         {
           "path": "registry/videocn/resolve-engine.ts",
@@ -131,6 +137,16 @@
           "path": "registry/videocn/time-display.tsx",
           "type": "registry:ui",
           "target": "@ui/video-player/time-display.tsx"
+        },
+        {
+          "path": "registry/videocn/live-badge.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/live-badge.tsx"
+        },
+        {
+          "path": "registry/videocn/quality-menu.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/quality-menu.tsx"
         },
         {
           "path": "registry/videocn/playback-rate-menu.tsx",
