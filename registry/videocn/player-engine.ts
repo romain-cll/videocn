@@ -42,12 +42,19 @@ export interface EngineCapabilities {
   readonly qualities: readonly QualityLevel[];
   /** `null` quand la sélection est automatique, c'est-à-dire adaptative. */
   readonly activeQualityId: string | null;
+  /**
+   * Ce qui est réellement joué en ce moment, sélection automatique comprise.
+   * C'est ce qui permet d'écrire « Auto (720p) » : en adaptatif, `activeQualityId`
+   * vaut `null` et ne dit rien de l'image qu'on est en train de regarder.
+   */
+  readonly playingQualityId: string | null;
   readonly isLive: boolean;
 }
 
 export const NO_CAPABILITIES: EngineCapabilities = Object.freeze({
   qualities: Object.freeze([]),
   activeQualityId: null,
+  playingQualityId: null,
   isLive: false,
 });
 

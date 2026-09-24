@@ -30,6 +30,8 @@ export interface PlayerActions {
   seek(time: number): void;
   /** Avance (positif) ou recule (négatif) depuis la position réelle de l'élément. */
   seekBy(seconds: number): void;
+  /** Ramène au bord du direct, et relance la lecture si elle était arrêtée. */
+  goToLive(): void;
   setVolume(volume: number): void;
   /**
    * Monte ou baisse le volume d'un pas, en tenant compte du muet. La keymap et
@@ -75,6 +77,9 @@ export interface UsePlayerResult {
  * monte le son plutôt que de couper.
  */
 const DEFAULT_VOLUME = 0.5;
+
+/** Voir `goToLive` : la marge qui évite de se poser sur un segment absent. */
+const LIVE_EDGE_MARGIN = 1;
 
 /**
  * Les événements qui font bouger l'état « lent ». `timeupdate` et `progress`
@@ -454,6 +459,25 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     [seek],
   );
 
+  /**
+   * Le bord du direct se vise avec une marge : la dernière seconde diffusée
+   * n'est pas encore téléchargée, et s'y poser fait caler la lecture le temps
+   * que le segment arrive. Une seconde, c'est assez pour tomber dans ce qui est
+   * déjà là sans qu'on se sente en retard.
+   */
+  const goToLive = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const { seekable } = video;
+    if (seekable.length === 0) return;
+    const edge = seekable.end(seekable.length - 1);
+    const start = seekable.start(0);
+    video.currentTime = Math.max(edge - LIVE_EDGE_MARGIN, start);
+    // Revenir au direct sur une vidéo en pause n'aurait aucun sens : c'est
+    // repartir qu'on demande.
+    if (video.paused) ignoreRejection(video.play());
+  }, []);
+
   const setVolume = useCallback(
     (volume: number) => {
       const video = videoRef.current;
@@ -569,6 +593,7 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       togglePlay,
       seek,
       seekBy,
+      goToLive,
       setVolume,
       stepVolume,
       setMuted,
@@ -584,6 +609,7 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       togglePlay,
       seek,
       seekBy,
+      goToLive,
       setVolume,
       stepVolume,
       setMuted,

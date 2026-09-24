@@ -45,6 +45,16 @@ export interface PlayerState {
   capabilities: EngineCapabilities;
 }
 
+/**
+ * En direct, et pas seulement d'après le moteur : une durée non finie le dit
+ * aussi, et c'est la seule source dont on dispose en HLS natif, là où Shaka ne
+ * tourne pas. Les deux comptent, sans quoi un iPhone d'avant iOS 17.1
+ * afficherait une vidéo à la demande sans fin.
+ */
+export function selectIsLive(state: PlayerState): boolean {
+  return state.capabilities.isLive || !Number.isFinite(state.duration);
+}
+
 export interface PlayerStateStore {
   subscribe(listener: () => void): () => void;
   getSnapshot(): PlayerState;

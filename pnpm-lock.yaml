@@ -32,6 +32,9 @@ importers:
       react-dom:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
+      shaka-player:
+        specifier: ^5.2.11
+        version: 5.2.11
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
@@ -2742,6 +2745,10 @@ packages:
     resolution: {integrity: sha512-UU2mFNusW8C5rvadKdH69vERYZqUlOOlXBcf0MYhYLdTGP6DPti7X4qovCu+RTfCqsAgq/T+YfE0Vnttxh9aiw==}
     engines: {node: '>=20.18.1'}
     hasBin: true
+
+  shaka-player@5.2.11:
+    resolution: {integrity: sha512-C9WvYtH5cWKBCUXWFzbKWcgMYSRviGPd+1WWYjS55dXGHyMHeD5mub3vvjOzX2Q6o/bu4N5xlXOnVeg9ajp+Sw==}
+    engines: {node: '>=18'}
 
   sharp@0.35.4:
     resolution: {integrity: sha512-n++8XWcj+jCOr2IOl7h8LbKnGBDY4aPbmprMONBNFdn0ImXqpGVv5zliDs0V9HbmbCQLpbuo2ej9rAoOQTvMDA==}
@@ -5884,6 +5891,8 @@ snapshots:
       - babel-plugin-macros
       - supports-color
       - typescript
+
+  shaka-player@5.2.11: {}
 
   sharp@0.35.4(@types/node@20.19.43):
     dependencies:

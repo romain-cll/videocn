@@ -26,6 +26,16 @@ export interface PlayheadSnapshot {
   readonly bufferedStart: number;
   readonly bufferedEnd: number;
   /**
+   * La fenêtre où l'on a le droit de chercher. En vidéo à la demande, elle va
+   * de zéro à la durée ; en direct, c'est la fenêtre encore diffusée, et elle
+   * glisse en permanence.
+   *
+   * Lue sur `video.seekable` et non sur le moteur : elle est alors juste avec
+   * Shaka comme avec le HLS natif d'un iPhone qui n'a pas de Shaka du tout.
+   */
+  readonly seekableStart: number;
+  readonly seekableEnd: number;
+  /**
    * La position demandée pendant un glissement, `null` le reste du temps. Elle
    * vit ici et non dans le curseur parce que plusieurs choses doivent suivre le
    * doigt plutôt que la vidéo — le scrubber, l'horodatage, le texte lu par un
@@ -57,6 +67,8 @@ const EMPTY_PLAYHEAD: PlayheadSnapshot = Object.freeze({
   currentTime: 0,
   bufferedStart: 0,
   bufferedEnd: 0,
+  seekableStart: 0,
+  seekableEnd: 0,
   scrubTime: null,
 });
 
@@ -66,6 +78,18 @@ const EMPTY_PLAYHEAD: PlayheadSnapshot = Object.freeze({
  * interruption du buffer.
  */
 const RANGE_TOLERANCE = 0.25;
+
+/**
+ * La fenêtre cherchable, de la première borne à la dernière. Plusieurs plages,
+ * c'est un flux troué : on garde l'enveloppe, qui est ce que le scrubber
+ * dessine. Aucune plage — les métadonnées manquent encore — donne une fenêtre
+ * vide posée sur `time`, jamais `0 → 0`, qui ferait sauter la tête de lecture.
+ */
+function seekableWindow(video: HTMLVideoElement, time: number): [number, number] {
+  const { seekable } = video;
+  if (seekable.length === 0) return [time, time];
+  return [seekable.start(0), seekable.end(seekable.length - 1)];
+}
 
 /** La plage qui contient `time`, ou une plage vide posée sur `time`. */
 function bufferedRangeAt(video: HTMLVideoElement, time: number): [number, number] {
@@ -95,6 +119,8 @@ export function createPlayheadStore(): PlayheadStore {
       next.currentTime === snapshot.currentTime &&
       next.bufferedStart === snapshot.bufferedStart &&
       next.bufferedEnd === snapshot.bufferedEnd &&
+      next.seekableStart === snapshot.seekableStart &&
+      next.seekableEnd === snapshot.seekableEnd &&
       next.scrubTime === snapshot.scrubTime
     ) {
       return;
@@ -107,7 +133,8 @@ export function createPlayheadStore(): PlayheadStore {
     if (!video) return null;
     const currentTime = video.currentTime;
     const [bufferedStart, bufferedEnd] = bufferedRangeAt(video, currentTime);
-    return { currentTime, bufferedStart, bufferedEnd, scrubTime };
+    const [seekableStart, seekableEnd] = seekableWindow(video, currentTime);
+    return { currentTime, bufferedStart, bufferedEnd, seekableStart, seekableEnd, scrubTime };
   }
 
   function read() {

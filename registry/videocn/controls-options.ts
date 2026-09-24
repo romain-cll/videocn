@@ -29,6 +29,10 @@ export interface ControlsOptions {
   fullscreen?: boolean;
   pictureInPicture?: boolean;
   playbackRate?: boolean | { rates?: readonly number[] };
+  /** Le sélecteur de qualité. Grisé, et non masqué, quand le moteur n'expose rien. */
+  quality?: boolean;
+  /** La pastille « Direct », qui ne s'affiche que sur un flux en direct. */
+  live?: boolean;
   /**
    * Les raccourcis clavier — `Espace`, `k`, les flèches, `m`, `f`, `0`–`9` —,
    * actifs quand le focus est dans le lecteur. `false` pour un hôte qui a déjà
@@ -52,6 +56,8 @@ export interface ResolvedControlsOptions {
   fullscreen: { enabled: boolean };
   pictureInPicture: { enabled: boolean };
   playbackRate: { enabled: boolean; rates: readonly number[] };
+  quality: { enabled: boolean };
+  live: { enabled: boolean };
   keyboard: { enabled: boolean };
 }
 
@@ -103,6 +109,8 @@ export function resolveControlsOptions(options: ControlsOptions = {}): ResolvedC
       enabled: playbackRate !== false,
       rates: resolveRates(rateOptions?.rates),
     },
+    quality: toggle(options.quality),
+    live: toggle(options.live),
     keyboard: toggle(options.keyboard),
   };
 }
