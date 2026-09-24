@@ -158,7 +158,12 @@ export function ChapterSegments({ children }: ChapterSegmentsProps) {
             // rien à départager : 4 px au repos, 6 px sur la barre, 10 px sur
             // le chapitre survolé. L'écart entre 6 et 10 est voulu large : à
             // deux pixels près, on ne voyait pas lequel on visait.
-            className="relative h-[calc(0.25rem_+_var(--scrubber-lift,0rem)_+_var(--chapter-lift,0rem))] w-[max(calc(100%_-_var(--chapter-gap,0px)),2px)] shrink-0 overflow-hidden rounded-full bg-foreground/20 transition-[height] duration-150 motion-reduce:transition-none"
+            // Le rayon vient de l'hôte et non d'un `rounded-full` : sur une
+            // barre de quatre pixels, le navigateur écrête le rayon à la moitié
+            // de la hauteur, donc `var(--radius)` y dessine exactement la même
+            // pilule. La différence n'apparaît qu'au bout de l'échelle — un
+            // thème à `--radius: 0` rend un angle vif, comme partout chez lui.
+            className="relative h-[calc(0.25rem_+_var(--scrubber-lift,0rem)_+_var(--chapter-lift,0rem))] w-[max(calc(100%_-_var(--chapter-gap,0px)),2px)] shrink-0 overflow-hidden rounded-lg bg-foreground/20 transition-[height] duration-150 motion-reduce:transition-none"
           >
             {/*
               Le calque : la piste entière, reconstituée à l'intérieur de la

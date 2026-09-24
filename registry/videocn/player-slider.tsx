@@ -431,7 +431,10 @@ export function PlayerSlider({
           un geste, et en permanence sur écran tactile, où rien ne survole.
         */}
         <div
-          className="size-0 shrink-0 rounded-full bg-primary ring-ring/50 transition-[width,height] duration-150 motion-reduce:transition-none group-hover/slider:size-3.5 group-focus-visible/slider:size-3.5 group-focus-visible/slider:ring-3 group-data-dragging/slider:size-3.5 pointer-coarse:size-3.5"
+          // `rounded-lg` et non `rounded-full` : à quatorze pixels, le rayon
+          // de l'hôte est écrêté à la moitié et donne le même rond. Un thème
+          // anguleux, lui, obtient une poignée carrée — comme la sienne.
+          className="size-0 shrink-0 rounded-lg bg-primary ring-ring/50 transition-[width,height] duration-150 motion-reduce:transition-none group-hover/slider:size-3.5 group-focus-visible/slider:size-3.5 group-focus-visible/slider:ring-3 group-data-dragging/slider:size-3.5 pointer-coarse:size-3.5"
         />
       </div>
     </div>
@@ -453,7 +456,9 @@ export function PlayerSliderTrack({ className, children }: PlayerSliderLayerProp
     <div
       data-slot="player-slider-track"
       className={cn(
-        "relative h-1 w-full overflow-hidden rounded-full bg-foreground/20 transition-[height] duration-150 motion-reduce:transition-none group-hover/slider:h-1.5 group-data-dragging/slider:h-1.5",
+        // Le rayon de l'hôte, écrêté par la hauteur de la piste : identique à
+        // une pilule partout, sauf sur un thème à angles vifs.
+        "relative h-1 w-full overflow-hidden rounded-lg bg-foreground/20 transition-[height] duration-150 motion-reduce:transition-none group-hover/slider:h-1.5 group-data-dragging/slider:h-1.5",
         className,
       )}
     >

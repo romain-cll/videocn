@@ -235,6 +235,19 @@ apporte son VTT.
 100 % tokens CSS de shadcn hérités du projet hôte. Aucune couleur en dur. Clair et sombre
 fonctionnent sans configuration.
 
+**Le rayon suit `--radius`, partout, y compris les pilules.** Pas de `rounded-full` dans le
+lecteur : sur une piste de quatre pixels ou une pastille de quatorze, le navigateur écrête le
+rayon à la moitié de la dimension, et `var(--radius)` y dessine exactement la même pilule. La
+différence n'apparaît qu'au bout de l'échelle — un thème à `--radius: 0` rend un lecteur
+entièrement anguleux, cadre, menus, scrubber, barre de volume et pastille compris.
+
+Un point qu'on ne peut pas couvrir, et il faut le savoir : certains styles shadcn — `sera` par
+exemple — codent `rounded-none` **en dur dans la source de chaque composant** au lieu de toucher
+`--radius`, qui y garde sa valeur par défaut. Aucun token ne permet de le détecter, et un item de
+registry ne livre qu'une source. L'utilisateur d'un tel style pose `--radius: 0` et le lecteur
+suit ; c'est la seule voie, et elle est sans effet sur le reste de son projet, qui ne lit pas ce
+token.
+
 ## Distribution
 
 **Un seul item publié : `@videocn/player`.** L'utilisateur tape une commande et reçoit le

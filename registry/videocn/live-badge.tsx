@@ -61,7 +61,9 @@ export const LiveBadge = memo(function LiveBadge(): ReactElement | null {
       <span
         aria-hidden="true"
         className={cn(
-          "size-2 shrink-0 rounded-full",
+          // Le rayon de l'hôte : sur huit pixels il est écrêté et donne le
+          // même point rond, mais un thème anguleux obtient un carré.
+          "size-2 shrink-0 rounded-lg",
           atEdge ? "bg-destructive" : "bg-muted-foreground",
         )}
       />
