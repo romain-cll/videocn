@@ -23,8 +23,8 @@ de retour en arrière, et les règles du sélecteur de qualité sont fixées. Vo
 **Contrôles**.
 
 Amendé le 24 septembre 2026, pendant la phase 5 : les chapitres arrivent par une prop racine et
-non par des enfants, leur fin se déduit, ils ne s'affichent pas en direct, et la heatmap est mise
-en réserve. Voir **Chapitres** et **Highlights**.
+non par des enfants, leur fin se déduit, ils ne s'affichent pas en direct, le chapitre survolé
+s'épaissit, et la heatmap est mise en réserve. Voir **Chapitres** et **Highlights**.
 
 Amendé le 22 septembre 2026, pendant la phase 3 : la keymap se précise (focus au clic, chiffres de
 tout clavier, règle du muet partagée avec le curseur, prop pour la couper), et la barre disparaît
@@ -204,6 +204,12 @@ Trois règles de normalisation, appliquées une fois pour toutes :
   laisserait la barre nue sur son premier vingtième — un trou que personne ne saurait interpréter.
 - **Aucun chapitre en direct.** Sans durée, un chapitre n'a pas de fin, et une fenêtre qui glisse
   ne se découpe pas. Une liste passée à un flux en direct reste donc sans effet.
+
+**Le chapitre survolé s'épaissit** — quatre pixels au repos, six au survol de la barre, huit pour
+celui qu'on vise. Chaque chapitre est une zone de la hauteur du curseur, invisible : une barre de
+quatre pixels ne se vise pas. Les zones se touchent, l'écart n'étant pris que sur la barre, pour
+que l'épaisseur ne retombe pas quand on balaie. Une vidéo sans chapitres garde ses six pixels : un
+segment unique ne se distingue pas de lui-même.
 
 Le menu **disparaît** quand la vidéo n'a pas de chapitres, là où le sélecteur de qualité reste
 grisé. Les deux règles suivent la donnée : toute vidéo a une qualité, presque aucune n'a de
