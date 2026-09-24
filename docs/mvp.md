@@ -18,6 +18,10 @@ le glissement du scrubber prend le modèle de YouTube, un curseur focalisé gard
 `buffered` se réduit à la plage qui contient la tête de lecture. Voir **Contrôles**,
 **Raccourcis clavier** et **Lecture**.
 
+Amendé le 24 septembre 2026, pendant la phase 4 : le direct entre au périmètre avec sa fenêtre
+de retour en arrière, et les règles du sélecteur de qualité sont fixées. Voir **Moteur vidéo** et
+**Contrôles**.
+
 Amendé le 22 septembre 2026, pendant la phase 3 : la keymap se précise (focus au clic, chiffres de
 tout clavier, règle du muet partagée avec le curseur, prop pour la couper), et la barre disparaît
 dès que la souris quitte le lecteur. Voir **Raccourcis clavier** et **Contrôles**.
@@ -85,6 +89,7 @@ publié, voir Distribution.
 | Horodatage `0:42 / 9:56` | aucune — du texte |
 | Vitesse de lecture, 0,5× → 2× | maison — voir note sur les menus |
 | Qualité | maison — `disabled` si le moteur n'en expose aucune |
+| Pastille « Live » | `Button` — seulement sur un flux en direct |
 | Plein écran | `Button` |
 | Picture-in-Picture | `Button` |
 
@@ -114,6 +119,19 @@ on a besoin.
 
 La liste des vitesses est réglable par prop, comme tout le reste : `<VideoCn>` s'installe et
 fonctionne, on ne renvoie jamais l'utilisateur éditer le code qu'il a reçu.
+
+Le sélecteur de qualité suit trois règles. **Une entrée par hauteur d'image**, la meilleure
+qualité de cette hauteur ; une même hauteur au-delà de trente images par seconde fait une entrée
+à part, écrite `1080p60`. **En automatique, le menu dit ce qui est réellement joué** — « Auto
+(720p) » —, parce que c'est la seule façon de savoir ce qu'on regarde sans quitter l'automatique ;
+le bouton, lui, affiche « Auto » sans la hauteur, qui changerait sous les yeux. **Un choix
+s'applique tout de suite**, quitte à vider ce qui est déjà chargé : on veut voir l'effet du clic,
+comme sur YouTube.
+
+Le direct a deux conséquences visibles. Le scrubber travaille sur la **fenêtre encore diffusée**
+et non sur une durée ; il reste inerte tant que cette fenêtre est trop courte pour qu'on y
+cherche. L'horodatage affiche le **retard sur le bord** (`−0:42`), et la pastille « Live » ramène
+au bord d'un clic — pleine quand on y est, éteinte quand on est en arrière.
 
 Deux gestes sur l'image, hors tableau parce qu'ils n'ont pas de bouton : un clic bascule la
 lecture, un double-clic bascule le plein écran.
