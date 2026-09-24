@@ -94,6 +94,11 @@ Une bonne part du temps part en tests sur de vrais appareils Safari et iOS, pas 
 
 Dépend entièrement de la phase 2.
 
+**Faite le 24 septembre 2026, sans la heatmap** — mise en réserve, comme le prévoit « Ce qui saute
+si ça déborde » plus bas. Les chapitres ont demandé quatre fichiers et une seule idée : chaque
+segment est une fenêtre d'`overflow-hidden` dans laquelle on replace la piste entière, re-cadrée.
+Rien du dessin existant n'a été recalculé, et le curseur n'a pas été touché.
+
 ## Phase 6 — Sous-titres
 
 - `<track>` et API `TextTrack`, bascule on/off, sélection de piste, réglage de la taille et

@@ -22,6 +22,10 @@ Amendé le 24 septembre 2026, pendant la phase 4 : le direct entre au périmètr
 de retour en arrière, et les règles du sélecteur de qualité sont fixées. Voir **Moteur vidéo** et
 **Contrôles**.
 
+Amendé le 24 septembre 2026, pendant la phase 5 : les chapitres arrivent par une prop racine et
+non par des enfants, leur fin se déduit, ils ne s'affichent pas en direct, et la heatmap est mise
+en réserve. Voir **Chapitres** et **Highlights**.
+
 Amendé le 22 septembre 2026, pendant la phase 3 : la keymap se précise (focus au clic, chiffres de
 tout clavier, règle du muet partagée avec le curseur, prop pour la couper), et la barre disparaît
 dès que la souris quitte le lecteur. Voir **Raccourcis clavier** et **Contrôles**.
@@ -177,11 +181,41 @@ ne lui parviendrait. Il ne s'ajoute pas à l'ordre de tabulation et ne s'entoure
 
 ## Chapitres
 
-Prop `chapters: { time, label }[]`. Rendu en segments sur le scrubber, plus une liste cliquable.
+Prop **racine** `chapters: { time, label }[]`. Rendu en segments sur le scrubber, plus un menu
+listant les titres.
+
+La prop est racine et non une clé de `controls` : ici on fournit **ce qu'il y a à afficher**,
+`controls` règle **ce qui s'affiche**. Les deux clés d'affichage existent quand même —
+`controls.chapters` coupe le menu, `controls.scrubber: { chapters: false }` garde la barre d'un
+seul tenant sans rien retirer au menu.
+
+**`<VideoCn>` n'accepte toujours pas de `children`.** Le `<track kind="chapters">` du web standard
+n'y change rien : le jour où les chapitres arriveront d'un fichier WebVTT — en phase 6, avec les
+sous-titres, où la mécanique `<track>` s'écrit de toute façon —, c'est le lecteur qui rendra la
+balise depuis une prop. Le composant reste fermé, et les deux formes coexisteront : un tableau en
+dur pour la petite vidéo, un fichier pour qui en a un. C'est le fichier qui compte pour le SaaS,
+parce qu'il change sans redéploiement de la page hôte.
+
+Trois règles de normalisation, appliquées une fois pour toutes :
+
+- **La fin d'un chapitre est le début du suivant**, et la durée pour le dernier. Rien à écrire de
+  plus que ce que l'intégrateur sait déjà.
+- **Le premier chapitre commence à zéro**, quoi qu'on nous donne. Un premier chapitre à 0:30
+  laisserait la barre nue sur son premier vingtième — un trou que personne ne saurait interpréter.
+- **Aucun chapitre en direct.** Sans durée, un chapitre n'a pas de fin, et une fenêtre qui glisse
+  ne se découpe pas. Une liste passée à un flux en direct reste donc sans effet.
+
+Le menu **disparaît** quand la vidéo n'a pas de chapitres, là où le sélecteur de qualité reste
+grisé. Les deux règles suivent la donnée : toute vidéo a une qualité, presque aucune n'a de
+chapitres, et un bouton mort sur chaque lecteur serait du bruit permanent.
 
 ## Highlights — « most replayed »
 
 Prop `heatmap: { time, value }[]`. Overlay en aire au-dessus du scrubber.
+
+**En réserve depuis le 24 septembre 2026.** `docs/roadmap.md` la désigne comme le premier élément
+à sauter si ça déborde ; elle n'a pas été faite avec les chapitres. Elle reste au périmètre, à
+reprendre avant la v1 si le temps le permet.
 
 ## Sous-titres
 
