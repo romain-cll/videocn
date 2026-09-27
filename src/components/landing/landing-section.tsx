@@ -24,7 +24,7 @@ export function LandingSection({
   className?: string;
 }) {
   return (
-    <section id={id} className={cn("scroll-mt-16 border-t px-6 py-16 md:px-10 md:py-20", className)}>
+    <section id={id} className={cn("scroll-mt-16 border-t px-4 py-16 sm:px-6 md:px-10 md:py-20", className)}>
       <header className="flex max-w-xl flex-col gap-2">
         <span className="text-muted-foreground font-mono text-xs">{label}</span>
         <h2 className="text-2xl font-semibold tracking-tight text-balance">{title}</h2>

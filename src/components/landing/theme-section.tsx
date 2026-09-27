@@ -12,6 +12,7 @@ import { useState } from "react";
 
 import { CodeBlock } from "@/components/code-block";
 import { Frame } from "@/components/frame";
+import { themeSnippet } from "@/lib/theme-snippet";
 import { LandingSection } from "@/components/landing/landing-section";
 import {
   PALETTES,
@@ -28,55 +29,11 @@ import { VideoCn } from "@/registry/videocn/video-cn";
 const SOURCE = getDemoSource("mp4");
 
 /**
- * Les valeurs posées par les classes `.demo-theme-*` de `globals.css`, recopiées
- * pour l'affichage : à tenir en phase avec elles. Seul le couple `--primary`
- * est montré — c'est lui que la barre du lecteur rend visible ; `--accent` et
- * `--ring` changent aussi, mais doubleraient la hauteur du bloc. Neutre n'a pas
- * d'entrée : c'est le thème par défaut du site, il n'y a rien à surcharger.
+ * Seul le couple `--primary` est montré : c'est lui que la barre du lecteur rend
+ * visible. `--accent` et `--ring` changent aussi, mais doubleraient la hauteur
+ * du bloc.
  */
-const PALETTE_VARS: Partial<Record<PaletteId, { light: string[]; dark: string[] }>> = {
-  blue: {
-    light: [
-      "--primary: oklch(0.488 0.243 264.376);",
-      "--primary-foreground: oklch(0.97 0.014 254.604);",
-    ],
-    dark: [
-      "--primary: oklch(0.623 0.214 259.815);",
-      "--primary-foreground: oklch(0.97 0.014 254.604);",
-    ],
-  },
-  rose: {
-    light: [
-      "--primary: oklch(0.586 0.253 17.585);",
-      "--primary-foreground: oklch(0.969 0.015 12.422);",
-    ],
-    dark: [
-      "--primary: oklch(0.645 0.246 16.439);",
-      "--primary-foreground: oklch(0.969 0.015 12.422);",
-    ],
-  },
-  green: {
-    light: [
-      "--primary: oklch(0.648 0.2 131.684);",
-      "--primary-foreground: oklch(0.986 0.031 120.757);",
-    ],
-    dark: [
-      "--primary: oklch(0.768 0.233 130.85);",
-      "--primary-foreground: oklch(0.274 0.072 132.109);",
-    ],
-  },
-};
-
-/** `0`, `0.625rem` ou `1rem` : le libellé de `RADII` est déjà la valeur CSS. */
-function cssSnippet(palette: PaletteId, radius: RadiusId) {
-  const radiusValue = RADII.find((candidate) => candidate.id === radius)?.label ?? "0.625rem";
-  const vars = PALETTE_VARS[palette];
-  const block = (selector: string, lines: string[]) =>
-    `${selector} {\n${lines.map((line) => `  ${line}`).join("\n")}\n}`;
-
-  if (!vars) return block(":root", [`--radius: ${radiusValue};`]);
-  return `${block(":root", [...vars.light, `--radius: ${radiusValue};`])}\n\n${block(".dark", vars.dark)}`;
-}
+const SNIPPET_OPTIONS = { only: ["--primary", "--primary-foreground"], alwaysRadius: true } as const;
 
 export function ThemeSection() {
   const [palette, setPalette] = useState<PaletteId>("blue");
@@ -144,7 +101,7 @@ export function ThemeSection() {
           <Frame label="<VideoCn chapters={chapters} />">
             <VideoCn src={SOURCE.src} poster={SOURCE.poster} chapters={BUNNY_CHAPTERS} />
           </Frame>
-          <CodeBlock title="globals.css" code={cssSnippet(palette, radius)} />
+          <CodeBlock title="globals.css" code={themeSnippet(palette, radius, SNIPPET_OPTIONS) ?? ""} />
         </div>
       </div>
     </LandingSection>

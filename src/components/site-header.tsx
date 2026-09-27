@@ -16,7 +16,7 @@ export function SiteHeader() {
             Docs
           </Link>
           <Link href="/demo" className="hover:text-foreground transition-colors">
-            Demo
+            Playground
           </Link>
           <Link href="/#changelog" className="hover:text-foreground transition-colors">
             Changelog
