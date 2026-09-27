@@ -8,7 +8,7 @@
  * ressemblerait plus à ce qu'un thème shadcn écrit.
  */
 
-import type { PaletteId, RadiusId } from "@/components/theme-picker";
+import type { PaletteId, RadiusId } from "@/lib/demo-themes";
 
 type Variables = Readonly<Record<string, string>>;
 

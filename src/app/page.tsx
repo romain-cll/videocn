@@ -4,10 +4,9 @@ import { ArrowRightIcon } from "lucide-react";
 
 import { ChangelogSection } from "@/components/landing/changelog-section";
 import { CopyCommand } from "@/components/landing/copy-command";
-import { HeroCarousel } from "@/components/landing/hero-carousel";
+import { HeroPlayer } from "@/components/landing/hero-player";
 import { InstallSection } from "@/components/landing/install-section";
 import { OneTagSection } from "@/components/landing/one-tag-section";
-import { ThemeSection } from "@/components/landing/theme-section";
 import { Button } from "@/components/ui/button";
 import { INSTALL_COMMAND } from "@/lib/install";
 
@@ -18,8 +17,7 @@ export default function Home() {
     // filet horizontal, au lieu de flotter dans des cartes.
     <main className="mx-auto w-full max-w-6xl border-x">
       <div className="flex flex-col items-center px-6">
-        {/* Au-dessus de la mosaïque du carrousel, qui remonte derrière le texte. */}
-        <section className="relative z-10 flex w-full flex-col items-center gap-6 pt-20 pb-14 text-center md:pt-28">
+        <section className="flex w-full flex-col items-center gap-6 pt-20 pb-12 text-center md:pt-28">
           {/* Le badge-lien de shadcn : la dernière sortie, qui mène au changelog. */}
           <Link
             href="/#changelog"
@@ -52,12 +50,11 @@ export default function Home() {
           <CopyCommand command={INSTALL_COMMAND} />
         </section>
 
-        <section className="w-full pb-16">
-          <HeroCarousel />
+        <section aria-label="Live example" className="w-full max-w-4xl pb-16">
+          <HeroPlayer />
         </section>
       </div>
 
-      <ThemeSection />
       <OneTagSection />
       <InstallSection />
       <ChangelogSection />

@@ -34,6 +34,12 @@ Amendé le 23 septembre 2026, côté site seulement : la landing présente le le
 d'exemple (plateforme vidéo, documentation, réseau social), aussi servies sous `/examples/<slug>`.
 Tout y est squelette sauf le lecteur. Le lecteur lui-même ne change pas.
 
+Amendé le 27 septembre 2026, côté site seulement : les trois pages d'exemple et leur carrousel sont
+retirés, `/examples/<slug>` avec. Le hero montre un seul `<VideoCn>` que le visiteur re-thématise
+sur place — palette en onglets, `--radius` à côté, le CSS correspondant à la demande. C'est la
+preuve la plus directe que le lecteur lit les tokens de l'hôte, et elle rendait redondante la
+section de thème qui suivait.
+
 ## Lecture
 
 Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :

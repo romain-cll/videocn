@@ -19,7 +19,7 @@ import {
   RADII,
   type PaletteId,
   type RadiusId,
-} from "@/components/theme-picker";
+} from "@/lib/demo-themes";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";

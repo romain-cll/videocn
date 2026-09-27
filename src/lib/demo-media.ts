@@ -8,7 +8,7 @@
  */
 
 import type { SourceType } from "@/registry/videocn/player-engine";
-import { EXAMPLE_VIDEOS } from "@/components/examples/videos";
+import { EXAMPLE_VIDEOS } from "@/lib/videos";
 
 /**
  * Big Buck Bunny découpé, pour voir les segments et le menu sur une vidéo dont

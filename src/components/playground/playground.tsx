@@ -28,7 +28,7 @@ import {
   toControlsOptions,
   type PlaygroundState,
 } from "@/components/playground/playground-state";
-import { themeClassName } from "@/components/theme-picker";
+import { themeClassName } from "@/lib/demo-themes";
 import { Button } from "@/components/ui/button";
 import { BUNNY_CHAPTERS, getDemoSource } from "@/lib/demo-media";
 import { videoCnSnippet } from "@/lib/snippet";

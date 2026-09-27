@@ -9,7 +9,7 @@
  */
 
 import { BUNNY_CHAPTERS, type DemoSourceId } from "@/lib/demo-media";
-import type { PaletteId, RadiusId } from "@/components/theme-picker";
+import type { PaletteId, RadiusId } from "@/lib/demo-themes";
 import {
   DEFAULT_AUTO_HIDE_DELAY,
   type ControlsOptions,

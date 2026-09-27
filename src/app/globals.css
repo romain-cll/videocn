@@ -45,7 +45,6 @@
     /* Le cadre du lecteur : noir dans les deux thèmes, parce qu'il
        encadre une image et non une page. */
     --color-player-backdrop: var(--player-backdrop);
-    --color-hero-glow: var(--hero-glow);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -90,8 +89,6 @@
     --sidebar-ring: oklch(0.708 0 0);
     --player-scrim: oklch(0 0 0 / 60%);
     --player-backdrop: oklch(0 0 0);
-    /* Les carreaux derrière les fenêtres du hero de la landing. */
-    --hero-glow: oklch(0.55 0.18 270);
 }
 
 .dark {
@@ -128,7 +125,6 @@
     --sidebar-ring: oklch(0.556 0 0);
     --player-scrim: oklch(0 0 0 / 70%);
     --player-backdrop: oklch(0 0 0);
-    --hero-glow: oklch(0.5 0.16 270);
 }
 
 @layer base {

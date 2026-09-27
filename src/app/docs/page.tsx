@@ -21,7 +21,7 @@ import {
   ReferenceTable,
   type ReferenceRow,
 } from "@/components/docs/reference-table";
-import { EXAMPLE_VIDEOS, SINTEL_CHAPTERS } from "@/components/examples/videos";
+import { EXAMPLE_VIDEOS, SINTEL_CHAPTERS } from "@/lib/videos";
 import { Frame } from "@/components/frame";
 import { bundleSize } from "@/lib/bundle";
 import { BUNNY_CHAPTERS, getDemoSource } from "@/lib/demo-media";
