@@ -11,9 +11,17 @@
 
 import { useRef, useState } from "react";
 
+import { CodeBlock } from "@/components/code-block";
+import {
+  ThemePicker,
+  themeClassName,
+  type PaletteId,
+  type RadiusId,
+} from "@/components/demo/theme-picker";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { PlayerDebugPanel } from "@/components/player-debug-panel";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 import { VideoCn } from "@/registry/videocn/video-cn";
 
 /**
@@ -82,7 +90,7 @@ const SOURCES = [
     // une liste passée à un direct doit rester sans effet — ni segments, ni
     // bouton. Un clic sur « Live » suffit alors à le vérifier.
     chapters: BUNNY_CHAPTERS,
-    note: "A live stream with about fifteen minutes of window: you can seek back inside it, and the badge brings you back to the edge.",
+    note: "A live stream with about fifteen minutes of window: you can seek back inside it, and the badge brings you back to the edge. The chapters are ignored: a live window has no fixed timeline to cut.",
   },
 ] as const;
 
@@ -96,77 +104,130 @@ type SourceId = (typeof SOURCES)[number]["id"];
  */
 const SHOW_DEBUG_PANEL = process.env.NODE_ENV === "development";
 
+/** Le réglage du second lecteur, passé tel quel et recopié dans son extrait plus bas. */
+const CONFIGURED_CONTROLS = {
+  pictureInPicture: false,
+  playbackRate: { rates: [1, 1.5, 2] },
+  autoHideDelay: 1000,
+  keyboard: false,
+  scrubber: { chapters: false },
+} as const;
+
+/** Les chapitres ne sont pas recopiés dans l'extrait : ils figurent déjà plus haut dans la page. */
+function sourceSnippet(source: (typeof SOURCES)[number]) {
+  const props = [`src="${source.src}"`];
+  if (source.chapters) props.push("chapters={chapters}");
+  return `<VideoCn\n  ${props.join("\n  ")}\n/>`;
+}
+
+// À tenir en phase avec `CONFIGURED_CONTROLS` : un `JSON.stringify` citerait les
+// clés entre guillemets, et l'extrait ne ressemblerait plus à ce qu'on écrit.
+const CONFIGURED_SNIPPET = `<VideoCn
+  src="${DEMO_SRC}"
+  chapters={chapters}
+  controls={{
+    pictureInPicture: false,
+    playbackRate: { rates: [1, 1.5, 2] },
+    autoHideDelay: 1000,
+    keyboard: false,
+    scrubber: { chapters: false },
+  }}
+/>`;
+
+const CHAPTERS_SNIPPET = `const chapters = [
+${BUNNY_CHAPTERS.map((chapter) => `  { time: ${chapter.time}, label: "${chapter.label}" },`).join("\n")}
+];`;
+
 export function PlayerDemo() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [sourceId, setSourceId] = useState<SourceId>("mp4");
+  const [palette, setPalette] = useState<PaletteId>("neutral");
+  const [radius, setRadius] = useState<RadiusId>("default");
 
   // Jamais `undefined` : le groupe ne permet pas de tout désélectionner, et on
   // ignore une valeur vide plutôt que de laisser le lecteur sans source.
   const source = SOURCES.find((candidate) => candidate.id === sourceId) ?? SOURCES[0];
 
   return (
-    <div className={SHOW_DEBUG_PANEL ? "grid items-start gap-6 lg:grid-cols-5" : "flex flex-col gap-6"}>
-      {/* Trois cinquièmes pour la vidéo, deux pour le panneau : au-dessous de
-          `lg`, la grille retombe sur une colonne et l'un passe sous l'autre. */}
-      <div className="flex flex-col gap-3 lg:col-span-3">
-        {/* Aucune classe : le lecteur possède son apparence — c'est tout
-            l'intérêt de le voir ici tel qu'il arrivera chez l'utilisateur. */}
-        <ToggleGroup
-          value={[source.id]}
-          onValueChange={(value) => {
-            const next = value[0];
-            if (next) setSourceId(next as SourceId);
-          }}
-          variant="outline"
-          size="sm"
-        >
-          {SOURCES.map((candidate) => (
-            <ToggleGroupItem key={candidate.id} value={candidate.id}>
-              {candidate.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-        {/* Pas de `key` : c'est le lecteur qui change de moteur sous la même
-            balise, exactement comme chez un utilisateur qui changerait sa prop
-            `src`. Remonter le composant masquerait ce chemin-là — et le panneau
-            d'observation, qui s'accroche à l'élément une fois pour toutes,
-            resterait sur l'ancien. */}
-        <VideoCn ref={videoRef} src={source.src} chapters={source.chapters} />
-        <p className="text-muted-foreground text-xs text-pretty">{source.note}</p>
-        {SHOW_DEBUG_PANEL && (
-          <p className="text-muted-foreground text-xs text-pretty">
-            The panel reads the element, not the controls: what it shows proves the action really
-            reached the video.
-          </p>
-        )}
-        <KeyboardShortcuts />
-      </div>
-      {SHOW_DEBUG_PANEL && (
-        <div className="lg:col-span-2">
-          <PlayerDebugPanel videoRef={videoRef} />
-        </div>
-      )}
-
-      {/* Le même lecteur, réglé par la seule prop `controls` : rien n'a été
-          édité dans le code livré, et c'est tout l'enjeu. */}
-      <div className="flex flex-col gap-3 lg:col-span-5">
-        <h2 className="text-sm font-medium">Configured through props</h2>
-        <VideoCn
-          src={DEMO_SRC}
-          chapters={BUNNY_CHAPTERS}
-          controls={{
-            pictureInPicture: false,
-            playbackRate: { rates: [1, 1.5, 2] },
-            autoHideDelay: 1000,
-            keyboard: false,
-            scrubber: { chapters: false },
-          }}
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <ThemePicker
+          palette={palette}
+          radius={radius}
+          onPaletteChange={setPalette}
+          onRadiusChange={setRadius}
         />
         <p className="text-muted-foreground text-xs text-pretty">
-          No Picture-in-Picture, three speeds instead of seven, a bar that hides after one second,
-          no keyboard shortcuts. Same chapters as above, but kept out of the bar: cutting it up is
-          a matter of looks, not of content.
+          These only set <code className="font-mono">--primary</code>,{" "}
+          <code className="font-mono">--accent</code> and{" "}
+          <code className="font-mono">--radius</code> on a wrapper, the way your own theme would.
+          Nothing in the player changes: open a menu, drag the bar.
         </p>
+      </div>
+      {/* Le thème englobe tout ce qui suit, comme le ferait celui d'un hôte :
+          lecteurs, extraits et sélecteur de source. Seul le sélecteur de thème
+          reste dehors, pour ne pas bouger sous le doigt. */}
+      <div
+        className={cn(
+          themeClassName(palette, radius),
+          SHOW_DEBUG_PANEL ? "grid items-start gap-6 lg:grid-cols-5" : "flex flex-col gap-6",
+        )}
+      >
+        {/* Trois cinquièmes pour la vidéo, deux pour le panneau : au-dessous de
+            `lg`, la grille retombe sur une colonne et l'un passe sous l'autre. */}
+        <div className="flex min-w-0 flex-col gap-3 lg:col-span-3">
+          {/* Aucune classe : le lecteur possède son apparence — c'est tout
+              l'intérêt de le voir ici tel qu'il arrivera chez l'utilisateur. */}
+          <ToggleGroup
+            value={[source.id]}
+            onValueChange={(value) => {
+              const next = value[0];
+              if (next) setSourceId(next as SourceId);
+            }}
+            variant="outline"
+            size="sm"
+          >
+            {SOURCES.map((candidate) => (
+              <ToggleGroupItem key={candidate.id} value={candidate.id}>
+                {candidate.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+          {/* Pas de `key` : c'est le lecteur qui change de moteur sous la même
+              balise, exactement comme chez un utilisateur qui changerait sa prop
+              `src`. Remonter le composant masquerait ce chemin-là — et le panneau
+              d'observation, qui s'accroche à l'élément une fois pour toutes,
+              resterait sur l'ancien. */}
+          <VideoCn ref={videoRef} src={source.src} chapters={source.chapters} />
+          <p className="text-muted-foreground text-xs text-pretty">{source.note}</p>
+          <CodeBlock code={sourceSnippet(source)} />
+          {SHOW_DEBUG_PANEL && (
+            <p className="text-muted-foreground text-xs text-pretty">
+              The panel reads the element, not the controls: what it shows proves the action really
+              reached the video.
+            </p>
+          )}
+          <KeyboardShortcuts />
+        </div>
+        {SHOW_DEBUG_PANEL && (
+          <div className="lg:col-span-2">
+            <PlayerDebugPanel videoRef={videoRef} />
+          </div>
+        )}
+
+        {/* Le même lecteur, réglé par la seule prop `controls` : rien n'a été
+            édité dans le code livré, et c'est tout l'enjeu. */}
+        <div className="flex min-w-0 flex-col gap-3 lg:col-span-5">
+          <h2 className="text-sm font-medium">Configured through props</h2>
+          <VideoCn src={DEMO_SRC} chapters={BUNNY_CHAPTERS} controls={CONFIGURED_CONTROLS} />
+          <p className="text-muted-foreground text-xs text-pretty">
+            No Picture-in-Picture, three speeds instead of seven, a bar that hides after one second,
+            no keyboard shortcuts. Same chapters as above, but kept out of the bar: cutting it up is
+            a matter of looks, not of content.
+          </p>
+          <CodeBlock code={CONFIGURED_SNIPPET} />
+          <CodeBlock code={CHAPTERS_SNIPPET} title="The chapters used on this page" />
+        </div>
       </div>
     </div>
   );

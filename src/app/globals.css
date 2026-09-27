@@ -142,3 +142,69 @@
     @apply font-sans;
     }
 }
+
+/*
+ * Les thèmes de la page de démo. Chacun imite ce qu'écrirait un hôte dans son
+ * propre `globals.css` — des valeurs claires, et des valeurs sous `.dark` —,
+ * mais posé sur un conteneur autour du lecteur au lieu de `:root`.
+ *
+ * Les valeurs sombres visent aussi `.dark` *à l'intérieur* du conteneur : la
+ * barre de contrôles se déclare `dark` (son fond est la vidéo), et c'est donc
+ * le jeu sombre de l'hôte qu'elle lit, même sur une page claire. Sans ce
+ * sélecteur, le `.dark` neutre de `:root` reprendrait la main sur la barre.
+ */
+.demo-theme-blue {
+    --primary: oklch(0.488 0.243 264.376);
+    --primary-foreground: oklch(0.97 0.014 254.604);
+    --accent: oklch(0.932 0.032 255.585);
+    --accent-foreground: oklch(0.379 0.146 265.522);
+    --ring: oklch(0.623 0.214 259.815);
+}
+.dark .demo-theme-blue,
+.demo-theme-blue .dark {
+    --primary: oklch(0.623 0.214 259.815);
+    --primary-foreground: oklch(0.97 0.014 254.604);
+    --accent: oklch(0.379 0.146 265.522);
+    --accent-foreground: oklch(0.97 0.014 254.604);
+    --ring: oklch(0.488 0.243 264.376);
+}
+
+.demo-theme-rose {
+    --primary: oklch(0.586 0.253 17.585);
+    --primary-foreground: oklch(0.969 0.015 12.422);
+    --accent: oklch(0.941 0.03 12.58);
+    --accent-foreground: oklch(0.455 0.188 13.697);
+    --ring: oklch(0.712 0.194 13.428);
+}
+.dark .demo-theme-rose,
+.demo-theme-rose .dark {
+    --primary: oklch(0.645 0.246 16.439);
+    --primary-foreground: oklch(0.969 0.015 12.422);
+    --accent: oklch(0.41 0.159 10.272);
+    --accent-foreground: oklch(0.969 0.015 12.422);
+    --ring: oklch(0.586 0.253 17.585);
+}
+
+.demo-theme-green {
+    --primary: oklch(0.648 0.2 131.684);
+    --primary-foreground: oklch(0.986 0.031 120.757);
+    --accent: oklch(0.967 0.067 122.328);
+    --accent-foreground: oklch(0.453 0.124 130.933);
+    --ring: oklch(0.768 0.233 130.85);
+}
+.dark .demo-theme-green,
+.demo-theme-green .dark {
+    --primary: oklch(0.768 0.233 130.85);
+    --primary-foreground: oklch(0.274 0.072 132.109);
+    --accent: oklch(0.405 0.101 131.063);
+    --accent-foreground: oklch(0.986 0.031 120.757);
+    --ring: oklch(0.648 0.2 131.684);
+}
+
+/* Le rayon : 0 pour les styles anguleux (lyra, sera), large pour les autres. */
+.demo-radius-none {
+    --radius: 0;
+}
+.demo-radius-large {
+    --radius: 1rem;
+}

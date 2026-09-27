@@ -7,11 +7,11 @@ import { siteConfig } from "@/lib/site-config";
 export function SiteHeader() {
   return (
     <header className="bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-5xl items-center gap-6 px-6">
+      <div className="mx-auto flex h-14 max-w-5xl items-center gap-4 px-4 sm:gap-6 sm:px-6">
         <Link href="/" className="font-medium tracking-tight">
           videoCn
         </Link>
-        <nav className="text-muted-foreground flex items-center gap-4 text-sm">
+        <nav className="text-muted-foreground flex items-center gap-3 text-sm sm:gap-4">
           <Link href="/docs" className="hover:text-foreground transition-colors">
             Docs
           </Link>

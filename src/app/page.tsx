@@ -1,7 +1,12 @@
 import Link from "next/link";
 
+import { BundleSize } from "@/components/landing/bundle-size";
 import { CopyCommand } from "@/components/landing/copy-command";
+import { Features } from "@/components/landing/features";
+import { FinalCta } from "@/components/landing/final-cta";
 import { HeroCarousel } from "@/components/landing/hero-carousel";
+import { Roadmap } from "@/components/landing/roadmap";
+import { SiteFooter } from "@/components/landing/site-footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/lib/site-config";
@@ -48,21 +53,15 @@ export default function Home() {
           <section className="w-full pb-16">
             <HeroCarousel />
           </section>
-        </div>
 
-        <p className="text-muted-foreground max-w-2xl px-6 py-16 text-center text-sm text-pretty">
-          Web formats, no API: MP4, WebM, HLS and DASH. The streaming engine only loads for an
-          HLS or DASH source, never for an MP4.
-        </p>
+          <Features />
+          <BundleSize />
+          <Roadmap />
+          <FinalCta command={INSTALL_COMMAND} />
+        </div>
       </main>
 
-      <footer className="text-muted-foreground border-t py-6 text-center text-sm">
-        videoCn, a video player for shadcn/ui. The source code is on{" "}
-        <a href={siteConfig.links.github} target="_blank" rel="noreferrer" className="text-foreground underline underline-offset-4">
-          GitHub
-        </a>
-        .
-      </footer>
+      <SiteFooter />
     </>
   );
 }

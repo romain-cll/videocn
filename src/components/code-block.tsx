@@ -18,7 +18,7 @@ export function CodeBlock({
   className?: string;
 }) {
   return (
-    <div className={cn("bg-muted overflow-hidden rounded-lg border", className)}>
+    <div className={cn("bg-muted min-w-0 overflow-hidden rounded-lg border", className)}>
       {title && (
         <div className="text-muted-foreground border-b px-4 py-2 font-mono text-xs">{title}</div>
       )}

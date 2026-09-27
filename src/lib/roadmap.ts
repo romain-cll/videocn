@@ -46,7 +46,7 @@ export const roadmap: readonly RoadmapColumn[] = [
       },
       {
         title: "Theme-aware",
-        description: "Your shadcn tokens and your --radius, down to the slider thumb.",
+        description: "Your shadcn color tokens and your radius, down to the slider thumb.",
       },
     ],
   },
