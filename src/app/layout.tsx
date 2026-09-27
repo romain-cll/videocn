@@ -4,6 +4,7 @@ import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/landing/site-footer";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <div className="flex min-h-svh flex-col">
             <SiteHeader />
             <div className="flex-1">{children}</div>
+            <SiteFooter />
           </div>
         </ThemeProvider>
       </body>

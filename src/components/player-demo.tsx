@@ -17,7 +17,7 @@ import {
   themeClassName,
   type PaletteId,
   type RadiusId,
-} from "@/components/demo/theme-picker";
+} from "@/components/theme-picker";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { PlayerDebugPanel } from "@/components/player-debug-panel";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
