@@ -109,7 +109,9 @@ export function HeroCarousel() {
         {/* Le halo : une mosaïque façon graphe de contributions, pleine en
             bas, qui s'efface en montant jusqu'à un arc : haut sur les côtés, à
             hauteur du titre, bas au centre, où il effleure la commande. Il vit
-            hors de la scène, sinon celle-ci le rognerait en haut.
+            hors de la scène, sinon celle-ci le rognerait en haut. Il s'étend
+            sur la marge du hero (`-inset-x-6`) pour aller jusqu'aux rails, où
+            la région le coupe.
 
             Deux masques empilés : le parent porte le fondu en arc — l'ellipse
             transparente creuse le haut, et le dégradé radial en fait le
@@ -118,7 +120,7 @@ export function HeroCarousel() {
             sombre. Voir `scripts/generate-contribution-grid.mjs`. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-96 bottom-0 -z-10 mask-[radial-gradient(ellipse_50.2%_33.3%_at_50%_0,transparent_100%,var(--hero-glow)_200%)]"
+          className="pointer-events-none absolute -inset-x-6 -top-96 bottom-0 -z-10 mask-[radial-gradient(ellipse_50.2%_33.3%_at_50%_0,transparent_100%,var(--hero-glow)_200%)]"
         >
           <div className="bg-hero-glow size-full mask-[url(/landing/contribution-grid.svg)] mask-bottom mask-no-repeat" />
         </div>
