@@ -18,7 +18,9 @@ export function SiteHeader() {
           <Link href="/demo" className="hover:text-foreground transition-colors">
             Playground
           </Link>
-          <Link href="/#changelog" className="hover:text-foreground transition-colors">
+          {/* Masqué sur téléphone : la barre n'a pas la place, et le changelog
+              reste à un défilement sur la landing. */}
+          <Link href="/#changelog" className="hover:text-foreground hidden transition-colors sm:inline">
             Changelog
           </Link>
         </nav>

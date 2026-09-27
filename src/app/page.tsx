@@ -13,8 +13,11 @@ import { INSTALL_COMMAND } from "@/lib/install";
 
 export default function Home() {
   return (
-    <main className="flex flex-col items-center">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center px-6">
+    // Le cadre à rails part du header et descend jusqu'au footer : hero compris,
+    // les sections se succèdent entre deux filets verticaux, séparées par un
+    // filet horizontal, au lieu de flotter dans des cartes.
+    <main className="mx-auto w-full max-w-6xl border-x">
+      <div className="flex flex-col items-center px-6">
         {/* Au-dessus de la mosaïque du carrousel, qui remonte derrière le texte. */}
         <section className="relative z-10 flex w-full flex-col items-center gap-6 pt-20 pb-14 text-center md:pt-28">
           {/* Le badge-lien de shadcn : la dernière sortie, qui mène au changelog. */}
@@ -43,7 +46,7 @@ export default function Home() {
               nativeButton={false}
               render={<Link href="/demo" />}
             >
-              View the demo
+              Open the playground
             </Button>
           </div>
           <CopyCommand command={INSTALL_COMMAND} />
@@ -54,15 +57,10 @@ export default function Home() {
         </section>
       </div>
 
-      {/* Le cadre à rails : les sections se succèdent entre deux filets
-          verticaux, séparées par un filet horizontal, au lieu de flotter
-          dans des cartes. */}
-      <div className="mx-auto w-full max-w-6xl border-x">
-        <ThemeSection />
-        <OneTagSection />
-        <InstallSection />
-        <ChangelogSection />
-      </div>
+      <ThemeSection />
+      <OneTagSection />
+      <InstallSection />
+      <ChangelogSection />
     </main>
   );
 }
