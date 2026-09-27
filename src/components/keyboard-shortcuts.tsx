@@ -12,7 +12,7 @@ import { DEFAULT_SEEK_STEP, DEFAULT_VOLUME_STEP } from "@/registry/videocn/contr
  * la page suit sans qu'on ait à s'en souvenir.
  */
 
-interface Shortcut {
+export interface Shortcut {
   keys: readonly string[];
   /**
    * Ce qui s'affiche entre deux touches. Jamais un `+` : aucune de ces touches
@@ -22,7 +22,7 @@ interface Shortcut {
   action: string;
 }
 
-const SHORTCUTS: readonly Shortcut[] = [
+export const SHORTCUTS: readonly Shortcut[] = [
   { keys: ["Space", "K"], joiner: "or", action: "Play / pause" },
   { keys: ["←", "→"], joiner: "/", action: `Seek back / forward ${DEFAULT_SEEK_STEP} s` },
   {

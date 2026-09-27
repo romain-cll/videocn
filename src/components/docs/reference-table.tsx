@@ -1,13 +1,84 @@
 import type { ReactNode } from "react";
 
+import { cn } from "@/lib/utils";
+
 /**
- * Le tableau de référence : une ligne par prop ou par option. Le nom, le type
- * et le défaut sont du code et s'affichent comme tel ; la description reste du
- * texte, et peut contenir du code en ligne.
+ * Les tableaux de la doc, à la manière des « API Reference » de shadcn : pas
+ * de cadre, des lignes fines, des en-têtes muted de 12 px, le code en mono.
  *
  * `overflow-x-auto` : sur mobile, les types sont plus larges que l'écran, et
  * c'est le tableau qui défile, pas la page.
  */
+export function DocsTable({
+  columns,
+  children,
+}: {
+  columns: readonly string[];
+  children: ReactNode;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead className="border-b">
+          <tr>
+            {columns.map((column) => (
+              <th
+                key={column}
+                className="text-muted-foreground py-2 pr-4 text-xs font-medium last:pr-0"
+              >
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y">{children}</tbody>
+      </table>
+    </div>
+  );
+}
+
+/** Une cellule de tableau ; `code` la passe en mono, pour un nom ou un type. */
+export function DocsCell({
+  code = false,
+  strong = false,
+  wide = false,
+  children,
+}: {
+  code?: boolean;
+  strong?: boolean;
+  /** Une largeur plancher : sur mobile, le tableau défile au lieu d'écraser la description. */
+  wide?: boolean;
+  children: ReactNode;
+}) {
+  if (code) {
+    return (
+      <td className="py-3 pr-4 align-top last:pr-0">
+        <code
+          className={
+            strong
+              ? "bg-muted text-foreground rounded-md px-1 py-0.5 font-mono text-xs whitespace-nowrap"
+              : "text-muted-foreground font-mono text-xs"
+          }
+        >
+          {children}
+        </code>
+      </td>
+    );
+  }
+  return (
+    <td
+      className={cn(
+        "py-3 pr-4 align-top last:pr-0",
+        strong ? "text-foreground" : "text-muted-foreground leading-relaxed text-pretty",
+        wide && "min-w-56",
+      )}
+    >
+      {children}
+    </td>
+  );
+}
+
+/** Une ligne par prop ou par option. */
 export interface ReferenceRow {
   name: string;
   type: string;
@@ -24,29 +95,17 @@ export function ReferenceTable({
   firstColumn?: string;
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-muted/40 border-b">
-          <tr>
-            <th className="px-4 py-2 font-medium">{firstColumn}</th>
-            <th className="px-4 py-2 font-medium">Type</th>
-            <th className="px-4 py-2 font-medium">Default</th>
-            <th className="px-4 py-2 font-medium">Description</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {rows.map((row) => (
-            <tr key={row.name} className="align-top">
-              <td className="px-4 py-3 font-mono text-xs whitespace-nowrap">{row.name}</td>
-              <td className="text-muted-foreground px-4 py-3 font-mono text-xs">{row.type}</td>
-              <td className="text-muted-foreground px-4 py-3 font-mono text-xs whitespace-nowrap">
-                {row.defaultValue ?? "—"}
-              </td>
-              <td className="text-muted-foreground px-4 py-3 text-pretty">{row.description}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DocsTable columns={[firstColumn, "Type", "Default", "Description"]}>
+      {rows.map((row) => (
+        <tr key={row.name}>
+          <DocsCell code strong>
+            {row.name}
+          </DocsCell>
+          <DocsCell code>{row.type}</DocsCell>
+          <DocsCell code>{row.defaultValue ?? "—"}</DocsCell>
+          <DocsCell wide>{row.description}</DocsCell>
+        </tr>
+      ))}
+    </DocsTable>
   );
 }
