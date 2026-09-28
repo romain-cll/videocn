@@ -1,6 +1,7 @@
 import { CopyButton } from "@/components/copy-button";
 import { Frame } from "@/components/frame";
 import { LandingSection } from "@/components/landing/landing-section";
+import { copyInstallEvent } from "@/lib/analytics";
 import { bundleSize } from "@/lib/bundle";
 import { INSTALL_COMMAND } from "@/lib/install";
 import registry from "../../../registry.json";
@@ -32,7 +33,7 @@ export function InstallSection() {
         <Frame
           className="lg:col-span-3"
           label="Terminal"
-          actions={<CopyButton text={INSTALL_COMMAND} />}
+          actions={<CopyButton text={INSTALL_COMMAND} event={copyInstallEvent("install-section")} />}
           contentClassName="bg-muted/40"
         >
           <div className="font-mono text-xs leading-6">

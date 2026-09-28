@@ -4,9 +4,10 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useCopy } from "@/hooks/use-copy";
+import { trackEvent, type AnalyticsEvent } from "@/lib/analytics";
 
 /** Une commande sur une ligne, avec son bouton pour la copier. */
-export function CopyCommand({ command }: { command: string }) {
+export function CopyCommand({ command, event }: { command: string; event?: AnalyticsEvent }) {
   const { copied, copy } = useCopy();
 
   return (
@@ -15,7 +16,10 @@ export function CopyCommand({ command }: { command: string }) {
         <span className="text-muted-foreground select-none">$ </span>
         {command}
       </code>
-      <Button variant="ghost" size="icon-sm" onClick={() => copy(command)}>
+      <Button variant="ghost" size="icon-sm" onClick={() => {
+          copy(command);
+          if (event) trackEvent(event);
+        }}>
         {copied ? <CheckIcon /> : <CopyIcon />}
         <span className="sr-only">{copied ? "Command copied" : "Copy command"}</span>
       </Button>

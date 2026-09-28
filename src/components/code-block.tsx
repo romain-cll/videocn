@@ -1,4 +1,5 @@
 import { CopyButton } from "@/components/copy-button";
+import type { AnalyticsEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 /**
@@ -11,10 +12,13 @@ import { cn } from "@/lib/utils";
 export function CodeBlock({
   code,
   title,
+  event,
   className,
 }: {
   code: string;
   title?: string;
+  /** L'événement Plausible envoyé à la copie, pour les blocs qu'on veut mesurer. */
+  event?: AnalyticsEvent;
   className?: string;
 }) {
   return (
@@ -26,7 +30,7 @@ export function CodeBlock({
         <pre className="text-muted-foreground overflow-x-auto px-4 py-3 pr-12 font-mono text-sm">
           <code>{code}</code>
         </pre>
-        <CopyButton text={code} className="absolute top-1.5 right-1.5" />
+        <CopyButton text={code} event={event} className="absolute top-1.5 right-1.5" />
       </div>
     </div>
   );

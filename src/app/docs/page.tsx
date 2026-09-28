@@ -27,6 +27,7 @@ import { bundleSize } from "@/lib/bundle";
 import { BUNNY_CHAPTERS, getDemoSource } from "@/lib/demo-media";
 import { themeSnippet } from "@/lib/theme-snippet";
 import { siteConfig } from "@/lib/site-config";
+import { copyInstallEvent } from "@/lib/analytics";
 import { PAGE_DESCRIPTIONS, pageMetadata } from "@/lib/metadata";
 import { videoCnSnippet } from "@/lib/snippet";
 import type { ControlsOptions } from "@/registry/videocn/controls-options";
@@ -274,9 +275,12 @@ export default function DocsPage() {
             )}
           />
           <DocsSubheading>2. Install the player</DocsSubheading>
-          <CodeBlock code={`pnpm dlx shadcn@latest add ${siteConfig.namespace}/player`} />
+          <CodeBlock
+            code={`pnpm dlx shadcn@latest add ${siteConfig.namespace}/player`}
+            event={copyInstallEvent("docs")}
+          />
           <DocsText>Or skip step 1 and install straight from the URL:</DocsText>
-          <CodeBlock code={`pnpm dlx shadcn@latest add ${PLAYER_URL}`} />
+          <CodeBlock code={`pnpm dlx shadcn@latest add ${PLAYER_URL}`} event={copyInstallEvent("docs")} />
 
           <DocsSubheading>What the CLI adds</DocsSubheading>
           <DocsList>

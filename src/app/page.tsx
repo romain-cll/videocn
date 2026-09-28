@@ -9,6 +9,7 @@ import { HeroPlayer } from "@/components/landing/hero-player";
 import { InstallSection } from "@/components/landing/install-section";
 import { OneTagSection } from "@/components/landing/one-tag-section";
 import { Button } from "@/components/ui/button";
+import { copyInstallEvent } from "@/lib/analytics";
 import { INSTALL_COMMAND } from "@/lib/install";
 import { PAGE_DESCRIPTIONS, pageMetadata } from "@/lib/metadata";
 
@@ -51,7 +52,7 @@ export default function Home() {
               Open the playground
             </Button>
           </div>
-          <CopyCommand command={INSTALL_COMMAND} />
+          <CopyCommand command={INSTALL_COMMAND} event={copyInstallEvent("hero")} />
         </section>
 
         <section aria-label="Live example" className="w-full max-w-4xl pb-16">
