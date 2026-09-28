@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ArrowRightIcon } from "lucide-react";
@@ -9,6 +10,9 @@ import { InstallSection } from "@/components/landing/install-section";
 import { OneTagSection } from "@/components/landing/one-tag-section";
 import { Button } from "@/components/ui/button";
 import { INSTALL_COMMAND } from "@/lib/install";
+import { PAGE_DESCRIPTIONS, pageMetadata } from "@/lib/metadata";
+
+export const metadata: Metadata = pageMetadata({ description: PAGE_DESCRIPTIONS.home, path: "/" });
 
 export default function Home() {
   return (

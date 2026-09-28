@@ -27,14 +27,15 @@ import { bundleSize } from "@/lib/bundle";
 import { BUNNY_CHAPTERS, getDemoSource } from "@/lib/demo-media";
 import { themeSnippet } from "@/lib/theme-snippet";
 import { siteConfig } from "@/lib/site-config";
+import { PAGE_DESCRIPTIONS, pageMetadata } from "@/lib/metadata";
 import { videoCnSnippet } from "@/lib/snippet";
 import type { ControlsOptions } from "@/registry/videocn/controls-options";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Docs",
-  description:
-    "Install videoCn with the shadcn CLI, drop in <VideoCn />, and tune it through props: controls, chapters, streaming, theming.",
-};
+  description: PAGE_DESCRIPTIONS.docs,
+  path: "/docs",
+});
 
 /** Le sommaire et les ancres viennent de la même liste : un titre renommé ne casse pas un lien. */
 const S = {

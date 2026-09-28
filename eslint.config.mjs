@@ -29,19 +29,26 @@ const eslintConfig = defineConfig([
       "shadcn/require-static-classes": "off",
     },
   },
-  // La vitrine du site — landing et exemples — a besoin de liberté de mise en
-  // page : fondus, proportions, grilles de maquette. Les couleurs restent des
-  // tokens (`no-raw-colors` active), pour que le mode sombre suive.
+  // La vitrine du site — la landing — a besoin de liberté de mise en page :
+  // proportions, grilles. Les couleurs restent des tokens (`no-raw-colors`
+  // active), pour que le mode sombre suive.
   {
-    files: [
-      "src/app/page.tsx",
-      "src/app/examples/**",
-      "src/components/landing/**",
-      "src/components/examples/**",
-    ],
+    files: ["src/app/page.tsx", "src/components/landing/**"],
     rules: {
       "shadcn/no-arbitrary-values": "off",
       "shadcn/require-static-classes": "off",
+    },
+  },
+  // Les images Open Graph sont rendues par `ImageResponse` (Satori), qui ne
+  // connaît que des styles inline, et une image partagée n'a pas de thème à
+  // suivre : ses couleurs sont fixes.
+  {
+    files: ["src/app/**/opengraph-image.tsx", "src/app/_og/**"],
+    rules: {
+      "shadcn/no-inline-styles": "off",
+      "shadcn/no-raw-colors": "off",
+      "shadcn/no-arbitrary-values": "off",
+      "shadcn/no-unknown-classes": "off",
     },
   },
   // Override default ignores of eslint-config-next.

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 
 import { Playground } from "@/components/playground/playground";
+import { PAGE_DESCRIPTIONS, pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Playground",
-};
+  description: PAGE_DESCRIPTIONS.demo,
+  path: "/demo",
+});
 
 export default function DemoPage() {
   return (

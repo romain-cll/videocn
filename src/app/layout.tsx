@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Geist } from "next/font/google";
+import { PAGE_DESCRIPTIONS } from "@/lib/metadata";
+import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/site-header";
@@ -9,12 +11,15 @@ import { SiteFooter } from "@/components/landing/site-footer";
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
+  // Rend absolues les URL des images Open Graph et des canoniques.
+  metadataBase: new URL(siteConfig.url),
+  applicationName: siteConfig.name,
+  keywords: ["shadcn", "shadcn/ui", "video player", "react", "registry", "HLS", "DASH", "Shaka Player", "tailwind"],
   title: {
     default: "videoCn — a video player for shadcn/ui",
     template: "%s — videoCn",
   },
-  description:
-    "A complete video player built on the native <video> element and shadcn/ui components. Installed with the CLI, themed by your own design system.",
+  description: PAGE_DESCRIPTIONS.home,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
