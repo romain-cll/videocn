@@ -42,8 +42,9 @@ export function pageMetadata({
   };
 }
 
+/** Sous 125 caractères : au-delà, les aperçus sociaux tronquent, surtout sur mobile. */
 export const PAGE_DESCRIPTIONS = {
-  home: "A complete video player for shadcn/ui. One command, one tag: it reads your theme tokens, plays MP4, HLS, DASH and live streams, and is configured through props.",
-  docs: "Install videoCn with the shadcn CLI, drop in <VideoCn />, and tune it through props: controls, chapters, streaming, theming.",
+  home: "A video player for shadcn/ui: one command, your theme tokens, configured through props. MP4, HLS, DASH and live.",
+  docs: "Install videoCn with the shadcn CLI, drop in <VideoCn />, and tune it through props.",
   demo: "Set the props of the videoCn player, watch it change, and copy the JSX.",
 } as const;

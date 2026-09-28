@@ -5,9 +5,5 @@ export const size = OG_SIZE;
 export const contentType = "image/png";
 
 export default function Image() {
-  return renderOgImage({
-    label: "@videocn/player",
-    title: "A video player for shadcn/ui",
-    description: "Reads your theme tokens. Configured through props.",
-  });
+  return renderOgImage({ title: "A video player for shadcn/ui", cta: "Get started" });
 }

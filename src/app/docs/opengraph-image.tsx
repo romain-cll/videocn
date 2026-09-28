@@ -5,9 +5,5 @@ export const size = OG_SIZE;
 export const contentType = "image/png";
 
 export default function Image() {
-  return renderOgImage({
-    label: "docs",
-    title: "Video Player",
-    description: "Install with the shadcn CLI, then tune it through props.",
-  });
+  return renderOgImage({ title: "The video player docs", cta: "Read the docs" });
 }

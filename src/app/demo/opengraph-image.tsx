@@ -5,9 +5,5 @@ export const size = OG_SIZE;
 export const contentType = "image/png";
 
 export default function Image() {
-  return renderOgImage({
-    label: "playground",
-    title: "Playground",
-    description: "Set the props, watch the player change, copy the JSX.",
-  });
+  return renderOgImage({ title: "Every prop, live", cta: "Open the playground" });
 }
