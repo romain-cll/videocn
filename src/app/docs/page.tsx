@@ -237,7 +237,7 @@ export default function DocsPage() {
               element and your own tokens.
             </p>
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <Link href="/demo" className={PILL}>
+              <Link href="/playground" className={PILL}>
                 Playground
               </Link>
               <a href={siteConfig.links.github} target="_blank" rel="noreferrer" className={PILL}>

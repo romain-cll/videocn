@@ -15,7 +15,7 @@ export function SiteHeader() {
           <Link href="/docs" className="hover:text-foreground transition-colors">
             Docs
           </Link>
-          <Link href="/demo" className="hover:text-foreground transition-colors">
+          <Link href="/playground" className="hover:text-foreground transition-colors">
             Playground
           </Link>
           {/* Masqué sur téléphone : la barre n'a pas la place, et le changelog

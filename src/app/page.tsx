@@ -46,7 +46,7 @@ export default function Home() {
               size="lg"
               variant="secondary"
               nativeButton={false}
-              render={<Link href="/demo" />}
+              render={<Link href="/playground" />}
             >
               Open the playground
             </Button>

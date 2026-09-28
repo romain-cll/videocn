@@ -50,9 +50,6 @@ const SEGMENT_FILLS = (() => {
   });
 })();
 
-function asset(...segments: string[]) {
-  return readFile(join(process.cwd(), ...segments));
-}
 
 /** Les icônes de la barre, reprises de lucide comme dans le lecteur. */
 function Icon({ children, size = 22 }: { children: React.ReactNode; size?: number }) {
@@ -150,10 +147,12 @@ function PlayerPreview({ poster }: { poster: string }) {
 
 export async function renderOgImage({ title, cta }: { title: string; cta: string }) {
   const [regular, semiBold, mono, poster] = await Promise.all([
-    asset("src/app/_og/fonts/Geist-Regular.ttf"),
-    asset("src/app/_og/fonts/Geist-SemiBold.ttf"),
-    asset("src/app/_og/fonts/GeistMono-Regular.ttf"),
-    asset("public/examples/big-buck-bunny-poster.jpg"),
+    // Chemins écrits en entier : un chemin calculé ferait tracer tout le projet
+    // dans le code serveur au build.
+    readFile(join(process.cwd(), "src/app/_og/fonts/Geist-Regular.ttf")),
+    readFile(join(process.cwd(), "src/app/_og/fonts/Geist-SemiBold.ttf")),
+    readFile(join(process.cwd(), "src/app/_og/fonts/GeistMono-Regular.ttf")),
+    readFile(join(process.cwd(), "public/examples/big-buck-bunny-poster.jpg")),
   ]);
 
   return new ImageResponse(
