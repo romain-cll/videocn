@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Geist } from "next/font/google";
+import Script from "next/script";
 import { PAGE_DESCRIPTIONS } from "@/lib/metadata";
 import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <SiteFooter />
           </div>
         </ThemeProvider>
+        {/* Plausible, auto-hébergé : liens sortants et événements balisés. La
+            file `window.plausible.q` accepte des appels avant le chargement du
+            script. Plausible ignore `localhost` de lui-même. */}
+        <Script
+          defer
+          data-domain="videocn.dev"
+          src="https://plausible.spotime.fr/js/script.outbound-links.tagged-events.js"
+        />
+        <Script id="plausible-init">
+          {"window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }"}
+        </Script>
       </body>
     </html>
   );
