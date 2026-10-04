@@ -73,7 +73,12 @@ export const VolumeControl = memo(function VolumeControl() {
   };
 
   return (
-    <div className="group/volume flex min-w-0 items-center">
+    // `peer/volume` : l'horodatage, qui suit ce contrôle dans la même rangée,
+    // s'efface dans une barre étroite pendant que le volet est déplié (voir
+    // `time-display.tsx`). Il recopie les trois conditions du volet ci-dessous
+    // — survol, focus clavier, glissement — et suppose de rester son voisin
+    // immédiat : réordonner la barre casserait le masquage sans erreur.
+    <div className="group/volume peer/volume flex min-w-0 items-center">
       <Button
         variant="ghost"
         size="icon"

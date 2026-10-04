@@ -134,7 +134,17 @@ export const TimeDisplay = memo(function TimeDisplay() {
       dir="ltr"
       // `tabular-nums` : sans chiffres à chasse fixe, le texte change de
       // largeur à chaque seconde et vibre sous les yeux.
-      className="mx-2 text-sm whitespace-nowrap tabular-nums"
+      //
+      // Dans une barre de moins de 30rem de contenu (lecteur < ≈ 506 px), le
+      // curseur de volume déplié n'aurait que quelques pixels de piste : tant
+      // qu'il est déplié, l'horodatage passe en `sr-only` — masqué à l'écran,
+      // toujours lu. Le seuil laisse ≈ 54 px de marge à une vidéo de moins
+      // d'une heure avec chapitres (≈ 426 px nécessaires, `59:59 / 59:59`).
+      // Les trois conditions recopient celles du volet de `volume-control.tsx`,
+      // dont ce `span` doit rester le voisin immédiat (`peer/volume`) ; le
+      // focus est restreint à `hover: hover` comme le volet, qu'un appareil sans
+      // survol n'affiche jamais.
+      className="mx-2 text-sm whitespace-nowrap tabular-nums @max-[30rem]:peer-hover/volume:sr-only @max-[30rem]:peer-has-data-dragging/volume:sr-only @max-[30rem]:[@media(hover:hover)]:peer-has-focus-visible/volume:sr-only"
     >
       {/* Deux écritures, une pour chaque canal. Lu tel quel, `9:56` devient
           « neuf deux-points cinquante-six », ou une heure de la journée : les

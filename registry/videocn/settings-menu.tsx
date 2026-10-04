@@ -121,13 +121,19 @@ function SettingsPanel(): ReactElement {
   const selected = qualities.find((level) => level.id === activeQualityId);
 
   // `←`/`→` sont arrêtés par le popup pour que la vidéo n'avance pas ; ici on
-  // leur donne un sens. Le popup les arrête encore après nous.
+  // leur donne un sens, celui des chevrons : en RTL, ils sont retournés et les
+  // touches avec eux. La direction se lit à chaque touche, sans état, pour
+  // suivre un `dir` changé en cours de route (`:dir()` lève avant Chrome 120).
+  // Le popup les arrête encore après nous.
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "ArrowRight" && view === "root") {
+    const rtl = getComputedStyle(event.currentTarget).direction === "rtl";
+    const openKey = rtl ? "ArrowLeft" : "ArrowRight";
+    const backKey = rtl ? "ArrowRight" : "ArrowLeft";
+    if (event.key === openKey && view === "root") {
       const active = document.activeElement;
       // Un clic : la ligne focalisée sait elle-même quelle vue ouvrir.
       if (active instanceof HTMLElement && panelRef.current?.contains(active)) active.click();
-    } else if (event.key === "ArrowLeft" && view !== "root") {
+    } else if (event.key === backKey && view !== "root") {
       setView("root");
     }
   };

@@ -140,7 +140,8 @@ pour la même raison : la primitive ne laisse pas atteindre ce dont on a besoin.
 Le volume est un curseur replié : seule l'icône du son est visible, et le curseur se déplie à sa
 droite au survol de l'icône, au focus clavier ou pendant un glissement, par une transition de
 largeur en CSS. Sur un appareil sans survol, il n'est jamais affiché et toucher l'icône bascule le
-muet.
+muet. Dans un lecteur étroit (moins d'environ 506 px), l'horodatage s'efface le temps que le curseur
+est déplié, faute de place pour les deux ; il reste lu par les lecteurs d'écran.
 
 La liste des vitesses est réglable par prop, comme tout le reste : `<VideoCn>` s'installe et
 fonctionne, on ne renvoie jamais l'utilisateur éditer le code qu'il a reçu.
