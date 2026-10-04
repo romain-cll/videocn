@@ -1,40 +1,40 @@
 # videoCn
 
-Un lecteur vidéo complet, construit sur la balise `<video>` native et les composants shadcn/ui,
-distribué comme registry shadcn. Il hérite du thème du projet qui l'installe.
+A full-featured video player, built on the native `<video>` element and shadcn/ui components,
+distributed as a shadcn registry. It inherits the theme of the project that installs it.
 
-Ce dépôt contient **le lecteur et son site**. Le SaaS d'hébergement vidéo (transcodage, sprites de
-miniatures, sous-titres IA) vit dans un dépôt séparé et privé : le lecteur ne le connaît pas et ne
-doit jamais le connaître. Il consomme des formats standard du web — WebVTT, `<track>`, HLS — que
-l'utilisateur produit lui-même ou délègue.
+This repository contains **the player and its site**. The video hosting SaaS (transcoding,
+thumbnail sprites, AI subtitles) lives in a separate, private repository: the player does not know
+about it and must never know about it. It consumes standard web formats — WebVTT, `<track>`, HLS —
+that the user produces themselves or outsources.
 
 ## Structure
 
 ```
-registry.json          le manifeste : l'item `player` et la liste de ses fichiers
-registry/videocn/      les sources distribuées, à plat : miroir de ce que reçoit l'utilisateur
-                       dans <ui>/video-player/ → lire registry/README.md avant d'y toucher
-src/                   le site (Next.js) : landing, docs, démos — jamais distribué
-public/r/              sortie de `shadcn build`, régénérée, non versionnée
+registry.json          the manifest: the `player` item and the list of its files
+registry/videocn/      the distributed sources, flat: a mirror of what the user receives
+                       in <ui>/video-player/ → read registry/README.md before touching it
+src/                   the site (Next.js): landing, docs, demos — never distributed
+public/r/              output of `shadcn build`, regenerated, git-ignored
 ```
 
-## Commandes
+## Commands
 
 ```bash
-pnpm dev               # le site en local
+pnpm dev               # the site, locally
 pnpm registry:build    # registry.json → public/r/*.json
-pnpm registry:serve    # build + sert public/ sur :4000, pour tester une install
-pnpm build             # registry:build puis next build
-pnpm typecheck         # nécessite un `next build` préalable (types générés)
+pnpm registry:serve    # build + serves public/ on :4000, to test an install
+pnpm build             # registry:build then next build
+pnpm typecheck         # requires a prior `next build` (generated types)
 ```
 
-## Point de vigilance
+## Caveat
 
-L'URL du registry est un contrat public. Dès qu'elle figure dans le `components.json` de quelqu'un,
-elle ne peut plus changer sans casser son projet. Elle est définie à un seul endroit,
-`src/lib/site-config.ts`, et vaut `https://videocn.dev/r/{name}.json`.
+The registry URL is a public contract. Once it appears in someone's `components.json`, it can no
+longer change without breaking their project. It is defined in a single place,
+`src/lib/site-config.ts`, and is `https://videocn.dev/r/{name}.json`.
 
-## Consommer le registry
+## Consuming the registry
 
 ```json
 {
@@ -48,6 +48,10 @@ elle ne peut plus changer sans casser son projet. Elle est définie à un seul e
 pnpm dlx shadcn@latest add @videocn/player
 ```
 
-Un seul item est publié. Cette commande installe le lecteur entier — tous les fichiers
-nécessaires, groupés dans `<ui>/video-player/` — et les primitives shadcn manquantes du
-projet hôte. Aucun contrôle n'est distribué séparément.
+Only one item is published. This command installs the entire player — all the necessary files,
+grouped in `<ui>/video-player/` — and the shadcn primitives missing from the host project. No
+player control is distributed separately.
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](./LICENSE) file.
