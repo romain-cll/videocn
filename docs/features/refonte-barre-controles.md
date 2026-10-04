@@ -9,78 +9,78 @@ réglages), afin que la barre reste lisible et tienne entière dans un lecteur �
 
 ### Volume
 
-- [ ] CA1 — Étant donné un appareil à souris, quand le pointeur n'est ni sur l'icône du son ni sur
+- [x] CA1 — Étant donné un appareil à souris, quand le pointeur n'est ni sur l'icône du son ni sur
   le curseur de volume et que le focus clavier n'y est pas, alors seule l'icône du son est visible,
   le curseur n'occupe aucune largeur et l'horodatage suit directement l'icône.
-- [ ] CA2 — Étant donné le curseur replié, quand le pointeur survole l'icône du son, alors le
+- [x] CA2 — Étant donné le curseur replié, quand le pointeur survole l'icône du son, alors le
   curseur se déplie **à droite** de l'icône par une transition CSS de largeur d'au plus 200 ms ;
   l'icône ne bouge pas et, au-dessus du seuil de CA22, l'horodatage glisse vers la droite.
-- [ ] CA3 — Étant donné le curseur déplié, quand le pointeur quitte la zone formée par l'icône et
+- [x] CA3 — Étant donné le curseur déplié, quand le pointeur quitte la zone formée par l'icône et
   le curseur, alors le curseur se replie avec la même transition (au-dessus du seuil de CA22 ; en
   dessous, l'horodatage réapparaît d'un coup). Passer de l'icône au curseur ne
   le replie pas.
-- [ ] CA4 — Étant donné un glissement en cours sur le curseur de volume, quand le pointeur sort de
+- [x] CA4 — Étant donné un glissement en cours sur le curseur de volume, quand le pointeur sort de
   la zone sans relâcher, alors le curseur reste déplié jusqu'au relâchement.
-- [ ] CA5 — Étant donné une navigation au clavier, quand le focus arrive par `Tab` sur le bouton
+- [x] CA5 — Étant donné une navigation au clavier, quand le focus arrive par `Tab` sur le bouton
   muet ou sur le curseur, alors le curseur est déplié. Le curseur reste atteignable par `Tab` même
   replié, et ses flèches fonctionnent comme aujourd'hui.
-- [ ] CA6 — Étant donné `prefers-reduced-motion: reduce`, quand le curseur se déplie ou se replie,
+- [x] CA6 — Étant donné `prefers-reduced-motion: reduce`, quand le curseur se déplie ou se replie,
   alors le changement est instantané, sans transition.
-- [ ] CA7 — Étant donné un appareil sans survol (`(hover: none)`, tactile), alors le curseur de
+- [x] CA7 — Étant donné un appareil sans survol (`(hover: none)`, tactile), alors le curseur de
   volume ne s'affiche jamais et toucher l'icône bascule le muet.
-- [ ] CA8 — Étant donné n'importe quel appareil, quand on clique sur l'icône du son, alors le muet
+- [x] CA8 — Étant donné n'importe quel appareil, quand on clique sur l'icône du son, alors le muet
   bascule comme aujourd'hui ; et `controls={{ volume: false }}` retire l'icône et le curseur.
 
 ### Popup de réglages
 
-- [ ] CA9 — Étant donné un lecteur sans prop `controls`, alors la barre ne contient plus de bouton
+- [x] CA9 — Étant donné un lecteur sans prop `controls`, alors la barre ne contient plus de bouton
   vitesse ni de bouton qualité, mais un bouton à icône de roue dentée, `aria-label="Settings"`,
   placé entre le bouton des chapitres et le bouton Picture-in-Picture.
-- [ ] CA10 — Étant donné le bouton Settings, quand on l'active, alors un popup s'ouvre vers le haut,
+- [x] CA10 — Étant donné le bouton Settings, quand on l'active, alors un popup s'ouvre vers le haut,
   rendu dans le conteneur du lecteur, et montre deux lignes, chacune suivie d'un chevron :
   « Speed » avec la vitesse courante (`1×`), et « Quality » avec la qualité courante (`Auto (720p)`
   en automatique sur un flux adaptatif, la hauteur choisie sinon).
-- [ ] CA11 — Étant donné le popup au premier niveau, quand on active la ligne « Speed », alors le
+- [x] CA11 — Étant donné le popup au premier niveau, quand on active la ligne « Speed », alors le
   popup affiche à la place la liste des vitesses, celle en cours cochée, sous une ligne de retour
   « Speed ». Choisir une vitesse l'applique et ferme le popup. Même chose pour « Quality » avec la
   liste des qualités et ses règles actuelles (« Auto (720p) », une entrée par hauteur, `1080p60`).
-- [ ] CA12 — Étant donné une sous-liste ouverte, quand on active la ligne de retour, alors le popup
+- [x] CA12 — Étant donné une sous-liste ouverte, quand on active la ligne de retour, alors le popup
   revient au premier niveau.
-- [ ] CA13 — Étant donné le popup ouvert au clavier, alors `↑`/`↓` parcourent les lignes, `Entrée`
+- [x] CA13 — Étant donné le popup ouvert au clavier, alors `↑`/`↓` parcourent les lignes, `Entrée`
   ou `→` ouvre une sous-liste, `←` revient au premier niveau, `Échap` ferme le popup et rend le
   focus au bouton Settings. Aucune de ces touches ne déclenche la keymap du lecteur pendant que le
   popup a le focus.
-- [ ] CA14 — Étant donné le moteur natif (aucune qualité exposée), quand le popup est ouvert, alors
+- [x] CA14 — Étant donné le moteur natif (aucune qualité exposée), quand le popup est ouvert, alors
   la ligne « Quality » est visible, grisée, non activable, et affiche « Auto ».
-- [ ] CA15 — Étant donné `controls={{ playbackRate: false }}`, alors la ligne « Speed » disparaît ;
+- [x] CA15 — Étant donné `controls={{ playbackRate: false }}`, alors la ligne « Speed » disparaît ;
   `controls={{ quality: false }}`, la ligne « Quality » disparaît ; les deux à la fois, le bouton
   Settings disparaît. `controls={{ playbackRate: { rates: [...] } }}` règle la liste des vitesses
   comme aujourd'hui.
-- [ ] CA16 — Étant donné le popup ouvert, alors la barre ne se masque pas ; un clic hors du popup
+- [x] CA16 — Étant donné le popup ouvert, alors la barre ne se masque pas ; un clic hors du popup
   le ferme.
-- [ ] CA17 — Étant donné le lecteur en plein écran, quand on ouvre le popup, alors il s'affiche et
+- [x] CA17 — Étant donné le lecteur en plein écran, quand on ouvre le popup, alors il s'affiche et
   fonctionne comme hors plein écran.
-- [ ] CA18 — Étant donné un lecteur de 360 × 202 px, quand on ouvre la liste des vitesses par
+- [x] CA18 — Étant donné un lecteur de 360 × 202 px, quand on ouvre la liste des vitesses par
   défaut (7 entrées), alors le popup tient entièrement dans le lecteur et sa liste défile si elle
   dépasse.
 
 ### Barre et site
 
-- [ ] CA19 — Étant donné un lecteur de 360 px de large, une vidéo de moins d'une heure avec des
+- [x] CA19 — Étant donné un lecteur de 360 px de large, une vidéo de moins d'une heure avec des
   chapitres, et aucune prop `controls`, alors tous les contrôles de la barre sont entièrement
   visibles, aucun n'est coupé ni ne déborde du lecteur.
-- [ ] CA20 — Étant donné une vidéo avec chapitres, alors le bouton des chapitres reste dans la
+- [x] CA20 — Étant donné une vidéo avec chapitres, alors le bouton des chapitres reste dans la
   barre, avec son comportement actuel.
-- [ ] CA21 — Étant donné la page `/docs` du site, alors aucun texte ne parle plus d'un « speed
+- [x] CA21 — Étant donné la page `/docs` du site, alors aucun texte ne parle plus d'un « speed
   menu » ou d'un « quality menu » distinct : vitesse et qualité y sont décrites comme des entrées
   du menu de réglages, et le volume comme un curseur qui se déplie au survol. Textes en anglais.
-- [ ] CA22 — Étant donné un lecteur de 360 px de large, une vidéo avec chapitres et aucune prop
+- [x] CA22 — Étant donné un lecteur de 360 px de large, une vidéo avec chapitres et aucune prop
   `controls`, quand le curseur de volume se déplie (survol, focus clavier ou glissement), alors
   l'horodatage est masqué tant que le curseur reste déplié, et le volet atteint sa largeur complète
   (96 px) ; quand le curseur se replie, l'horodatage réapparaît.
-- [ ] CA23 — Étant donné un lecteur de 640 px de large, quand le curseur de volume se déplie, alors
+- [x] CA23 — Étant donné un lecteur de 640 px de large, quand le curseur de volume se déplie, alors
   l'horodatage reste visible et glisse vers la droite (comportement de CA2).
-- [ ] CA24 — Étant donné un lecteur en `dir="rtl"` et le popup de réglages ouvert au clavier, alors
+- [x] CA24 — Étant donné un lecteur en `dir="rtl"` et le popup de réglages ouvert au clavier, alors
   `←` ouvre la sous-liste de la ligne focalisée et `→` revient au premier niveau, dans le sens des
   chevrons. En `ltr`, le comportement de CA13 est inchangé.
 
@@ -249,3 +249,4 @@ réglages), afin que la barre reste lisible et tienne entière dans un lecteur �
 - 2026-10-05 — Décision 7 = A : sous le seuil, l'horodatage réapparaît d'un coup au repli ; CA2 et CA3 précisés « au-dessus du seuil de CA22 » (validée par Romain)
 - 2026-10-05 — Décision 8 = A : seuil à 30rem de largeur de barre (lecteur < ≈ 506 px) (validée par Romain)
 - 2026-10-05 — Décision 9 = A : une phrase ajoutée au paragraphe du volume de `docs/mvp.md` (validée par Romain)
+- 2026-10-05 — Écarts du dev, relus en review et signalés à Romain : `docs/` exclu du scan Tailwind (`@source not "../../docs"` dans `src/app/globals.css`, la spec citant des classes qui cassaient le CSS de dev) ; `min-w-0` sur la racine du volume pour que le volet se comprime ; chevrons du popup en `rtl:rotate-180` ; l'image OG dessine une roue dentée à la place de « 1× » et « Auto »
