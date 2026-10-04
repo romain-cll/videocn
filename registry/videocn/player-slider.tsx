@@ -262,8 +262,8 @@ export function PlayerSlider({
   useEffect(() => () => finish("cancel"), [finish]);
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    // Jamais de `stopPropagation` ni de `preventDefault` ici : le menu de
-    // vitesse ferme sur un `pointerdown` du document, la visibilité de la
+    // Jamais de `stopPropagation` ni de `preventDefault` ici : les menus
+    // ferment sur un `pointerdown` du document, la visibilité de la
     // barre l'écoute sur le conteneur, et c'est le comportement natif qui pose
     // le focus sur la racine.
     if (inert || gestureRef.current) return;

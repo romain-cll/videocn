@@ -55,7 +55,13 @@ const ROWS: readonly ReferenceRow[] = [
       </>
     ),
   },
-  { name: "volume", type: "boolean", defaultValue: "true", description: "Mute button and volume slider." },
+  {
+    name: "volume",
+    type: "boolean",
+    defaultValue: "true",
+    description:
+      "Mute button and volume slider. The slider folds behind the icon and unfolds on hover or keyboard focus; on touch devices only the button shows.",
+  },
   { name: "fullscreen", type: "boolean", defaultValue: "true", description: "The fullscreen button." },
   {
     name: "pictureInPicture",
@@ -74,13 +80,14 @@ const ROWS: readonly ReferenceRow[] = [
     type: "boolean | { rates?: number[] }",
     defaultValue: `[${DEFAULT_PLAYBACK_RATES.join(", ")}]`,
     description:
-      "The speed menu. Rates are sorted and deduplicated; invalid values are dropped.",
+      "The Speed entry of the settings menu. Rates are sorted and deduplicated; invalid values are dropped.",
   },
   {
     name: "quality",
     type: "boolean",
     defaultValue: "true",
-    description: "The quality menu. Disabled, not hidden, when the engine exposes no levels.",
+    description:
+      "The Quality entry of the settings menu. Greyed out, not hidden, when the engine exposes no levels. With playbackRate and quality both off, the settings button disappears.",
   },
   {
     name: "live",

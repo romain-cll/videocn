@@ -198,6 +198,9 @@ export function VideoCn({
     <PlayerProvider value={player}>
       <div
         ref={containerRef}
+        // Repère de la hauteur mesurée par les menus : ils bornent leur popup à
+        // la place qui reste dans ce conteneur.
+        data-slot="video-player"
         data-fullscreen={fullscreenAttribute}
         // Le curseur se masque avec la barre, et pour la même raison : plus
         // rien ne doit flotter au-dessus de l'image.

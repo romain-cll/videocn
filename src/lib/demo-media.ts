@@ -49,7 +49,7 @@ export const DEMO_SOURCES: readonly DemoSource[] = [
     src: EXAMPLE_VIDEOS.bigBuckBunny.src,
     poster: EXAMPLE_VIDEOS.bigBuckBunny.poster,
     supportsChapters: true,
-    note: "Native engine, no streaming JavaScript. The quality button stays disabled: a progressive file has a single quality.",
+    note: "Native engine, no streaming JavaScript. The Quality setting stays greyed out: a progressive file has a single quality.",
   },
   {
     id: "hls",

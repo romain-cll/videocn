@@ -52,7 +52,7 @@ const CASES: readonly Case[] = [
   {
     id: "streaming",
     title: "Streaming",
-    description: "An HLS manifest loads Shaka on demand and enables the quality menu.",
+    description: "An HLS manifest loads Shaka on demand and enables the quality setting.",
     prop: "src",
     source: "hls",
     showNote: true,

@@ -40,6 +40,11 @@ sur place — palette en onglets, `--radius` à côté, le CSS correspondant à 
 preuve la plus directe que le lecteur lit les tokens de l'hôte, et elle rendait redondante la
 section de thème qui suivait.
 
+Amendé le 5 octobre 2026, refonte de la barre de contrôles : le volume se replie derrière son icône
+et se déplie au survol, la vitesse et la qualité quittent la barre pour un menu de réglages à deux
+niveaux. Le bouton de qualité grisé devient une ligne grisée de ce menu. Voir **Contrôles** et
+**Moteur vidéo**.
+
 ## Lecture
 
 Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
@@ -73,8 +78,9 @@ de plus, la source est auto-détectée. Une prop d'échappement `type="native" |
 couvre les URL signées, sans extension ou trompeuses.
 
 L'API publique ne varie pas d'un moteur à l'autre ; seules les **capacités** varient. Le moteur
-natif expose une liste de qualités vide : le bouton reste affiché et passe `disabled`, comme sur
-YouTube. Un contrôle qui disparaît déroute plus qu'un contrôle grisé.
+natif expose une liste de qualités vide : la ligne « Quality » du menu de réglages reste affichée,
+grisée et non activable, comme sur YouTube. Une ligne qui disparaît déroute plus qu'une ligne
+grisée.
 
 Deux conséquences à tenir :
 
@@ -95,10 +101,9 @@ publié, voir Distribution.
 | --- | --- |
 | Play / pause | `Button` |
 | Scrubber avec aperçu du buffer, glissement comme YouTube : pause au premier déplacement, recherche continue limitée, reprise au relâchement | maison — voir note |
-| Volume + bascule muet | maison — voir note — plus `Button` |
+| Volume + bascule muet : l'icône seule, le curseur se déplie à sa droite au survol ou au focus | maison — voir note — plus `Button` |
 | Horodatage `0:42 / 9:56` | aucune — du texte |
-| Vitesse de lecture, 0,5× → 2× | maison — voir note sur les menus |
-| Qualité | maison — `disabled` si le moteur n'en expose aucune |
+| Réglages : un bouton à roue dentée, un popup à deux niveaux — vitesse de lecture (0,5× → 2×) et qualité | maison — voir note sur les menus |
 | Pastille « Live » | `Button` — seulement sur un flux en direct |
 | Plein écran | `Button` |
 | Picture-in-Picture | `Button` |
@@ -122,10 +127,20 @@ est porté là n'est plus rendu dès qu'un autre élément est en plein écran �
 du lecteur qui passe en plein écran, pour que la barre y survive. Les briques pour recomposer le
 menu ne sont pas exportées, et leur structure interne diverge entre `radix` et `base`. Nos menus
 sont donc écrits à la main, rendus **dans** le conteneur, et reprennent les classes et les tokens
-du `DropdownMenu` pour hériter du thème de l'hôte. Ça vaut pour la vitesse, la qualité, les
-chapitres et les sous-titres. Avec le curseur, ce sont les deux seuls composants qu'on écrit
-nous-mêmes — et à chaque fois pour la même raison : la primitive ne laisse pas atteindre ce dont
-on a besoin.
+du `DropdownMenu` pour hériter du thème de l'hôte. Ça vaut pour les réglages (vitesse et qualité),
+les chapitres et les sous-titres. Le menu de réglages est à deux niveaux : la racine liste les
+lignes avec leur valeur courante (`Speed 1×`, `Quality Auto (720p)`), chacune ouvre sa liste de
+choix, et choisir applique et ferme. Les chapitres restent un bouton à part dans la barre. Les
+flèches `←`/`→` n'atteignent jamais la keymap tant qu'un menu a le focus, et la hauteur d'un popup
+est bornée à la place qui reste dans le lecteur.
+
+Avec le curseur, ce sont les deux seuls composants qu'on écrit nous-mêmes — et à chaque fois
+pour la même raison : la primitive ne laisse pas atteindre ce dont on a besoin.
+
+Le volume est un curseur replié : seule l'icône du son est visible, et le curseur se déplie à sa
+droite au survol de l'icône, au focus clavier ou pendant un glissement, par une transition de
+largeur en CSS. Sur un appareil sans survol, il n'est jamais affiché et toucher l'icône bascule le
+muet.
 
 La liste des vitesses est réglable par prop, comme tout le reste : `<VideoCn>` s'installe et
 fonctionne, on ne renvoie jamais l'utilisateur éditer le code qu'il a reçu.
@@ -134,7 +149,7 @@ Le sélecteur de qualité suit trois règles. **Une entrée par hauteur d'image*
 qualité de cette hauteur ; une même hauteur au-delà de trente images par seconde fait une entrée
 à part, écrite `1080p60`. **En automatique, le menu dit ce qui est réellement joué** — « Auto
 (720p) » —, parce que c'est la seule façon de savoir ce qu'on regarde sans quitter l'automatique ;
-le bouton, lui, affiche « Auto » sans la hauteur, qui changerait sous les yeux. **Un choix
+la racine du menu de réglages l'affiche aussi sur sa ligne « Quality ». **Un choix
 s'applique tout de suite**, quitte à vider ce qui est déjà chargé : on veut voir l'effet du clic,
 comme sur YouTube.
 

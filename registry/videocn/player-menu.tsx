@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -59,6 +60,13 @@ type InitialFocus = "checked" | "first" | "last";
  */
 const ITEM_SELECTOR =
   '[role="menuitemradio"]:not([data-disabled]),[role="menuitem"]:not([data-disabled])';
+
+/**
+ * Ce que le popup laisse libre de chaque côté dans sa hauteur mesurée : le
+ * `mb-2` qui le décolle de son déclencheur, et autant au-dessus, pour qu'il ne
+ * touche pas le bord du lecteur.
+ */
+const POPUP_MARGIN = 16;
 
 /** Au-delà, la frappe suivante repart d'une chaîne vide. */
 const TYPEAHEAD_RESET_MS = 500;
@@ -114,7 +122,7 @@ function getItems(content: HTMLElement | null): HTMLElement[] {
   return Array.from(content.querySelectorAll<HTMLElement>(ITEM_SELECTOR));
 }
 
-function focusInitialItem(content: HTMLElement | null, initialFocus: InitialFocus): void {
+export function focusInitialItem(content: HTMLElement | null, initialFocus: InitialFocus): void {
   const items = getItems(content);
   if (items.length === 0) return;
   if (initialFocus === "last") {
@@ -274,9 +282,10 @@ export function PlayerMenuTrigger({
       id={triggerId}
       type="button"
       variant="ghost"
-      // `sm` et non `icon-sm` : nos déclencheurs portent une valeur en toutes
-      // lettres (« 1.5× »), qu'un carré de 28 px ne contiendrait pas. Même
-      // hauteur, largeur libre.
+      // `sm` et non `icon-sm` : aucun déclencheur ne porte plus de texte, mais
+      // la largeur reste libre pour qu'un contenu à venir — une icône suivie
+      // d'un badge, par exemple — ne soit pas rogné. Même hauteur que les
+      // autres boutons de la barre.
       size="sm"
       disabled={disabled}
       aria-label={ariaLabel}
@@ -316,6 +325,22 @@ function PlayerMenuPopup({ children, className }: PlayerMenuContentProps) {
   // La chaîne de saisie rapide et son minuteur vivent dans une ref : les
   // changer ne doit rien re-rendre, seul le focus bouge.
   const typeaheadRef = useRef({ query: "", timer: 0 });
+
+  // Avant la première peinture : le popup ne doit jamais apparaître à sa
+  // hauteur naturelle puis se raccourcir. Le conteneur du lecteur est
+  // `overflow-hidden`, et un lecteur étroit est aussi un lecteur bas : le popup,
+  // ancré dans la barre, ne connaît pas cette hauteur en CSS. Seule mesure faite
+  // en JavaScript ; elle passe par une variable CSS posée à la main et non par
+  // un `style` JSX, que le lint interdit et que React réécrirait au rendu.
+  useLayoutEffect(() => {
+    const content = contentRef.current;
+    const trigger = triggerRef.current;
+    const player = trigger?.closest('[data-slot="video-player"]');
+    if (!content || !trigger || !player) return;
+    const room =
+      trigger.getBoundingClientRect().top - player.getBoundingClientRect().top - POPUP_MARGIN;
+    content.style.setProperty("--player-menu-max-h", `${Math.max(room, 0)}px`);
+  }, [contentRef, triggerRef]);
 
   useEffect(() => {
     // Au montage, donc à l'ouverture. Le focus DOM entre réellement dans le
@@ -389,6 +414,15 @@ function PlayerMenuPopup({ children, className }: PlayerMenuContentProps) {
         items[current]?.click();
         return;
       }
+      case "ArrowLeft":
+      case "ArrowRight": {
+        // Le popup a le focus : `←`/`→` ne doivent pas faire avancer la vidéo.
+        // Un contenu qui s'en sert (les niveaux du menu de réglages) les traite
+        // avant nous, depuis ses propres items.
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       case "Escape": {
         event.preventDefault();
         event.stopPropagation();
@@ -449,8 +483,10 @@ function PlayerMenuPopup({ children, className }: PlayerMenuContentProps) {
       className={cn(
         POPUP_CLASSNAME,
         // Vers le haut et aligné à droite : seule direction possible pour une
-        // barre en bas. `max-h-64` est un garde-fou — le conteneur du lecteur
-        // est `overflow-hidden`, un popup plus haut que la vidéo serait coupé.
+        // barre en bas. La hauteur est bornée à 16 rem, ou à la place qui reste
+        // au-dessus du déclencheur si elle est moindre (variable posée par
+        // l'effet de mise en page ci-dessus) : le conteneur du lecteur est
+        // `overflow-hidden`, un popup plus haut que la vidéo serait coupé.
         //
         // `w-max` n'est pas une coquetterie. Un élément `absolute` sans `left`
         // se dimensionne en « shrink-to-fit », borné par la largeur disponible
@@ -461,8 +497,8 @@ function PlayerMenuPopup({ children, className }: PlayerMenuContentProps) {
         // qualité ne le montraient pas, leurs libellés étant si courts que le
         // `min-w-32` couvrait le défaut. `max-w-64` prend alors le relais du
         // repli, pour qu'un titre à rallonge ne pousse pas le popup hors de la
-        // vidéo — le pendant horizontal de `max-h-64`.
-        "absolute right-0 bottom-full mb-2 max-h-64 w-max max-w-64",
+        // vidéo — le pendant horizontal de la borne de hauteur.
+        "absolute right-0 bottom-full mb-2 max-h-[min(16rem,var(--player-menu-max-h,16rem))] w-max max-w-64",
         className,
       )}
       onKeyDown={handleKeyDown}
@@ -470,6 +506,36 @@ function PlayerMenuPopup({ children, className }: PlayerMenuContentProps) {
     >
       {children}
     </div>
+  );
+}
+
+export interface PlayerMenuItemProps {
+  /** Appelé au clic ; le menu reste ouvert, c'est à l'appelant de le fermer. */
+  onSelect: () => void;
+  disabled?: boolean;
+  className?: string;
+  children: ReactNode;
+}
+
+/**
+ * Un item simple, sans état coché : une ligne qui mène ailleurs, comme celles
+ * du menu de réglages. Il ne ferme pas le menu — ouvrir un sous-niveau ne
+ * quitte pas le popup.
+ */
+export function PlayerMenuItem({ onSelect, disabled, className, children }: PlayerMenuItemProps) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      data-slot="player-menu-item"
+      data-disabled={disabled ? "" : undefined}
+      disabled={disabled}
+      tabIndex={-1}
+      className={cn(ITEM_CLASSNAME, className)}
+      onClick={onSelect}
+    >
+      {children}
+    </button>
   );
 }
 

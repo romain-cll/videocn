@@ -73,7 +73,7 @@ export const VolumeControl = memo(function VolumeControl() {
   };
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="group/volume flex items-center">
       <Button
         variant="ghost"
         size="icon"
@@ -84,30 +84,46 @@ export const VolumeControl = memo(function VolumeControl() {
         <VolumeIcon />
       </Button>
       {/*
-        Le curseur prend toute la largeur de son parent : c'est cette enveloppe
-        qui lui donne la sienne, plutôt qu'une classe posée sur le composant.
-        La marge laisse la place au thumb, centré sur la position, qui déborde
-        de la moitié de sa taille — et de son anneau de focus — à 0 % et à
-        100 % : sans elle, il mordrait sur le bouton muet et sur l'horodatage.
+        Le volet qui replie le curseur. Seule sa largeur s'anime, en CSS : il
+        s'ouvre quand le pointeur est sur le groupe, quand le focus clavier y
+        est, et tant qu'un glissement est en cours — le pointeur peut alors
+        sortir de la zone sans que le curseur ne se referme sous le doigt.
+
+        Le curseur reste dans le DOM, replié : il garde sa place dans la
+        tabulation, et le focus l'ouvre. Sans survol possible (`hover: none`),
+        il n'est jamais affiché : toucher l'icône bascule le muet, et un curseur
+        de 96 px ne se manie pas au doigt dans une barre qui en compte déjà dix.
+
+        `overflow-hidden` a une largeur minimale nulle en flex : dans une barre
+        étroite, le volet se comprime au lieu de la faire déborder.
       */}
-      <div className="mx-2 w-20">
-        <PlayerSlider
-          aria-label="Volume"
-          min={0}
-          max={1}
-          value={effectiveVolume}
-          step={DEFAULT_VOLUME_STEP}
-          pageStep={0.2}
-          getValueText={(value) => (muted ? "Muted" : `${Math.round(value * 100)}%`)}
-          // Sur iPhone, Safari ignore les écritures sur `video.volume` : le
-          // curseur mentirait. Le bouton muet, lui, fonctionne — il reste actif.
-          disabled={!canControlVolume}
-          onValueChange={handleValueChange}
-        >
-          <PlayerSliderTrack>
-            <PlayerSliderRange />
-          </PlayerSliderTrack>
-        </PlayerSlider>
+      <div className="w-0 overflow-hidden transition-[width] duration-200 group-hover/volume:w-24 group-has-focus-visible/volume:w-24 group-has-data-dragging/volume:w-24 motion-reduce:transition-none [@media(hover:none)]:hidden">
+        {/*
+          Le curseur prend toute la largeur de son parent : c'est cette
+          enveloppe qui lui donne la sienne, plutôt qu'une classe posée sur le
+          composant. La marge laisse la place au thumb, centré sur la position,
+          qui déborde de la moitié de sa taille — et de son anneau de focus — à
+          0 % et à 100 % : l'`overflow-hidden` du volet les couperait.
+        */}
+        <div className="mx-2.5">
+          <PlayerSlider
+            aria-label="Volume"
+            min={0}
+            max={1}
+            value={effectiveVolume}
+            step={DEFAULT_VOLUME_STEP}
+            pageStep={0.2}
+            getValueText={(value) => (muted ? "Muted" : `${Math.round(value * 100)}%`)}
+            // Sur iPhone, Safari ignore les écritures sur `video.volume` : le
+            // curseur mentirait. Le bouton muet, lui, fonctionne — il reste actif.
+            disabled={!canControlVolume}
+            onValueChange={handleValueChange}
+          >
+            <PlayerSliderTrack>
+              <PlayerSliderRange />
+            </PlayerSliderTrack>
+          </PlayerSlider>
+        </div>
       </div>
     </div>
   );

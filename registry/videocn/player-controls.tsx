@@ -7,10 +7,9 @@ import { useControlsOptions, useControlsVisible, useHoldControlsVisible } from "
 import { FullscreenToggle } from "./fullscreen-toggle";
 import { LiveBadge } from "./live-badge";
 import { PictureInPictureToggle } from "./picture-in-picture-toggle";
-import { PlaybackRateMenu } from "./playback-rate-menu";
-import { QualityMenu } from "./quality-menu";
 import { PlayToggle } from "./play-toggle";
 import { PlayerScrubber } from "./player-scrubber";
+import { SettingsMenu } from "./settings-menu";
 import { TimeDisplay } from "./time-display";
 import { VolumeControl } from "./volume-control";
 
@@ -78,12 +77,13 @@ export function PlayerControls(): ReactElement | null {
             la lecture, et elle ne doit jamais déplacer une cible cliquable. */}
         <TimeDisplay />
         <div className="ml-auto flex items-center gap-1">
-          {/* En tête des menus : c'est le seul qui parle du contenu et non du
-              rendu, et c'est celui qu'on vient chercher le plus souvent.
-              Rendu `null` quand la vidéo n'a pas de chapitres. */}
+          {/* Avant les réglages : c'est le seul menu qui parle du contenu et
+              non du rendu, et c'est celui qu'on vient chercher le plus
+              souvent. Rendu `null` quand la vidéo n'a pas de chapitres. */}
           <ChapterMenu />
-          <PlaybackRateMenu />
-          <QualityMenu />
+          {/* Vitesse et qualité, rangées derrière un seul bouton : deux
+              boutons à libellé ne tenaient pas dans un lecteur étroit. */}
+          <SettingsMenu />
           <PictureInPictureToggle />
           <FullscreenToggle />
         </div>
