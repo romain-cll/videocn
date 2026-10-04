@@ -73,7 +73,7 @@ export const VolumeControl = memo(function VolumeControl() {
   };
 
   return (
-    <div className="group/volume flex items-center">
+    <div className="group/volume flex min-w-0 items-center">
       <Button
         variant="ghost"
         size="icon"
@@ -94,8 +94,9 @@ export const VolumeControl = memo(function VolumeControl() {
         il n'est jamais affiché : toucher l'icône bascule le muet, et un curseur
         de 96 px ne se manie pas au doigt dans une barre qui en compte déjà dix.
 
-        `overflow-hidden` a une largeur minimale nulle en flex : dans une barre
-        étroite, le volet se comprime au lieu de la faire déborder.
+        `overflow-hidden` a une largeur minimale nulle en flex, et le `min-w-0`
+        de la racine lui laisse la même latitude : dans une barre étroite, le
+        volet se comprime au lieu de la faire déborder.
       */}
       <div className="w-0 overflow-hidden transition-[width] duration-200 group-hover/volume:w-24 group-has-focus-visible/volume:w-24 group-has-data-dragging/volume:w-24 motion-reduce:transition-none [@media(hover:none)]:hidden">
         {/*
