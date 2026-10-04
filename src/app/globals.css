@@ -2,6 +2,10 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Les specs citent des classes à moitié écrites (`var(…)`) : Tailwind les
+   générerait telles quelles et le CSS ne se parserait plus. */
+@source not "../../docs";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

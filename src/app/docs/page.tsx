@@ -370,10 +370,10 @@ export default function DocsPage() {
                 </DocsText>
                 <CodeBlock code={TYPE_EXAMPLE} />
                 <DocsText>
-                  The quality menu lists one entry per resolution. In automatic mode, it shows what
-                  is actually playing, for example <InlineCode>Auto (720p)</InlineCode>. On the
-                  native engine, the browser exposes no levels, so the button stays visible but
-                  disabled.
+                  The Quality entry of the settings menu lists one choice per resolution. In
+                  automatic mode, it shows what is actually playing, for example{" "}
+                  <InlineCode>Auto (720p)</InlineCode>. On the native engine, the browser exposes no
+                  levels, so the entry stays visible but greyed out.
                 </DocsText>
               </>
             }

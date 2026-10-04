@@ -7,10 +7,9 @@ import { useControlsOptions, useControlsVisible, useHoldControlsVisible } from "
 import { FullscreenToggle } from "./fullscreen-toggle";
 import { LiveBadge } from "./live-badge";
 import { PictureInPictureToggle } from "./picture-in-picture-toggle";
-import { PlaybackRateMenu } from "./playback-rate-menu";
-import { QualityMenu } from "./quality-menu";
 import { PlayToggle } from "./play-toggle";
 import { PlayerScrubber } from "./player-scrubber";
+import { SettingsMenu } from "./settings-menu";
 import { TimeDisplay } from "./time-display";
 import { VolumeControl } from "./volume-control";
 
@@ -65,7 +64,12 @@ export function PlayerControls(): ReactElement | null {
       // plusieurs lignes, cette chaîne perdait quatre classes dans un projet
       // RTL — le voile et la couleur du texte avec — et les icônes devenaient
       // presque invisibles sur la vidéo.
-      className="dark absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 bg-linear-to-t from-player-scrim to-transparent px-3 pt-10 pb-3 text-foreground transition-opacity duration-200 motion-reduce:transition-none data-hidden:not-has-focus-visible:pointer-events-none data-hidden:not-has-focus-visible:opacity-0"
+      //
+      // `@container` : la barre est le contexte des requêtes de largeur de ses
+      // contrôles (l'horodatage, qui s'efface sous 30rem quand le volume se
+      // déplie). Elle et non la racine du lecteur, où `container-type` annulerait
+      // la largeur intrinsèque d'un lecteur en `w-fit`.
+      className="@container dark absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 bg-linear-to-t from-player-scrim to-transparent px-3 pt-10 pb-3 text-foreground transition-opacity duration-200 motion-reduce:transition-none data-hidden:not-has-focus-visible:pointer-events-none data-hidden:not-has-focus-visible:opacity-0"
     >
       <PlayerScrubber />
       <div className="flex items-center gap-1">
@@ -78,12 +82,13 @@ export function PlayerControls(): ReactElement | null {
             la lecture, et elle ne doit jamais déplacer une cible cliquable. */}
         <TimeDisplay />
         <div className="ml-auto flex items-center gap-1">
-          {/* En tête des menus : c'est le seul qui parle du contenu et non du
-              rendu, et c'est celui qu'on vient chercher le plus souvent.
-              Rendu `null` quand la vidéo n'a pas de chapitres. */}
+          {/* Avant les réglages : c'est le seul menu qui parle du contenu et
+              non du rendu, et c'est celui qu'on vient chercher le plus
+              souvent. Rendu `null` quand la vidéo n'a pas de chapitres. */}
           <ChapterMenu />
-          <PlaybackRateMenu />
-          <QualityMenu />
+          {/* Vitesse et qualité, rangées derrière un seul bouton : deux
+              boutons à libellé ne tenaient pas dans un lecteur étroit. */}
+          <SettingsMenu />
           <PictureInPictureToggle />
           <FullscreenToggle />
         </div>
