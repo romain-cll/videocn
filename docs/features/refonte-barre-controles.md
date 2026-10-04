@@ -73,6 +73,15 @@ réglages), afin que la barre reste lisible et tienne entière dans un lecteur �
 - [ ] CA21 — Étant donné la page `/docs` du site, alors aucun texte ne parle plus d'un « speed
   menu » ou d'un « quality menu » distinct : vitesse et qualité y sont décrites comme des entrées
   du menu de réglages, et le volume comme un curseur qui se déplie au survol. Textes en anglais.
+- [ ] CA22 — Étant donné un lecteur de 360 px de large, une vidéo avec chapitres et aucune prop
+  `controls`, quand le curseur de volume se déplie (survol, focus clavier ou glissement), alors
+  l'horodatage est masqué tant que le curseur reste déplié, et le volet atteint sa largeur complète
+  (96 px) ; quand le curseur se replie, l'horodatage réapparaît.
+- [ ] CA23 — Étant donné un lecteur de 640 px de large, quand le curseur de volume se déplie, alors
+  l'horodatage reste visible et glisse vers la droite (comportement de CA2).
+- [ ] CA24 — Étant donné un lecteur en `dir="rtl"` et le popup de réglages ouvert au clavier, alors
+  `←` ouvre la sous-liste de la ligne focalisée et `→` revient au premier niveau, dans le sens des
+  chevrons. En `ltr`, le comportement de CA13 est inchangé.
 
 ## Hors scope
 - Sous-titres dans le popup : la phase 6 décidera de leur place.
@@ -186,3 +195,5 @@ réglages), afin que la barre reste lisible et tienne entière dans un lecteur �
 - 2026-10-05 — Décision 3 = A : arrêt de `←`/`→` et hauteur bornée partagés par tous les menus, chapitres compris (validée par Romain)
 - 2026-10-05 — Décision 4 = A : les textes du site hors `/docs` devenus faux sont corrigés ici (playground, landing, OG) (validée par Romain)
 - 2026-10-05 — Décision 5 : pas de runner de tests ni de phase rouge. Le dev implémente en autonomie et vérifie lui-même chaque CA dans le navigateur ; la review se fait contre la spec (validée par Romain)
+- 2026-10-05 — À 360 px, le curseur déplié n'avait que ~1,6 px de piste : sous un seuil de largeur, l'horodatage se masque pendant que le volume est déplié (CA22, CA23) (validée par Romain)
+- 2026-10-05 — En RTL, `←` ouvre une sous-liste et `→` revient, dans le sens des chevrons retournés (CA24) (validée par Romain)
