@@ -207,7 +207,8 @@ function SettingsPanel(): ReactElement {
 function RowChevron(): ReactElement {
   return (
     <span className="pointer-events-none absolute right-2 flex items-center justify-center">
-      <ChevronRightIcon />
+      {/* Retourné en RTL : la ligne s'ouvre alors vers l'autre bord. */}
+      <ChevronRightIcon className="rtl:rotate-180" />
     </span>
   );
 }
@@ -216,7 +217,7 @@ function RowChevron(): ReactElement {
 function BackItem({ title, onSelect }: { title: string; onSelect: () => void }): ReactElement {
   return (
     <PlayerMenuItem className="font-medium" onSelect={onSelect}>
-      <ChevronLeftIcon />
+      <ChevronLeftIcon className="rtl:rotate-180" />
       <span>{title}</span>
     </PlayerMenuItem>
   );
