@@ -14,9 +14,10 @@ réglages), afin que la barre reste lisible et tienne entière dans un lecteur �
   le curseur n'occupe aucune largeur et l'horodatage suit directement l'icône.
 - [ ] CA2 — Étant donné le curseur replié, quand le pointeur survole l'icône du son, alors le
   curseur se déplie **à droite** de l'icône par une transition CSS de largeur d'au plus 200 ms ;
-  l'icône ne bouge pas et l'horodatage glisse vers la droite.
+  l'icône ne bouge pas et, au-dessus du seuil de CA22, l'horodatage glisse vers la droite.
 - [ ] CA3 — Étant donné le curseur déplié, quand le pointeur quitte la zone formée par l'icône et
-  le curseur, alors le curseur se replie avec la même transition. Passer de l'icône au curseur ne
+  le curseur, alors le curseur se replie avec la même transition (au-dessus du seuil de CA22 ; en
+  dessous, l'horodatage réapparaît d'un coup). Passer de l'icône au curseur ne
   le replie pas.
 - [ ] CA4 — Étant donné un glissement en cours sur le curseur de volume, quand le pointeur sort de
   la zone sans relâcher, alors le curseur reste déplié jusqu'au relâchement.
@@ -185,6 +186,53 @@ réglages), afin que la barre reste lisible et tienne entière dans un lecteur �
 - En RTL, les chevrons lucide ne se retournent pas et CA13 n'inverse pas `→`/`←`. Proposition : `rtl:rotate-180` sur les chevrons, à juger lors de la passe RTL.
 - La taille de bundle affichée dans `/docs` (14 kB gzip) peut bouger légèrement ; pas de remesure exigée.
 
+### Amendement CA22–CA24
+
+#### Approche
+**CA22/CA23 — CSS seul.** `@container` sur la barre, `peer/volume` sur la racine du volume. L'horodatage — qui suit le volume dans la même rangée — passe en `sr-only` sous `@max-[30rem]` quand son voisin volume est survolé, a le focus clavier, ou porte un glissement : les trois conditions qui ouvrent déjà le volet (le focus restreint à `(hover: hover)`, comme le volet). Il disparaît à l'écran mais reste lu (décision 6).
+**CA24.** `handleKeyDown` de `SettingsPanel` lit `getComputedStyle(panel).direction` à chaque touche et, en `rtl`, inverse les rôles : `←` ouvre une sous-liste, `→` revient à la racine. `player-menu.tsx` est inchangé (il arrête déjà `←`/`→` quelle que soit la direction).
+
+#### Fichiers
+- modifié : `registry/videocn/player-controls.tsx` — `@container` ajouté à la chaîne de classes de la barre (`data-slot="video-player-controls"`), sur une ligne, avec commentaire.
+- modifié : `registry/videocn/volume-control.tsx` — `peer/volume` à côté de `group/volume` sur la racine, avec commentaire.
+- modifié : `registry/videocn/time-display.tsx` — trois classes conditionnelles sur le `span` racine, commentaire donnant le seuil et sa mesure.
+- modifié : `registry/videocn/settings-menu.tsx` — `handleKeyDown` choisit la touche d'ouverture et de retour selon la direction ; commentaire mis à jour.
+- modifié (si décision 9 = A) : `docs/mvp.md` — une phrase dans le paragraphe du volume (section Contrôles), dans l'amendement du 5 octobre déjà en place.
+
+#### Tâches (ordonnées)
+1. **Masquer l'horodatage (CA22, CA23).**
+   - `player-controls.tsx` : `@container` sur la barre, ni sur la racine `video-player` (`container-type: inline-size` y annule la largeur intrinsèque : un lecteur en `w-fit` ou dans un flex sans largeur tomberait à 0 px), ni sur la rangée (elle deviendrait un contexte d'empilement pour le popup). La barre est déjà `absolute` `z-10`, le confinement n'y change rien. La requête lit la boîte de contenu de la barre : largeur du lecteur − 2 px de bordure − 24 px de `px-3`.
+   - `volume-control.tsx` : `group/volume peer/volume …`.
+   - `time-display.tsx`, sur la même ligne que les classes actuelles : `@max-[30rem]:peer-hover/volume:sr-only @max-[30rem]:peer-has-data-dragging/volume:sr-only @max-[30rem]:[@media(hover:hover)]:peer-has-focus-visible/volume:sr-only`. `peer-hover` porte déjà `@media (hover: hover)` en Tailwind v4 (vérifié dans `tailwindcss@4.3.3`) ; le garde explicite sur le focus évite qu'un iPad avec clavier, où le volet est `hidden`, masque l'horodatage pour rien. `sr-only` est `absolute` : l'horodatage sort du flux et le `gap` qui le précédait disparaît avec lui.
+   - **Seuil 30rem** (480 px de contenu, lecteur ≈ 506 px). Largeur nécessaire volet ouvert, à ≈ 8,5 px par chiffre (cohérent avec les ~1,6 px de piste relevés à 360 px) : VOD < 1 h avec chapitres ≈ 426 px (lecture 32, muet 32, chapitres 36, réglages 36, PiP 32, plein écran 32, six `gap-1` = 24, volet 96, horodatage `59:59 / 59:59` ≈ 106 avec `mx-2`) ; vidéo ≥ 1 h ≈ 451 px ; direct ≈ 409 px (pastille Live ≈ 62, horodatage `−59:59` ≈ 63, sans chapitres). Marge de 54 px sur le cas de CA22, 29 px sur une vidéo ≥ 1 h. À 360 px (334 utiles), masquer l'horodatage libère ≈ 110 px : le volet atteint 96 px, il reste ≈ 18 px. À 640 px (614 utiles), 134 px au-dessus du seuil : CA23 tient. Seuil en `rem` comme toutes les tailles de la barre : il suit la police racine.
+2. **`settings-menu.tsx` (CA24)** — disjoint de la tâche 1, parallélisable. En tête de `handleKeyDown` : `const rtl = getComputedStyle(event.currentTarget).direction === "rtl"` ; ouverture = `rtl ? "ArrowLeft" : "ArrowRight"` (à la racine, clique la ligne focalisée), retour = l'autre (dans une sous-liste, `setView("root")`). Lue à chaque touche, sans état : suit un `dir` changé en cours de route. `getComputedStyle` plutôt que `matches(":dir(rtl)")` : `:dir()` lève une exception avant Chrome 120, Tailwind v4 vise Chrome 111. Les chevrons ont déjà `rtl:rotate-180` (`9cffdc4`).
+3. **`docs/mvp.md`** selon la décision 9.
+4. **Barrières** : CLI Tailwind dans un dossier jetable lancée depuis le dépôt (les candidats de la tâche 1 et `@container` doivent produire `@container (width < 30rem)` et `@media (hover: hover)` autour des règles `peer-hover` et `peer-has-focus-visible`) ; `pnpm lint` ; `pnpm build && pnpm typecheck`.
+5. **Commit, puis vérification navigateur** — sondes après le commit.
+6. **Bancs `base` et `radix`** avec passe RTL (`"rtl": true`, `<html dir="rtl">`, `-y -o`) : masquage et touches vérifiés dans un projet où le CLI a converti les classes.
+
+#### Stratégie de test
+- **CA22** → e2e navigateur, `/playground`, BBB avec chapitres, sans `controls`, conteneur forcé à 360 px. Trois déclencheurs : `hover` sur le muet ; Tab jusqu'au muet puis au curseur ; `pointerdown` de synthèse (`pointerId: 1`) sur le curseur puis `hover` hors zone. Après 250 ms : `[data-slot=video-player-time]` en `position: absolute`, largeur ≤ 1 px ; volet à 96 px ; rangée `scrollWidth ≤ clientWidth` ; le snapshot a11y contient toujours la forme parlée de l'horodatage (si décision 6 = A). Au repli (`hover` dehors, Tab plus loin, `pointerup`) : horodatage revenu en `position: static`, largeur > 1 px. Pire cas : vidéo en pause, texte visuel forcé à `59:59 / 59:59`, mêmes mesures.
+- **CA23** → e2e navigateur, conteneur à 640 px, même texte forcé : au `hover` du muet, horodatage visible, son `left` décalé de 96 px, volet à 96 px, rien ne déborde. Bornes du seuil sur `1:00:00 / 1:00:00` forcé : à 500 px horodatage masqué ; à 512 px visible, volet à 96 px, `scrollWidth ≤ clientWidth`.
+- **CA24** → e2e navigateur (`press_key`) : `document.documentElement.dir = "rtl"`, Tab jusqu'à Settings, `Entrée` ; `←` sur « Speed » ouvre la liste (focus sur `1×`), `→` revient (focus sur « Speed ») ; idem « Quality » sur HLS mux ; `→` à la racine et `←` dans une sous-liste ne font rien ; `currentTime` immobile. Retour en `ltr` : la séquence de CA13 donne le même résultat qu'avant. Banc RTL : même séquence, contrôle à l'œil que chevrons et touches vont dans le même sens.
+- **Non-régression** : CA1 à 360 et 640 px (volet à 0, horodatage visible collé au muet) ; CA2/CA3 à 640 px comme dans le plan initial (sous le seuil : selon décision 7) ; CA4 à 360 px (pendant un glissement sorti de la zone, volet ouvert et horodatage masqué jusqu'au `pointerup`) ; CA5 à 360 px (Tab ouvre le volet sur le muet et le curseur, `↑` +0,05 une seule fois) ; CA13 en `ltr` ; CA19 à 360 px volet replié et déplié (`scrollWidth ≤ clientWidth`) ; CA7 par le CSSOM (règle `focus-visible` de l'horodatage enveloppée dans `@media (hover: hover)`), le téléphone reste manuel.
+- Commandes : pas de runner. Barrières `pnpm lint`, `pnpm build && pnpm typecheck` ; vérification `pnpm dev` + navigateur piloté ; bancs `pnpm registry:build && pnpm dlx serve public -p 4000 --cors`.
+- À la main seulement : rendu RTL des bancs, appareil tactile, effet du repli sous le seuil.
+
+#### Décisions à valider
+6. **[Ambiguïté] Accessibilité de l'horodatage masqué.** A : `sr-only` (caché à l'écran, toujours lu). B : `hidden` (retiré de l'arbre d'accessibilité tant que le volet est déplié). **Reco A** : on le masque faute de place, pas parce que l'information est fausse ; avec B, un utilisateur de lecteur d'écran qui met le focus sur le volume (ce qui le déplie) perdrait l'horodatage en lisant la suite de la barre.
+7. **[Ambiguïté, CA2/CA3 vs CA22] Sous le seuil**, CA2 dit que l'horodatage glisse, sans condition de largeur ; et au repli, l'horodatage revient d'un coup alors que le volet est comprimé à ≈ 20 px, donc le repli de CA3 paraît instantané. A : accepter, et préciser CA2/CA3 « au-dessus du seuil de CA22 ». B : retarder de 200 ms la réapparition par une transition sur `display` (`transition-discrete`) — ≈ six classes de plus, impose `hidden` (donc 6 = B), sans effet sur Firefox < 129 ni Safari < 17.4. **Reco A** : plus petit changement ; avant l'amendement le repli à 360 px ne partait déjà que de ≈ 22 px, et le dépliement, le geste qu'on regarde, reste animé.
+8. **Valeur du seuil.** A : 30rem (lecteur < ≈ 506 px). B : 28rem (lecteur < ≈ 474 px). **Reco A** : B garde l'horodatage visible sur plus de lecteurs moyens mais ne laisse que 22 px de marge sur une VOD < 1 h, et une vidéo ≥ 1 h y comprime le volet de quelques pixels juste au-dessus du seuil.
+9. **[Ambiguïté] `docs/mvp.md`.** A : une phrase dans le paragraphe du volume (« dans un lecteur étroit, l'horodatage s'efface le temps que le curseur est déplié »). B : rien. **Reco A** : la contrainte demande que `mvp.md` décrive la nouvelle barre, et l'amendement du 5 octobre existe déjà.
+
+#### Risques
+- **Mesures estimées.** Seuil en `rem`, mais la largeur du texte dépend de la police de l'hôte : mesurer dans le navigateur avec les textes forcés au pire cas.
+- **Direct à 360 px** (hors CA22, qui parle d'une vidéo avec chapitres) : horodatage masqué, le volet ne dépasse pas ≈ 88 px (piste ≈ 68 px) à cause des 62 px de la pastille Live. À regarder à l'œil.
+- **Couplage par un nom de classe.** `peer/volume` suppose que `TimeDisplay` suit immédiatement `VolumeControl` dans la même rangée de `player-controls.tsx` ; réordonner la barre casserait le masquage sans erreur. Les trois conditions recopient celles du volet : à commenter des deux côtés.
+- **Focus visible de Chrome** (risque déjà noté, qui s'étend) : après un clic sur le muet, une touche frappée rend le focus visible ; sous le seuil, l'horodatage est alors masqué en plus, jusqu'à ce que le focus parte.
+- **RTL, deux signaux qui peuvent diverger.** Les touches lisent la direction calculée, les chevrons suivent l'attribut `dir` (variante `rtl:`). Ils ne divergent que si l'hôte pose `direction: rtl` en CSS sans `dir`, ou un `dir="ltr"` autour du lecteur dans une page RTL — où `rtl:` retourne quand même les chevrons (fuite déjà décrite dans le README) : les touches suivent alors la mise en page, pas le chevron.
+- **`container-type: inline-size` sur la barre** ajoute un confinement de mise en page ; sans effet attendu (la barre est déjà bloc conteneur et contexte d'empilement). À confirmer en ouvrant les popups (CA17, CA18) dans la même passe.
+
 ## Décisions
 - 2026-10-04 — Le curseur de volume se déplie à droite de l'icône, comme YouTube (validée par Romain)
 - 2026-10-04 — Popup de réglages à deux niveaux, comme YouTube (validée par Romain)
@@ -197,3 +245,7 @@ réglages), afin que la barre reste lisible et tienne entière dans un lecteur �
 - 2026-10-05 — Décision 5 : pas de runner de tests ni de phase rouge. Le dev implémente en autonomie et vérifie lui-même chaque CA dans le navigateur ; la review se fait contre la spec (validée par Romain)
 - 2026-10-05 — À 360 px, le curseur déplié n'avait que ~1,6 px de piste : sous un seuil de largeur, l'horodatage se masque pendant que le volume est déplié (CA22, CA23) (validée par Romain)
 - 2026-10-05 — En RTL, `←` ouvre une sous-liste et `→` revient, dans le sens des chevrons retournés (CA24) (validée par Romain)
+- 2026-10-05 — Décision 6 = A : l'horodatage masqué passe en `sr-only`, toujours lu par les lecteurs d'écran (validée par Romain)
+- 2026-10-05 — Décision 7 = A : sous le seuil, l'horodatage réapparaît d'un coup au repli ; CA2 et CA3 précisés « au-dessus du seuil de CA22 » (validée par Romain)
+- 2026-10-05 — Décision 8 = A : seuil à 30rem de largeur de barre (lecteur < ≈ 506 px) (validée par Romain)
+- 2026-10-05 — Décision 9 = A : une phrase ajoutée au paragraphe du volume de `docs/mvp.md` (validée par Romain)
