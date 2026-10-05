@@ -37,12 +37,64 @@ function selectDuration(state: PlayerState): number {
   return state.duration;
 }
 
-export const ChapterMenu = memo(function ChapterMenu(): ReactElement | null {
-  const { chapters: chapterOptions } = useControlsOptions();
+/**
+ * La liste des chapitres, un item coché par le chapitre courant. Extraite du
+ * menu de la barre large pour que le menu de réglages la rende aussi dans son
+ * lecteur étroit : même saut, même fermeture, même focus sur l'item coché. À
+ * rendre dans un `PlayerMenuContent`. Elle lit seule ce dont elle a besoin et
+ * ne prend aucune prop, comme les contrôles de la barre.
+ */
+export function ChapterMenuItems(): ReactElement {
   const chapters = useChapters();
   const activeIndex = useActiveChapterIndex();
   const duration = usePlayerValue(selectDuration);
   const { seek } = usePlayerActions();
+
+  return (
+    <>
+      {chapters.map((chapter, index) => (
+        // `PlayerMenuRadioItem` et non un item simple : le chapitre courant
+        // est un état, il se coche — et le menu s'ouvre alors tout seul sur
+        // lui, sans qu'on ait à parcourir la liste pour se retrouver.
+        // L'item coché reste sélectionnable : y cliquer reprend le chapitre
+        // à son début, ce qu'on vient souvent chercher ici.
+        <PlayerMenuRadioItem
+          key={chapter.start}
+          checked={index === activeIndex}
+          onSelect={() => seek(chapter.start)}
+        >
+          {/* Le titre garde la direction de la page : il vient de
+              l'intégrateur et peut être écrit en arabe. Il vient aussi en
+              premier, ce qui laisse la saisie rapide du menu — qui compare
+              le texte de l'item — filtrer sur le titre. */}
+          <span>{chapter.label}</span>
+          {/* La durée en seconde référence et non le début : toute la
+              colonne prend alors la même écriture, et `0:42` ne voisine pas
+              `1:02:13`. `dir="ltr"` parce que ce sont des chiffres — sous
+              une page RTL, l'algorithme bidi afficherait `42:0`. */}
+          <span
+            aria-hidden="true"
+            dir="ltr"
+            className="ml-auto shrink-0 text-xs whitespace-nowrap text-muted-foreground tabular-nums"
+          >
+            {formatTime(chapter.start, duration)}
+          </span>
+          {/* Lu tel quel, `2:15` devient « deux deux-points quinze » ou une
+              heure de la journée. Le lecteur d'écran reçoit donc la forme
+              parlée à la place — à la place du seul horodatage, pas du
+              titre : ce que l'utilisateur lit doit rester ce qu'il peut
+              dire. */}
+          <span className="sr-only">{formatSpokenTime(chapter.start)}</span>
+        </PlayerMenuRadioItem>
+      ))}
+    </>
+  );
+}
+
+export const ChapterMenu = memo(function ChapterMenu(): ReactElement | null {
+  const { chapters: chapterOptions } = useControlsOptions();
+  const chapters = useChapters();
+  const activeIndex = useActiveChapterIndex();
 
   if (!chapterOptions.enabled || chapters.length === 0) return null;
 
@@ -61,41 +113,7 @@ export const ChapterMenu = memo(function ChapterMenu(): ReactElement | null {
         <ListIcon />
       </PlayerMenuTrigger>
       <PlayerMenuContent>
-        {chapters.map((chapter, index) => (
-          // `PlayerMenuRadioItem` et non un item simple : le chapitre courant
-          // est un état, il se coche — et le menu s'ouvre alors tout seul sur
-          // lui, sans qu'on ait à parcourir la liste pour se retrouver.
-          // L'item coché reste sélectionnable : y cliquer reprend le chapitre
-          // à son début, ce qu'on vient souvent chercher ici.
-          <PlayerMenuRadioItem
-            key={chapter.start}
-            checked={index === activeIndex}
-            onSelect={() => seek(chapter.start)}
-          >
-            {/* Le titre garde la direction de la page : il vient de
-                l'intégrateur et peut être écrit en arabe. Il vient aussi en
-                premier, ce qui laisse la saisie rapide du menu — qui compare
-                le texte de l'item — filtrer sur le titre. */}
-            <span>{chapter.label}</span>
-            {/* La durée en seconde référence et non le début : toute la
-                colonne prend alors la même écriture, et `0:42` ne voisine pas
-                `1:02:13`. `dir="ltr"` parce que ce sont des chiffres — sous
-                une page RTL, l'algorithme bidi afficherait `42:0`. */}
-            <span
-              aria-hidden="true"
-              dir="ltr"
-              className="ml-auto shrink-0 text-xs whitespace-nowrap text-muted-foreground tabular-nums"
-            >
-              {formatTime(chapter.start, duration)}
-            </span>
-            {/* Lu tel quel, `2:15` devient « deux deux-points quinze » ou une
-                heure de la journée. Le lecteur d'écran reçoit donc la forme
-                parlée à la place — à la place du seul horodatage, pas du
-                titre : ce que l'utilisateur lit doit rester ce qu'il peut
-                dire. */}
-            <span className="sr-only">{formatSpokenTime(chapter.start)}</span>
-          </PlayerMenuRadioItem>
-        ))}
+        <ChapterMenuItems />
       </PlayerMenuContent>
     </PlayerMenu>
   );

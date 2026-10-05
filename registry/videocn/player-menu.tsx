@@ -513,8 +513,19 @@ function PlayerMenuPopup({ children, className }: PlayerMenuContentProps) {
 }
 
 export interface PlayerMenuItemProps {
-  /** Appelé au clic ; le menu reste ouvert, c'est à l'appelant de le fermer. */
+  /**
+   * Appelé au clic. Le menu reste ouvert, c'est à l'appelant de le fermer,
+   * sauf avec `closeOnSelect`.
+   */
   onSelect: () => void;
+  /**
+   * Ferme le popup après `onSelect` et rend le focus au déclencheur, comme le
+   * fait `PlayerMenuRadioItem`. Pour une ligne qui agit au lieu d'ouvrir un
+   * sous-niveau (Picture-in-Picture). `onSelect` passe avant la fermeture et
+   * dans le même appel synchrone : une action qui exige un geste utilisateur
+   * (`requestPictureInPicture`) doit s'y lancer sans attendre.
+   */
+  closeOnSelect?: boolean;
   disabled?: boolean;
   className?: string;
   children: ReactNode;
@@ -523,9 +534,17 @@ export interface PlayerMenuItemProps {
 /**
  * Un item simple, sans état coché : une ligne qui mène ailleurs, comme celles
  * du menu de réglages. Il ne ferme pas le menu — ouvrir un sous-niveau ne
- * quitte pas le popup.
+ * quitte pas le popup — sauf si `closeOnSelect` le demande.
  */
-export function PlayerMenuItem({ onSelect, disabled, className, children }: PlayerMenuItemProps) {
+export function PlayerMenuItem({
+  onSelect,
+  closeOnSelect,
+  disabled,
+  className,
+  children,
+}: PlayerMenuItemProps) {
+  const { closeMenu } = useMenu();
+
   return (
     <button
       type="button"
@@ -535,7 +554,10 @@ export function PlayerMenuItem({ onSelect, disabled, className, children }: Play
       disabled={disabled}
       tabIndex={-1}
       className={cn(ITEM_CLASSNAME, className)}
-      onClick={onSelect}
+      onClick={() => {
+        onSelect();
+        if (closeOnSelect) closeMenu(true);
+      }}
     >
       {children}
     </button>
