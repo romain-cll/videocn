@@ -276,7 +276,7 @@ function SettingsPanel(): ReactElement {
   );
 }
 
-/** Le chevron de fin de ligne, dans la place que `pr-8` réserve à l'item. */
+/** Le chevron de fin de ligne, dans la place que `pe-8` réserve à l'item. */
 function RowChevron(): ReactElement {
   return (
     <span className="pointer-events-none absolute right-2 flex items-center justify-center">

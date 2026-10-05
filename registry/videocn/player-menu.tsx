@@ -89,11 +89,14 @@ const POPUP_CLASSNAME =
  * remplissent leur ligne d'office ; nous rendons des `button`, pour que le
  * focus DOM puisse réellement s'y poser, et il faut le leur demander.
  *
- * Le `pr-8` réserve la place de l'indicateur coché : rien ne bouge quand la
- * sélection change de ligne.
+ * Le `pe-8` réserve la place de l'indicateur coché : rien ne bouge quand la
+ * sélection change de ligne. Propriétés logiques écrites telles quelles : le CLI
+ * shadcn ne réécrit pas les classes d'une constante, seulement celles d'un
+ * `className`, et un `pr-8` resterait à droite en RTL alors que l'indicateur,
+ * lui, passe à gauche — la valeur d'une ligne de réglages s'y superposait.
  */
 const ITEM_CLASSNAME =
-  "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
+  "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pe-8 ps-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
 
 interface PlayerMenuContextValue {
   open: boolean;
