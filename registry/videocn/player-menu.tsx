@@ -282,11 +282,11 @@ export function PlayerMenuTrigger({
       id={triggerId}
       type="button"
       variant="ghost"
-      // `sm` et non `icon-sm` : aucun déclencheur ne porte plus de texte, mais
-      // la largeur reste libre pour qu'un contenu à venir — une icône suivie
-      // d'un badge, par exemple — ne soit pas rogné. Même hauteur que les
-      // autres boutons de la barre.
-      size="sm"
+      // `icon`, comme les autres boutons de la barre : 32 px de côté et une
+      // icône de 16 px. Aucun déclencheur ne porte de texte, et les 4 px que
+      // `sm` rendait en plus par bouton comptent à 360 px de large, où le bouton
+      // des sous-titres s'ajoute à ceux des chapitres et des réglages.
+      size="icon"
       disabled={disabled}
       aria-label={ariaLabel}
       aria-haspopup="menu"

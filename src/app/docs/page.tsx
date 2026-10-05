@@ -21,7 +21,7 @@ import {
   ReferenceTable,
   type ReferenceRow,
 } from "@/components/docs/reference-table";
-import { EXAMPLE_VIDEOS, SINTEL_CHAPTERS } from "@/lib/videos";
+import { EXAMPLE_VIDEOS, SINTEL_CHAPTERS, SINTEL_SUBTITLES } from "@/lib/videos";
 import { Frame } from "@/components/frame";
 import { bundleSize } from "@/lib/bundle";
 import { BUNNY_CHAPTERS, getDemoSource } from "@/lib/demo-media";
@@ -31,6 +31,7 @@ import { copyInstallEvent } from "@/lib/analytics";
 import { PAGE_DESCRIPTIONS, pageMetadata } from "@/lib/metadata";
 import { videoCnSnippet } from "@/lib/snippet";
 import type { ControlsOptions } from "@/registry/videocn/controls-options";
+import type { SubtitleTrack } from "@/registry/videocn/subtitles";
 
 export const metadata: Metadata = pageMetadata({
   title: "Docs",
@@ -44,6 +45,7 @@ const S = {
   usage: { id: "usage", title: "Usage" },
   examples: { id: "examples", title: "Examples" },
   chapters: { id: "chapters", title: "Chapters" },
+  subtitles: { id: "subtitles", title: "Subtitles" },
   streaming: { id: "streaming", title: "Streaming (HLS)" },
   live: { id: "live", title: "Live" },
   poster: { id: "poster", title: "Poster" },
@@ -64,7 +66,7 @@ const TOC: readonly DocsTocItem[] = [
   S.usage,
   {
     ...S.examples,
-    items: [S.chapters, S.streaming, S.live, S.poster, S.configured, S.square, S.palette],
+    items: [S.chapters, S.subtitles, S.streaming, S.live, S.poster, S.configured, S.square, S.palette],
   },
   { ...S.api, items: [S.props, S.controls] },
   S.keyboard,
@@ -120,6 +122,29 @@ const CHAPTERS_CODE = `${chaptersCode(SINTEL_CHAPTERS)}
 
 ${videoCnSnippet({ ...CHAPTERS, chapters: "chapters" })}`;
 
+/** Écrit une liste de pistes telle qu'on la taperait, pour l'extrait. */
+function subtitlesCode(tracks: readonly SubtitleTrack[]) {
+  const lines = tracks.map((track) => {
+    const fields = [
+      `src: ${JSON.stringify(track.src)}`,
+      `srcLang: ${JSON.stringify(track.srcLang)}`,
+      `label: ${JSON.stringify(track.label)}`,
+      ...(track.default ? ["default: true"] : []),
+    ];
+    return `  { ${fields.join(", ")} },`;
+  });
+  return `const subtitles = [\n${lines.join("\n")}\n]`;
+}
+
+const SUBTITLES = {
+  src: SINTEL.src,
+  poster: SINTEL.poster,
+  subtitles: SINTEL_SUBTITLES,
+};
+const SUBTITLES_CODE = `${subtitlesCode(SINTEL_SUBTITLES)}
+
+${videoCnSnippet({ ...SUBTITLES, subtitles: "subtitles" })}`;
+
 const STREAMING = { src: HLS.src, type: "hls" } as const;
 const LIVE_PROPS = { src: LIVE.src };
 const POSTER = { src: TEARS.src, poster: TEARS.poster };
@@ -174,6 +199,16 @@ const PROPS: readonly ReferenceRow[] = [
       <>
         Start time in seconds and title. See{" "}
         <DocsLink href={`#${S.chapters.id}`}>Chapters</DocsLink>.
+      </>
+    ),
+  },
+  {
+    name: "subtitles",
+    type: "{ src: string; srcLang: string; label: string; default?: boolean }[]",
+    description: (
+      <>
+        WebVTT subtitle tracks. See{" "}
+        <DocsLink href={`#${S.subtitles.id}`}>Subtitles</DocsLink>.
       </>
     ),
   },
@@ -347,6 +382,62 @@ export default function DocsPage() {
             }
           >
             <LazyPlayer {...CHAPTERS} ratio="sintel" />
+          </DocsExample>
+
+          <DocsExample
+            {...S.subtitles}
+            label="subtitles"
+            description={
+              <>
+                Pass a list of WebVTT tracks. The player adds a CC button to the bar and a
+                Subtitles entry to the settings menu, where the viewer picks a language. The
+                official English and French subtitles of Sintel start at 1:47.
+              </>
+            }
+            code={[{ code: SUBTITLES_CODE }]}
+            extra={
+              <>
+                <DocsList>
+                  <li>
+                    <InlineCode>src</InlineCode> is the URL of the <InlineCode>.vtt</InlineCode>{" "}
+                    file, <InlineCode>srcLang</InlineCode> its language code,{" "}
+                    <InlineCode>label</InlineCode> the name shown in the menu.
+                  </li>
+                  <li>
+                    <InlineCode>default</InlineCode> turns a track on at mount. Only the first
+                    track marked is used. Without one, subtitles start off.
+                  </li>
+                  <li>
+                    A track is identified by its <InlineCode>src</InlineCode>. When the list
+                    changes, the active track stays on if its URL is still there, and subtitles
+                    turn off otherwise. A duplicate URL keeps the first entry.
+                  </li>
+                  <li>
+                    Subtitles embedded in an HLS or DASH manifest are ignored: only the tracks you
+                    pass are offered, whatever the source.
+                  </li>
+                  <li>
+                    <InlineCode>controls.subtitles: false</InlineCode> removes the CC button, the
+                    menu entry and the <InlineCode>C</InlineCode> shortcut, but a track marked{" "}
+                    <InlineCode>default</InlineCode> still displays.
+                  </li>
+                </DocsList>
+                <DocsText>
+                  The <InlineCode>.vtt</InlineCode> files must be served from the same origin as
+                  the page. The video element has no <InlineCode>crossorigin</InlineCode>{" "}
+                  attribute, so the browser does not load a track from another origin, and fails
+                  silently. The video itself can live anywhere: here Sintel comes from
+                  archive.org, and the two files from this site.
+                </DocsText>
+                <DocsText>
+                  Sintel © Blender Foundation |{" "}
+                  <DocsLink href="https://durian.blender.org">durian.blender.org</DocsLink>,{" "}
+                  <DocsLink href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</DocsLink>.
+                </DocsText>
+              </>
+            }
+          >
+            <LazyPlayer {...SUBTITLES} ratio="sintel" />
           </DocsExample>
 
           <DocsExample
@@ -533,8 +624,9 @@ export default function DocsPage() {
               elements with a label and a readable value, such as a time or a percentage.
             </li>
             <li>
-              Every button has a label. Play, mute and fullscreen announce their shortcut with{" "}
-              <InlineCode>aria-keyshortcuts</InlineCode>.
+              Every button has a label. Play, mute, fullscreen and subtitles announce their
+              shortcut with <InlineCode>aria-keyshortcuts</InlineCode>. The CC button also
+              announces whether subtitles are on.
             </li>
             <li>
               A click on the video gives the player focus without adding it to the tab order, and
@@ -544,7 +636,7 @@ export default function DocsPage() {
         </DocsSection>
 
         <p className="text-muted-foreground border-t pt-6 text-sm text-pretty">
-          Subtitles and a most-replayed heatmap are not available yet.{" "}
+          A most-replayed heatmap is not available yet.{" "}
           <Link
             href="/#changelog"
             className="text-foreground font-medium underline underline-offset-4"

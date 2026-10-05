@@ -24,6 +24,7 @@ import { resolveControlsOptions, type ControlsOptions } from "./controls-options
 import { PlayerControls } from "./player-controls";
 import { PlayerProvider, usePlayerStoreValue } from "./player-context";
 import type { SourceType } from "./player-engine";
+import { SubtitleDisplay } from "./subtitle-display";
 import type { SubtitleTrack } from "./subtitles";
 import { useControlsVisibility } from "./use-controls-visibility";
 import { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
@@ -99,6 +100,7 @@ export function VideoCn({
   type,
   poster,
   chapters,
+  subtitles,
   autoPlay,
   loop,
   defaultVolume,
@@ -117,11 +119,15 @@ export function VideoCn({
     defaultVolume,
     defaultMuted,
     containerRef,
+    subtitles,
   });
 
   const { actions } = player;
   const paused = usePlayerStoreValue(player.store, (state) => state.paused);
   const isFullscreen = usePlayerStoreValue(player.store, (state) => state.isFullscreen);
+  // Les pistes que le store a normalisées, et non la prop : la référence est
+  // stable, et ce sont elles que le menu et le bouton lisent aussi.
+  const subtitleTracks = usePlayerStoreValue(player.store, (state) => state.subtitles);
   const { togglePlay, toggleFullscreen } = actions;
 
   // Résolue une fois : l'objet part dans un contexte, et en fabriquer un
@@ -140,6 +146,7 @@ export function VideoCn({
     store: player.store,
     actions,
     reveal,
+    subtitles: controlsOptions.subtitles.enabled,
   });
 
   // La ref du consommateur passe par une ref à nous, jamais par les
@@ -232,6 +239,9 @@ export function VideoCn({
           // une vidéo moins haute que l'écran laisse voir ses bandes, et du
           // blanc y serait aveuglant. Un token, jamais une couleur en dur.
           "bg-player-backdrop relative isolate overflow-hidden rounded-lg border",
+          // Le repère de `group-data-hidden/player:` : le calque des sous-titres
+          // redescend en bas du lecteur quand la barre se masque.
+          "group/player",
           // Chrome passe le conteneur cliqué en `:focus-visible` à la première
           // touche frappée, et l'entourerait d'un contour. Il n'est pas dans
           // l'ordre de tabulation : ce contour ne guiderait personne.
@@ -266,11 +276,29 @@ export function VideoCn({
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
           className="block h-auto w-full data-fullscreen:h-full data-fullscreen:object-contain"
-        />
+        >
+          {/* Jamais `default` : le navigateur afficherait lui-même la piste, et
+              le texte paraîtrait en double. Le mode se règle par `use-subtitles`,
+              qui reconnaît nos pistes à ce `data-slot`. L'URL sert de clé : une
+              piste qui garde la sienne garde son élément, donc son mode. */}
+          {subtitleTracks.map((track) => (
+            <track
+              key={track.src}
+              data-slot="video-player-subtitle-track"
+              kind="subtitles"
+              src={track.src}
+              srcLang={track.srcLang}
+              label={track.label}
+            />
+          ))}
+        </video>
         {/* Autour des contrôles et non du lecteur entier : les chapitres ne
             servent qu'à la barre, et ce fournisseur s'abonne à la durée. */}
         <ChaptersProvider chapters={chapters}>
           <ControlsProvider options={controlsOptions} visible={visible} holdVisible={holdVisible}>
+            {/* Dans le fournisseur des contrôles : le calque a besoin de savoir
+                s'il y a une barre à éviter. Avant elle, pour passer dessous. */}
+            <SubtitleDisplay />
             <PlayerControls />
           </ControlsProvider>
         </ChaptersProvider>

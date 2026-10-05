@@ -76,6 +76,13 @@ const ROWS: readonly ReferenceRow[] = [
     description: "The chapter menu. It only shows when the video has chapters.",
   },
   {
+    name: "subtitles",
+    type: "boolean",
+    defaultValue: "true",
+    description:
+      "The CC button, the Subtitles entry of the settings menu and the C shortcut. They only show when the video has subtitle tracks. A track marked default still displays when this is false: controls shape the bar, not the content.",
+  },
+  {
     name: "playbackRate",
     type: "boolean | { rates?: number[] }",
     defaultValue: `[${DEFAULT_PLAYBACK_RATES.join(", ")}]`,
@@ -87,7 +94,7 @@ const ROWS: readonly ReferenceRow[] = [
     type: "boolean",
     defaultValue: "true",
     description:
-      "The Quality entry of the settings menu. Greyed out, not hidden, when the engine exposes no levels. With playbackRate and quality both off, the settings button disappears.",
+      "The Quality entry of the settings menu. Greyed out, not hidden, when the engine exposes no levels. With playbackRate and quality both off, the settings button stays only if the video has subtitle tracks, for the Subtitles entry; otherwise it disappears.",
   },
   {
     name: "live",

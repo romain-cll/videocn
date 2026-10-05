@@ -10,6 +10,7 @@ import { PictureInPictureToggle } from "./picture-in-picture-toggle";
 import { PlayToggle } from "./play-toggle";
 import { PlayerScrubber } from "./player-scrubber";
 import { SettingsMenu } from "./settings-menu";
+import { SubtitlesToggle } from "./subtitles-toggle";
 import { TimeDisplay } from "./time-display";
 import { VolumeControl } from "./volume-control";
 
@@ -72,7 +73,11 @@ export function PlayerControls(): ReactElement | null {
       className="@container dark absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 bg-linear-to-t from-player-scrim to-transparent px-3 pt-10 pb-3 text-foreground transition-opacity duration-200 motion-reduce:transition-none data-hidden:not-has-focus-visible:pointer-events-none data-hidden:not-has-focus-visible:opacity-0"
     >
       <PlayerScrubber />
-      <div className="flex items-center gap-1">
+      {/* Sous le seuil de 30rem, plus d'espacement entre les contrôles : à 360 px
+          le bouton CC s'ajoute aux chapitres, et sans cela la barre déborde. Les
+          boutons de 32 px se touchent alors, mais leur zone cliquable reste la
+          leur. Au-dessus du seuil, rien ne change. */}
+      <div className="flex items-center gap-1 @max-[30rem]:gap-0">
         <PlayToggle />
         {/* Juste après la lecture : sur un direct, savoir si l'on est au bord
             vaut autant que savoir si ça joue. Rendue `null` ailleurs. */}
@@ -81,11 +86,15 @@ export function PlayerControls(): ReactElement | null {
         {/* Après le volume et non avant : la largeur du texte change au fil de
             la lecture, et elle ne doit jamais déplacer une cible cliquable. */}
         <TimeDisplay />
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-1 @max-[30rem]:gap-0">
           {/* Avant les réglages : c'est le seul menu qui parle du contenu et
               non du rendu, et c'est celui qu'on vient chercher le plus
               souvent. Rendu `null` quand la vidéo n'a pas de chapitres. */}
           <ChapterMenu />
+          {/* Entre les chapitres et les réglages : il parle du contenu comme les
+              chapitres, et le menu de réglages, lui, du rendu. Rendu `null`
+              sans pistes de sous-titres. */}
+          <SubtitlesToggle />
           {/* Vitesse et qualité, rangées derrière un seul bouton : deux
               boutons à libellé ne tenaient pas dans un lecteur étroit. */}
           <SettingsMenu />

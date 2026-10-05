@@ -1,3 +1,5 @@
+import type { SubtitleTrack } from "@/registry/videocn/subtitles";
+
 /**
  * Les vidéos du site : des films libres de la Blender Foundation, servis
  * par archive.org en fichiers progressifs. Le moteur natif suffit, aucun
@@ -49,3 +51,19 @@ export const SINTEL_CHAPTERS = [
   { time: 770, label: "The duel" },
   { time: 830, label: "Credits" },
 ] as const;
+
+/**
+ * Les sous-titres officiels de Sintel, pour l'exemple des sous-titres de la
+ * doc. Ils sont servis par le site et non par archive.org : le `<video>` ne
+ * porte pas d'attribut `crossorigin`, donc un `<track>` ne se charge que depuis
+ * l'origine de la page.
+ *
+ * Sintel © Blender Foundation | durian.blender.org, CC BY 3.0. L'attribution
+ * est aussi dans l'en-tête de chaque fichier `.vtt`.
+ *
+ * `French` et non `Français` : le site est en anglais.
+ */
+export const SINTEL_SUBTITLES = [
+  { src: "/examples/sintel-en.vtt", srcLang: "en", label: "English", default: true },
+  { src: "/examples/sintel-fr.vtt", srcLang: "fr", label: "French" },
+] as const satisfies readonly SubtitleTrack[];

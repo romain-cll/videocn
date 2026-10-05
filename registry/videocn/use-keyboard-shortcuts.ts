@@ -48,6 +48,11 @@ const TOGGLE_FULLSCREEN: Shortcut = {
   },
 };
 
+const TOGGLE_SUBTITLES: Shortcut = {
+  toggle: true,
+  run: (actions) => actions.toggleSubtitles(),
+};
+
 function seekBy(seconds: number): Shortcut {
   return {
     toggle: false,
@@ -93,7 +98,10 @@ function digitOf(event: ReactKeyboardEvent): number | null {
  * non par leur position : `m` est là où la disposition l'a mis, et Verr. Maj
  * ne doit rien changer.
  */
-function resolveShortcut(event: ReactKeyboardEvent): Shortcut | null {
+function resolveShortcut(
+  event: ReactKeyboardEvent,
+  hasSubtitles: boolean,
+): Shortcut | null {
   switch (event.key) {
     case " ":
       return TOGGLE_PLAY;
@@ -115,6 +123,11 @@ function resolveShortcut(event: ReactKeyboardEvent): Shortcut | null {
       return TOGGLE_MUTED;
     case "f":
       return TOGGLE_FULLSCREEN;
+    case "c":
+      // Sans piste, ou avec `controls.subtitles: false`, la touche n'est pas à
+      // nous : elle reste à l'hôte.
+      if (hasSubtitles) return TOGGLE_SUBTITLES;
+      break;
     default:
       break;
   }
@@ -144,13 +157,15 @@ export interface UseKeyboardShortcutsOptions {
   actions: PlayerActions;
   /** Un raccourci est une activité : la barre apparaît, et on voit son effet. */
   reveal: () => void;
+  /** `controls.subtitles` : `c` ne répond que s'il est actif et qu'il y a des pistes. */
+  subtitles: boolean;
 }
 
 /** Le gestionnaire à poser sur le conteneur, ou `undefined` si la keymap est coupée. */
 export function useKeyboardShortcuts(
   options: UseKeyboardShortcutsOptions,
 ): ((event: ReactKeyboardEvent<HTMLElement>) => void) | undefined {
-  const { enabled, store, actions, reveal } = options;
+  const { enabled, store, actions, reveal, subtitles } = options;
 
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLElement>) => {
@@ -165,7 +180,8 @@ export function useKeyboardShortcuts(
       if (isEditable(event.target)) return;
       if (event.key === " " && isButton(event.target)) return;
 
-      const shortcut = resolveShortcut(event);
+      const state = store.getSnapshot();
+      const shortcut = resolveShortcut(event, subtitles && state.subtitles.length > 0);
       if (!shortcut) return;
 
       // Le lecteur a le focus et la touche est à lui : ni défilement de la
@@ -176,10 +192,10 @@ export function useKeyboardShortcuts(
       // la page —, mais une bascule n'agit qu'une fois.
       if (event.repeat && shortcut.toggle) return;
 
-      shortcut.run(actions, store.getSnapshot());
+      shortcut.run(actions, state);
       reveal();
     },
-    [actions, reveal, store],
+    [actions, reveal, store, subtitles],
   );
 
   return enabled ? handleKeyDown : undefined;

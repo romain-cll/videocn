@@ -29,8 +29,9 @@ import type { PlayerState } from "./player-state-store";
  * libellés tenaient trop de place dans une barre étroite.
  *
  * Aucune prop : le contrôle lit ses options et son état dans les contextes.
- * `playbackRate` et `quality` décident des lignes ; sans l'une ni l'autre, il
- * se rend `null`.
+ * `subtitles`, `playbackRate` et `quality` décident des lignes ; sans aucune, il
+ * se rend `null`. La ligne « Subtitles » ouvre la liste, et reste en tête : c'est
+ * la seule qui parle du contenu. Elle n'existe que si la vidéo a des pistes.
  *
  * **La ligne « Quality » reste affichée quand le moteur n'expose aucune
  * qualité**, et passe grisée — c'est le cas d'un MP4 progressif, où le
@@ -40,10 +41,13 @@ import type { PlayerState } from "./player-state-store";
  * capacités.
  */
 
-type View = "root" | "speed" | "quality";
+type View = "root" | "subtitles" | "speed" | "quality";
 
 /** Le libellé du choix automatique, seul ou suivi de ce qui est joué. */
 const AUTO = "Auto";
+
+/** Le libellé des sous-titres coupés, dans la ligne de la racine et dans la liste. */
+const OFF = "Off";
 
 /**
  * Point décimal et signe « × », quelle que soit la locale du navigateur : la
@@ -59,16 +63,40 @@ function selectCapabilities(state: PlayerState) {
   return state.capabilities;
 }
 
+function selectTracks(state: PlayerState) {
+  return state.subtitles;
+}
+
+/**
+ * Les lignes de la racine, dans l'ordre où elles s'affichent. Partagé par le
+ * bouton, qui s'efface sans ligne, et par le panneau, qui les dessine et qui
+ * s'en sert pour rendre le focus à la ligne d'où l'on revient.
+ */
+function useRootRows(): View[] {
+  const {
+    subtitles: subtitlesOptions,
+    playbackRate: rateOptions,
+    quality: qualityOptions,
+  } = useControlsOptions();
+  const tracks = usePlayerValue(selectTracks);
+
+  const rows: View[] = [];
+  if (subtitlesOptions.enabled && tracks.length > 0) rows.push("subtitles");
+  if (rateOptions.enabled) rows.push("speed");
+  if (qualityOptions.enabled) rows.push("quality");
+  return rows;
+}
+
 export const SettingsMenu = memo(function SettingsMenu(): ReactElement | null {
-  const { playbackRate: rateOptions, quality: qualityOptions } = useControlsOptions();
+  const rows = useRootRows();
   const capabilities = usePlayerValue(selectCapabilities);
 
-  if (!rateOptions.enabled && !qualityOptions.enabled) return null;
+  if (rows.length === 0) return null;
 
   // Seule la qualité peut être grisée. Quand elle l'est et qu'elle est seule, le
   // popup ne mènerait nulle part : c'est alors le bouton qui se grise.
   const hasActionableRow =
-    rateOptions.enabled || (qualityOptions.enabled && capabilities.qualities.length > 0);
+    rows.some((row) => row !== "quality") || capabilities.qualities.length > 0;
 
   return (
     <PlayerMenu>
@@ -89,13 +117,19 @@ export const SettingsMenu = memo(function SettingsMenu(): ReactElement | null {
  * à chaque ouverture sans qu'il y ait rien à remettre à zéro.
  */
 function SettingsPanel(): ReactElement {
-  const { playbackRate: rateOptions, quality: qualityOptions } = useControlsOptions();
+  const { playbackRate: rateOptions } = useControlsOptions();
+  const rows = useRootRows();
+  const tracks = usePlayerValue(selectTracks);
+  const activeSubtitle = usePlayerValue((state) => state.activeSubtitle);
   const playbackRate = usePlayerValue((state) => state.playbackRate);
   const capabilities = usePlayerValue(selectCapabilities);
-  const { setPlaybackRate, selectQuality } = usePlayerActions();
+  const { selectSubtitles, setPlaybackRate, selectQuality } = usePlayerActions();
   const [view, setView] = useState<View>("root");
   const panelRef = useRef<HTMLDivElement>(null);
   const previousViewRef = useRef<View>("root");
+  // Une chaîne et non le tableau : `useRootRows` en fabrique un à chaque rendu,
+  // et l'effet ne doit se relancer que si les lignes changent vraiment.
+  const rowsKey = rows.join();
 
   // Le focus était sur l'item de la vue précédente, que React vient de
   // démonter : il est retombé sur le `body`. On le repose avant la peinture.
@@ -108,17 +142,19 @@ function SettingsPanel(): ReactElement {
     const panel = panelRef.current;
     if (!panel) return;
     if (view === "root") {
-      // On revient sur la ligne d'où l'on est parti.
-      const rows = panel.querySelectorAll<HTMLElement>('[role="menuitem"]');
-      rows[previous === "quality" && rateOptions.enabled ? 1 : 0]?.focus();
+      // On revient sur la ligne d'où l'on est parti, retrouvée par sa position
+      // parmi les lignes présentes : elle change avec les options et les pistes.
+      const items = panel.querySelectorAll<HTMLElement>('[role="menuitem"]');
+      items[Math.max(rowsKey.split(",").indexOf(previous), 0)]?.focus();
       return;
     }
     focusInitialItem(panel, "checked");
-  }, [rateOptions.enabled, view]);
+  }, [rowsKey, view]);
 
   const { qualities, activeQualityId, playingQualityId } = capabilities;
   const playing = qualities.find((level) => level.id === playingQualityId);
   const selected = qualities.find((level) => level.id === activeQualityId);
+  const activeTrack = tracks.find((track) => track.src === activeSubtitle);
 
   // `←`/`→` sont arrêtés par le popup pour que la vidéo n'avance pas ; ici on
   // leur donne un sens, celui des chevrons : en RTL, ils sont retournés et les
@@ -144,6 +180,17 @@ function SettingsPanel(): ReactElement {
     <div ref={panelRef} role="none" onKeyDown={handleKeyDown}>
       {view === "root" ? (
         <>
+          {rows.includes("subtitles") ? (
+            <PlayerMenuItem onSelect={() => setView("subtitles")}>
+              <span>Subtitles</span>
+              {/* Sans `dir="ltr"` : le libellé vient de l'intégrateur et garde la
+                  direction de la page, comme le titre d'un chapitre. */}
+              <span className="ml-auto min-w-0 truncate text-muted-foreground">
+                {activeTrack ? activeTrack.label : OFF}
+              </span>
+              <RowChevron />
+            </PlayerMenuItem>
+          ) : null}
           {rateOptions.enabled ? (
             <PlayerMenuItem onSelect={() => setView("speed")}>
               <span>Speed</span>
@@ -153,7 +200,7 @@ function SettingsPanel(): ReactElement {
               <RowChevron />
             </PlayerMenuItem>
           ) : null}
-          {qualityOptions.enabled ? (
+          {rows.includes("quality") ? (
             <PlayerMenuItem disabled={qualities.length === 0} onSelect={() => setView("quality")}>
               <span>Quality</span>
               {/* En automatique, la hauteur jouée : c'est la seule façon de
@@ -164,6 +211,26 @@ function SettingsPanel(): ReactElement {
               <RowChevron />
             </PlayerMenuItem>
           ) : null}
+        </>
+      ) : null}
+      {view === "subtitles" ? (
+        <>
+          <BackItem title="Subtitles" onSelect={() => setView("root")} />
+          <PlayerMenuRadioItem
+            checked={activeTrack === undefined}
+            onSelect={() => selectSubtitles(null)}
+          >
+            <span>{OFF}</span>
+          </PlayerMenuRadioItem>
+          {tracks.map((track) => (
+            <PlayerMenuRadioItem
+              key={track.src}
+              checked={track.src === activeSubtitle}
+              onSelect={() => selectSubtitles(track.src)}
+            >
+              <span>{track.label}</span>
+            </PlayerMenuRadioItem>
+          ))}
         </>
       ) : null}
       {view === "speed" ? (

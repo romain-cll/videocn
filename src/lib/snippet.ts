@@ -20,6 +20,8 @@ export interface SnippetProps {
    * tableau : on ne recopie pas sept lignes de données dans chaque extrait.
    */
   chapters?: string;
+  /** Idem pour les pistes de sous-titres : le nom de la variable (`"subtitles"`). */
+  subtitles?: string;
   autoPlay?: boolean;
   loop?: boolean;
   defaultVolume?: number;
@@ -55,6 +57,7 @@ export function videoCnSnippet(props: SnippetProps): string {
   if (props.type) lines.push(`type=${JSON.stringify(props.type)}`);
   if (props.poster) lines.push(`poster=${JSON.stringify(props.poster)}`);
   if (props.chapters) lines.push(`chapters={${props.chapters}}`);
+  if (props.subtitles) lines.push(`subtitles={${props.subtitles}}`);
   if (props.autoPlay) lines.push("autoPlay");
   if (props.loop) lines.push("loop");
   if (props.defaultVolume !== undefined) lines.push(`defaultVolume={${props.defaultVolume}}`);
