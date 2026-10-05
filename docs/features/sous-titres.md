@@ -14,84 +14,84 @@ l'architect et validés par Romain au plan.
 
 ### Fournir les pistes
 
-- [ ] CA1 — Étant donné un `<VideoCn>` sans prop de sous-titres, ou avec une liste vide, alors la
+- [x] CA1 — Étant donné un `<VideoCn>` sans prop de sous-titres, ou avec une liste vide, alors la
   barre n'a pas de bouton CC, le menu Settings n'a pas de ligne « Subtitles », et `c` ne fait rien.
-- [ ] CA2 — Étant donné la prop de sous-titres avec deux pistes dont aucune n'est marquée par
+- [x] CA2 — Étant donné la prop de sous-titres avec deux pistes dont aucune n'est marquée par
   défaut, quand le lecteur est monté, alors les sous-titres sont coupés et aucun texte ne s'affiche
   sur l'image.
-- [ ] CA3 — Étant donné une piste marquée par défaut, quand le lecteur est monté et la lecture
+- [x] CA3 — Étant donné une piste marquée par défaut, quand le lecteur est monté et la lecture
   lancée, alors cette piste est active et ses sous-titres s'affichent. Si plusieurs pistes sont
   marquées par défaut, seule la première de la liste est active. Une liste reçue vide au montage
   puis remplie ensuite (chargement asynchrone) applique sa piste par défaut à sa première arrivée
   non vide ; les changements suivants relèvent de CA5.
-- [ ] CA4 — Étant donné la même prop de sous-titres passée successivement à une source MP4 (moteur
+- [x] CA4 — Étant donné la même prop de sous-titres passée successivement à une source MP4 (moteur
   natif), HLS et DASH (Shaka), alors le bouton CC, la ligne « Subtitles » et l'affichage se
   comportent à l'identique. Des sous-titres contenus dans le manifeste HLS ou DASH ne sont jamais
   proposés.
-- [ ] CA5 — Étant donné un lecteur monté, quand la prop de sous-titres change, alors le bouton, le
+- [x] CA5 — Étant donné un lecteur monté, quand la prop de sous-titres change, alors le bouton, le
   menu et l'affichage suivent la nouvelle liste. La piste active reste active si son URL figure
   encore dans la liste ; sinon les sous-titres sont coupés.
-- [ ] CA6 — Étant donné plusieurs pistes, alors au plus une piste est affichée à la fois.
+- [x] CA6 — Étant donné plusieurs pistes, alors au plus une piste est affichée à la fois.
 
 ### Bouton CC
 
-- [ ] CA7 — Étant donné un lecteur d'au moins 506 px de large (au-dessus du seuil de CA26), une
+- [x] CA7 — Étant donné un lecteur d'au moins 506 px de large (au-dessus du seuil de CA26), une
   vidéo avec au moins une piste et aucune prop `controls`, alors la barre
   contient un bouton CC à icône, placé entre le bouton des chapitres (ou, sans chapitres, le début
   du groupe de droite) et le bouton Settings. Son nom accessible est « Subtitles », il annonce s'il
   est activé ou non aux lecteurs d'écran, et porte `aria-keyshortcuts="c"` quand les raccourcis sont
   actifs.
-- [ ] CA8 — Étant donné les sous-titres coupés, quand on active le bouton CC, alors s'active la
+- [x] CA8 — Étant donné les sous-titres coupés, quand on active le bouton CC, alors s'active la
   dernière piste choisie depuis le montage du lecteur ; à défaut, la piste marquée par défaut ; à
   défaut, la première de la liste.
-- [ ] CA9 — Étant donné les sous-titres actifs, quand on active le bouton CC, alors ils sont coupés
+- [x] CA9 — Étant donné les sous-titres actifs, quand on active le bouton CC, alors ils sont coupés
   et le texte affiché disparaît.
-- [ ] CA10 — Étant donné le bouton CC, alors son état activé et son état coupé se distinguent à
+- [x] CA10 — Étant donné le bouton CC, alors son état activé et son état coupé se distinguent à
   l'œil (rendu calculé différent entre les deux états), sans couleur en dur.
 
 ### Ligne « Subtitles » du menu de réglages
 
-- [ ] CA11 — Étant donné un lecteur au-dessus du seuil de CA26 et une vidéo avec au moins une
+- [x] CA11 — Étant donné un lecteur au-dessus du seuil de CA26 et une vidéo avec au moins une
   piste, quand on ouvre le menu Settings, alors sa première ligne est « Subtitles », suivie de la valeur courante — « Off », ou le libellé de la
   piste active — et d'un chevron, au-dessus de « Speed » et « Quality ».
-- [ ] CA12 — Étant donné le menu au premier niveau, quand on active la ligne « Subtitles », alors le
+- [x] CA12 — Étant donné le menu au premier niveau, quand on active la ligne « Subtitles », alors le
   popup affiche, sous une ligne de retour « Subtitles », l'entrée « Off » puis une entrée par piste
   dans l'ordre de la prop, l'état courant coché. Choisir une entrée l'applique et ferme le popup ;
   le bouton CC reflète aussitôt le nouvel état.
-- [ ] CA13 — Étant donné le popup ouvert au clavier, alors la ligne « Subtitles » et sa sous-liste
+- [x] CA13 — Étant donné le popup ouvert au clavier, alors la ligne « Subtitles » et sa sous-liste
   suivent les mêmes touches que « Speed » et « Quality » : `↑`/`↓`, `Entrée` ou `→` pour ouvrir
   (`←` en RTL), `←` pour revenir (`→` en RTL), `Échap` pour fermer et rendre le focus au bouton
   Settings.
-- [ ] CA14 — Étant donné `controls={{ playbackRate: false, quality: false }}` et une vidéo avec au
+- [x] CA14 — Étant donné `controls={{ playbackRate: false, quality: false }}` et une vidéo avec au
   moins une piste, alors le bouton Settings reste dans la barre avec la seule ligne « Subtitles ».
   Sans aucune piste, avec ces mêmes `controls`, il disparaît comme aujourd'hui.
 
 ### Réglage par `controls`
 
-- [ ] CA15 — Étant donné `controls={{ subtitles: false }}` et une vidéo avec des pistes, alors le
+- [x] CA15 — Étant donné `controls={{ subtitles: false }}` et une vidéo avec des pistes, alors le
   bouton CC, la ligne « Subtitles » et le raccourci `c` disparaissent. Une piste marquée par défaut
   s'affiche quand même : `controls` règle ce que montre la barre, pas le contenu.
 
 ### Affichage
 
-- [ ] CA16 — Étant donné une piste active et la barre masquée, quand la lecture atteint le temps
+- [x] CA16 — Étant donné une piste active et la barre masquée, quand la lecture atteint le temps
   d'un sous-titre, alors son texte s'affiche centré en bas du lecteur, et disparaît à son temps de
   fin. En plein écran, « en bas du lecteur » est le bas de l'écran, bande noire comprise.
-- [ ] CA17 — Étant donné une piste active et la barre visible, alors aucun sous-titre n'est
+- [x] CA17 — Étant donné une piste active et la barre visible, alors aucun sous-titre n'est
   recouvert par les contrôles : le bas du texte reste au-dessus du haut du premier élément de la
   barre (le scrubber, ou la rangée de boutons avec `controls={{ scrubber: false }}`) ; le dégradé
   de la barre peut passer derrière. Quand la barre se masque, le texte revient en bas du lecteur.
-- [ ] CA18 — Étant donné le lecteur en plein écran, alors les sous-titres s'affichent et suivent
+- [x] CA18 — Étant donné le lecteur en plein écran, alors les sous-titres s'affichent et suivent
   CA16 et CA17 comme hors plein écran.
-- [ ] CA19 — Étant donné un sous-titre affiché, alors chaque ligne de texte est posée sur un fond
+- [x] CA19 — Étant donné un sous-titre affiché, alors chaque ligne de texte est posée sur un fond
   opaque ou semi-opaque qui la sépare de l'image, couleurs du texte et du fond tirées des tokens du
   thème, aucune couleur en dur.
-- [ ] CA20 — Étant donné un iPhone et une piste active, quand on passe en plein écran (plein écran
+- [ ] CA20 — _(code en place, vérification à la main par Romain sur iPhone, entrée et sortie du plein écran)_ Étant donné un iPhone et une piste active, quand on passe en plein écran (plein écran
   natif du système), alors les sous-titres de cette piste restent affichés.
 
 ### Clavier
 
-- [ ] CA21 — Étant donné une vidéo avec des pistes et le focus dans le lecteur, quand on presse `c`,
+- [x] CA21 — Étant donné une vidéo avec des pistes et le focus dans le lecteur, quand on presse `c`,
   alors l'effet est celui d'un clic sur le bouton CC (CA8, CA9) et la barre apparaît. Comme les
   autres bascules : sans effet avec Ctrl, Cmd ou Alt, pas de répétition si la touche reste
   enfoncée, inactif dans un `input`, un `textarea` ou un `contenteditable` de la page hôte, et coupé
@@ -99,21 +99,21 @@ l'architect et validés par Romain au plan.
 
 ### Largeur
 
-- [ ] ~~CA22~~ — Remplacé par CA31 (amendement « lecteur étroit » du 05/10/2026). Étant donné un lecteur de 360 px de large, une vidéo de moins d'une heure avec
+- [x] ~~CA22~~ — Remplacé par CA31 (amendement « lecteur étroit » du 05/10/2026). Étant donné un lecteur de 360 px de large, une vidéo de moins d'une heure avec
   chapitres et sous-titres, et aucune prop `controls`, alors tous les contrôles de la barre sont
   entièrement visibles, volume replié comme déplié, et aucun ne déborde du lecteur.
-- [ ] CA23 — Étant donné une vidéo sans sous-titres, alors les critères CA19 et CA22 de la refonte
+- [x] CA23 — Étant donné une vidéo sans sous-titres, alors les critères CA19 et CA22 de la refonte
   de la barre (`docs/features/refonte-barre-controles.md`) restent vrais à 360 px.
 
 ### Site et documentation
 
-- [ ] CA24 — Étant donné la page `/docs`, alors elle documente la prop de sous-titres (champs de
+- [x] CA24 — Étant donné la page `/docs`, alors elle documente la prop de sous-titres (champs de
   chaque piste), la clé `controls.subtitles`, le raccourci `c` dans le tableau des raccourcis, et
   montre un exemple jouable : Sintel avec ses sous-titres officiels en anglais et en français,
   fichiers `.vtt` servis par le site. Elle indique que les fichiers `.vtt` doivent être servis
   depuis la même origine que la page. La chaîne `docs` de `registry.json`, affichée par le CLI à
   l'installation, montre aussi un exemple `subtitles`. Textes en anglais.
-- [ ] CA25 — Étant donné `docs/mvp.md`, alors un amendement daté du jour décrit le bouton CC, la
+- [x] CA25 — Étant donné `docs/mvp.md`, alors un amendement daté du jour décrit le bouton CC, la
   ligne « Subtitles », la prop et le raccourci `c` (tableau des raccourcis compris), et indique que
   la taille et la position font l'objet de la feature suivante.
 
@@ -122,12 +122,12 @@ l'architect et validés par Romain au plan.
 Le seuil est celui que la refonte a posé pour l'horodatage : une barre de moins de 30rem de
 contenu, soit un lecteur de moins d'environ 506 px de large.
 
-- [ ] CA26 — Étant donné un lecteur sous le seuil, une vidéo avec chapitres et sous-titres et
+- [x] CA26 — Étant donné un lecteur sous le seuil, une vidéo avec chapitres et sous-titres et
   aucune prop `controls`, alors la barre montre seulement, dans l'ordre : lecture, pastille Live
   (sur un direct), son, horodatage, Settings, plein écran. Les boutons des chapitres, CC et
   Picture-in-Picture n'y sont ni visibles, ni atteignables par `Tab`, ni exposés aux lecteurs
   d'écran.
-- [ ] CA27 — Étant donné un lecteur sous le seuil, quand on ouvre Settings, alors ses lignes sont,
+- [x] CA27 — Étant donné un lecteur sous le seuil, quand on ouvre Settings, alors ses lignes sont,
   dans l'ordre : « Chapters », « Subtitles », « Speed », « Quality », puis la ligne
   Picture-in-Picture. Chaque ligne suit la règle d'affichage du contrôle qu'elle remplace :
   « Chapters » seulement si la vidéo a des chapitres (donc jamais en direct), « Subtitles »
@@ -135,26 +135,26 @@ contenu, soit un lecteur de moins d'environ 506 px de large.
   navigateur ne le permet pas ; et chaque clé de `controls` à `false` (`chapters`, `subtitles`,
   `playbackRate`, `quality`, `pictureInPicture`) retire sa ligne. Le bouton Settings disparaît
   quand il ne reste aucune ligne.
-- [ ] CA28 — Étant donné la ligne « Chapters », alors elle affiche le titre du chapitre en cours
+- [x] CA28 — Étant donné la ligne « Chapters », alors elle affiche le titre du chapitre en cours
   et un chevron ; activée, le popup montre, sous une ligne de retour « Chapters », la liste des
   chapitres, celui en cours coché. Choisir un chapitre y saute et ferme le popup, comme le menu des
   chapitres de la barre large.
-- [ ] CA29 — Étant donné la ligne Picture-in-Picture, alors son libellé est celui du bouton
+- [x] CA29 — Étant donné la ligne Picture-in-Picture, alors son libellé est celui du bouton
   qu'elle remplace (« Enter picture-in-picture » ou « Exit picture-in-picture ») ; l'activer entre
   en Picture-in-Picture ou en sort, et ferme le popup.
-- [ ] CA30 — Étant donné un lecteur qui franchit le seuil dans un sens ou dans l'autre
+- [x] CA30 — Étant donné un lecteur qui franchit le seuil dans un sens ou dans l'autre
   (redimensionnement de la fenêtre, entrée ou sortie du plein écran), alors la barre et le menu
   Settings prennent aussitôt la forme de leur côté du seuil, sans rechargement ni perte de l'état
   (lecture, piste de sous-titres, vitesse, qualité).
-- [ ] CA31 — Étant donné un lecteur de 360 px de large, une vidéo de moins d'une heure avec
+- [x] CA31 — Étant donné un lecteur de 360 px de large, une vidéo de moins d'une heure avec
   chapitres et sous-titres et aucune prop `controls`, alors, dans le site comme dans les projets de
   test `base` (base-nova) et `radix` (radix-vega), chaque contrôle de la barre est entièrement
   visible et aucun n'en chevauche un autre, volume replié comme déplié (volet à 96 px, horodatage
   pire cas `59:59 / 59:59`).
-- [ ] CA32 — Étant donné la page `/docs` et `docs/mvp.md`, alors ils décrivent la barre étroite :
+- [x] CA32 — Étant donné la page `/docs` et `docs/mvp.md`, alors ils décrivent la barre étroite :
   sous environ 506 px, chapitres, sous-titres et Picture-in-Picture passent dans le menu de
   réglages. Textes du site en anglais.
-- [ ] CA33 — Étant donné un lecteur sous le seuil et le popup Settings ouvert au clavier, alors
+- [x] CA33 — Étant donné un lecteur sous le seuil et le popup Settings ouvert au clavier, alors
   CA13 vaut pour toutes ses lignes : `↑`/`↓` ne parcourent que les lignes présentes.
 
 ## Hors scope
@@ -608,3 +608,6 @@ Commandes :
 - 2026-10-05 — Décision 12 = A : `@max-[30rem]:gap-0` retiré, déclencheurs de menu gardés en `size="icon"` (validée par Romain)
 - 2026-10-05 — Décision 13 = A : `c` garde son effet sous le seuil (validée par Romain)
 - 2026-10-05 — Décision 14 = A : chaîne `docs` de `registry.json` inchangée par l'amendement (validée par Romain)
+- 2026-10-06 — Écarts du dev, relus en review : `findDefaultSubtitle` ajoutée à `subtitles.ts` ; calque des sous-titres toujours monté (seul le texte est conditionnel), `px-4 pb-3` ; `relative` et `min-w-0 truncate` dans le bouton CC et les valeurs du menu ; `ChapterMenuItems` sans prop ; padding logique (`pe-8 ps-1.5`) des lignes de menu, qui corrige un défaut RTL antérieur de tous les menus (`c29a2fe`)
+- 2026-10-06 — Vérification navigateur et bancs : CA1–CA33 OK sauf CA20 (iPhone, à la main) ; marge à 360 px de 84,8 px (site, base-nova) et 65,3 px (radix-vega) ; bundle 53 kB / 17 kB gzip
+- 2026-10-06 — Review OK au premier passage, aucun bloquant
