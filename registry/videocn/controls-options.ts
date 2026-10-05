@@ -12,7 +12,9 @@
  * La frontière avec les props de `<VideoCn>` : ici on règle **ce qui s'affiche**,
  * là-bas on fournit **ce qu'il y a à afficher**. Les chapitres tombent des deux
  * côtés — une prop racine `chapters` porte la liste, deux clés d'ici décident du
- * menu et du découpage de la barre.
+ * menu et du découpage de la barre. Les sous-titres de même : la prop racine
+ * `subtitles` porte les pistes, la clé `subtitles` d'ici décide du bouton, de la
+ * ligne du menu et du raccourci.
  */
 
 export interface ControlsOptions {
@@ -43,13 +45,20 @@ export interface ControlsOptions {
    * bruit.
    */
   chapters?: boolean;
+  /**
+   * Le bouton CC et la ligne « Subtitles » du menu de réglages, ainsi que le
+   * raccourci `c`. Comme les chapitres, ils **disparaissent** quand la vidéo n'a
+   * pas de pistes. `false` règle ce que montre la barre, pas le contenu : une
+   * piste marquée par défaut s'affiche quand même.
+   */
+  subtitles?: boolean;
   playbackRate?: boolean | { rates?: readonly number[] };
   /** Le sélecteur de qualité. Grisé, et non masqué, quand le moteur n'expose rien. */
   quality?: boolean;
   /** La pastille « Direct », qui ne s'affiche que sur un flux en direct. */
   live?: boolean;
   /**
-   * Les raccourcis clavier — `Espace`, `k`, les flèches, `m`, `f`, `0`–`9` —,
+   * Les raccourcis clavier — `Espace`, `k`, les flèches, `m`, `f`, `c`, `0`–`9` —,
    * actifs quand le focus est dans le lecteur. `false` pour un hôte qui a déjà
    * les siens.
    */
@@ -71,6 +80,7 @@ export interface ResolvedControlsOptions {
   fullscreen: { enabled: boolean };
   pictureInPicture: { enabled: boolean };
   chapters: { enabled: boolean };
+  subtitles: { enabled: boolean };
   playbackRate: { enabled: boolean; rates: readonly number[] };
   quality: { enabled: boolean };
   live: { enabled: boolean };
@@ -146,6 +156,7 @@ export function resolveControlsOptions(options: ControlsOptions = {}): ResolvedC
     fullscreen: toggle(options.fullscreen),
     pictureInPicture: toggle(options.pictureInPicture),
     chapters: toggle(options.chapters),
+    subtitles: toggle(options.subtitles),
     playbackRate: {
       enabled: playbackRate !== false,
       rates: resolveRates(rateOptions?.rates),

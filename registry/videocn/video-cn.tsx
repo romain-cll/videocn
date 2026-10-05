@@ -24,6 +24,7 @@ import { resolveControlsOptions, type ControlsOptions } from "./controls-options
 import { PlayerControls } from "./player-controls";
 import { PlayerProvider, usePlayerStoreValue } from "./player-context";
 import type { SourceType } from "./player-engine";
+import type { SubtitleTrack } from "./subtitles";
 import { useControlsVisibility } from "./use-controls-visibility";
 import { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
 import { usePlayer } from "./use-player";
@@ -45,6 +46,22 @@ export interface VideoCnProps {
    * chapitre n'aurait ni fin ni place fixe.
    */
   chapters?: readonly Chapter[];
+  /**
+   * Les pistes de sous-titres : l'URL d'un fichier WebVTT, un code de langue et
+   * un libellé par entrée, et `default` sur celle qui doit s'afficher au
+   * montage. Elles alimentent le bouton CC, la ligne « Subtitles » du menu de
+   * réglages et le raccourci `c`.
+   *
+   * Seule la première piste marquée `default` compte. Une entrée sans URL ou
+   * sans libellé est écartée, et pour une URL répétée la première gagne. La
+   * liste peut changer après le montage : la piste active le reste si son URL
+   * figure encore dans la nouvelle liste, sinon les sous-titres sont coupés.
+   *
+   * Les fichiers `.vtt` doivent être servis depuis la **même origine** que la
+   * page : le lecteur n'ajoute pas d'attribut `crossorigin`. Les sous-titres
+   * contenus dans un manifeste HLS ou DASH sont ignorés, il n'y a que ceux-ci.
+   */
+  subtitles?: readonly SubtitleTrack[];
   autoPlay?: boolean;
   loop?: boolean;
   /**

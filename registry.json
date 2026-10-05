@@ -79,6 +79,11 @@
           "target": "@ui/video-player/chapters.ts"
         },
         {
+          "path": "registry/videocn/subtitles.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/subtitles.ts"
+        },
+        {
           "path": "registry/videocn/controls-options.ts",
           "type": "registry:ui",
           "target": "@ui/video-player/controls-options.ts"
@@ -102,6 +107,11 @@
           "path": "registry/videocn/use-keyboard-shortcuts.ts",
           "type": "registry:ui",
           "target": "@ui/video-player/use-keyboard-shortcuts.ts"
+        },
+        {
+          "path": "registry/videocn/use-subtitles.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/use-subtitles.ts"
         },
         {
           "path": "registry/videocn/video-cn.tsx",
@@ -162,6 +172,16 @@
           "path": "registry/videocn/chapter-menu.tsx",
           "type": "registry:ui",
           "target": "@ui/video-player/chapter-menu.tsx"
+        },
+        {
+          "path": "registry/videocn/subtitles-toggle.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/subtitles-toggle.tsx"
+        },
+        {
+          "path": "registry/videocn/subtitle-display.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/subtitle-display.tsx"
         },
         {
           "path": "registry/videocn/settings-menu.tsx",

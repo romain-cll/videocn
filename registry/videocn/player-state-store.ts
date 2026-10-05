@@ -2,6 +2,7 @@
 
 import { NO_CAPABILITIES } from "./player-engine";
 import type { EngineCapabilities, EngineStatus, PlayerError } from "./player-engine";
+import { NO_SUBTITLES, type SubtitleTrack } from "./subtitles";
 
 /**
  * Tout l'état du lecteur **sauf la tête de lecture**, qui a son propre store
@@ -43,6 +44,23 @@ export interface PlayerState {
   engineStatus: EngineStatus;
   error: PlayerError | null;
   capabilities: EngineCapabilities;
+  /**
+   * Les pistes de sous-titres, déjà normalisées (`resolveSubtitles`). Référence
+   * stable tant que le contenu de la liste ne change pas : le menu et les
+   * `<track>` rendus la lisent telle quelle.
+   */
+  subtitles: readonly SubtitleTrack[];
+  /**
+   * L'URL de la piste active, ou `null` quand les sous-titres sont coupés. C'est
+   * l'élément qui a raison : la valeur suit le mode des `TextTrack`, elle ne le
+   * précède pas.
+   */
+  activeSubtitle: string | null;
+  /**
+   * Le texte des répliques en cours, jointes par `\n`. Vide hors réplique, et
+   * quand les sous-titres sont coupés.
+   */
+  subtitleText: string;
 }
 
 /**
@@ -84,6 +102,9 @@ export function createInitialPlayerState(overrides?: Partial<PlayerState>): Play
     engineStatus: "idle",
     error: null,
     capabilities: NO_CAPABILITIES,
+    subtitles: NO_SUBTITLES,
+    activeSubtitle: null,
+    subtitleText: "",
     ...overrides,
   };
 }
