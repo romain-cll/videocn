@@ -12,6 +12,6 @@
  * des sous-titres).
  */
 export const bundleSize = {
-  core: { minified: "51 kB", gzip: "17 kB" },
+  core: { minified: "53 kB", gzip: "17 kB" },
   shaka: { minified: "810 kB", gzip: "262 kB" },
 } as const;
