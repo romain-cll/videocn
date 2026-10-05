@@ -62,7 +62,7 @@ export const SubtitlesToggle = memo(function SubtitlesToggle() {
         // symétrique, reste sous l'icône.
         <span
           data-slot="video-player-subtitles-indicator"
-          className="pointer-events-none absolute inset-x-2 bottom-1 h-0.5 rounded-full bg-primary"
+          className="pointer-events-none absolute inset-x-2 bottom-1 h-0.5 rounded-lg bg-primary"
         />
       ) : null}
     </Button>
