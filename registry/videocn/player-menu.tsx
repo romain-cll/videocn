@@ -287,8 +287,9 @@ export function PlayerMenuTrigger({
       variant="ghost"
       // `icon`, comme les autres boutons de la barre : 32 px de côté et une
       // icône de 16 px. Aucun déclencheur ne porte de texte, et les 4 px que
-      // `sm` rendait en plus par bouton comptent à 360 px de large, où le bouton
-      // des sous-titres s'ajoute à ceux des chapitres et des réglages.
+      // `sm` rendait en plus par bouton comptent dans la barre large la plus
+      // chargée, juste au-dessus du seuil de 30rem (chapitres, sous-titres,
+      // réglages et Picture-in-Picture côte à côte).
       size="icon"
       disabled={disabled}
       aria-label={ariaLabel}

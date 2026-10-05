@@ -4,7 +4,7 @@ import { memo, type ReactElement } from "react";
 import { ListIcon } from "lucide-react";
 
 import { useActiveChapterIndex, useChapters } from "./chapters-context";
-import { useControlsOptions } from "./controls-context";
+import { useControlsNarrow, useControlsOptions } from "./controls-context";
 import { formatSpokenTime, formatTime } from "./format-time";
 import { usePlayerActions, usePlayerValue } from "./player-context";
 import {
@@ -95,15 +95,23 @@ export const ChapterMenu = memo(function ChapterMenu(): ReactElement | null {
   const { chapters: chapterOptions } = useControlsOptions();
   const chapters = useChapters();
   const activeIndex = useActiveChapterIndex();
+  const narrow = useControlsNarrow();
 
-  if (!chapterOptions.enabled || chapters.length === 0) return null;
+  // Sous le seuil, les chapitres passent par le menu de réglages : rendu
+  // `null`, le bouton est hors du DOM, de la tabulation et de l'arbre
+  // d'accessibilité.
+  if (narrow || !chapterOptions.enabled || chapters.length === 0) return null;
 
   // `-1` avant les premières métadonnées, ou si la tête de lecture n'est pas
   // encore retombée dans un chapitre : le bouton s'annonce alors sans titre.
   const active = activeIndex === -1 ? null : chapters[activeIndex];
 
   return (
-    <PlayerMenu>
+    // `null` : pas encore mesurée (rendu serveur, hydratation). La garde CSS
+    // cache le bouton sous le seuil le temps d'un rendu que personne ne peint ;
+    // dès la mesure elle disparaît et le JS décide seul. Même seuil que
+    // `time-display.tsx`, voir `player-controls.tsx`.
+    <PlayerMenu className={narrow === null ? "@max-[30rem]:hidden" : undefined}>
       {/* Icône seule, sans libellé visible : le titre du chapitre courant
           change au fil de la lecture, et avec lui la largeur du bouton — les
           cibles cliquables voisines se déplaceraient sous le doigt. C'est la

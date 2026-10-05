@@ -67,20 +67,22 @@ const ROWS: readonly ReferenceRow[] = [
     name: "pictureInPicture",
     type: "boolean",
     defaultValue: "true",
-    description: "The Picture-in-Picture button.",
+    description:
+      "The Picture-in-Picture button, or its entry in the settings menu in a narrow player.",
   },
   {
     name: "chapters",
     type: "boolean",
     defaultValue: "true",
-    description: "The chapter menu. It only shows when the video has chapters.",
+    description:
+      "The chapter menu, or its entry in the settings menu in a narrow player. It only shows when the video has chapters.",
   },
   {
     name: "subtitles",
     type: "boolean",
     defaultValue: "true",
     description:
-      "The CC button, the Subtitles entry of the settings menu and the C shortcut. They only show when the video has subtitle tracks. A track marked default still displays when this is false: controls shape the bar, not the content.",
+      "The CC button, the Subtitles entry of the settings menu and the C shortcut. In a narrow player the CC button is not in the bar and the entry is the way in. They only show when the video has subtitle tracks. A track marked default still displays when this is false: controls shape the bar, not the content.",
   },
   {
     name: "playbackRate",
@@ -94,7 +96,7 @@ const ROWS: readonly ReferenceRow[] = [
     type: "boolean",
     defaultValue: "true",
     description:
-      "The Quality entry of the settings menu. Greyed out, not hidden, when the engine exposes no levels. With playbackRate and quality both off, the settings button stays only if the video has subtitle tracks, for the Subtitles entry; otherwise it disappears.",
+      "The Quality entry of the settings menu. Greyed out, not hidden, when the engine exposes no levels. With playbackRate and quality both off, the settings button stays only if the video has subtitle tracks, for the Subtitles entry; otherwise it disappears. In a narrow player the Chapters and Picture-in-Picture entries count too: the button disappears only when no entry is left.",
   },
   {
     name: "live",

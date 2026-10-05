@@ -10,7 +10,9 @@ import {
 } from "react";
 import { ChevronLeftIcon, ChevronRightIcon, SettingsIcon } from "lucide-react";
 
-import { useControlsOptions } from "./controls-context";
+import { ChapterMenuItems } from "./chapter-menu";
+import { useActiveChapterIndex, useChapters } from "./chapters-context";
+import { useControlsNarrow, useControlsOptions } from "./controls-context";
 import { usePlayerActions, usePlayerValue } from "./player-context";
 import {
   focusInitialItem,
@@ -30,8 +32,16 @@ import type { PlayerState } from "./player-state-store";
  *
  * Aucune prop : le contrôle lit ses options et son état dans les contextes.
  * `subtitles`, `playbackRate` et `quality` décident des lignes ; sans aucune, il
- * se rend `null`. La ligne « Subtitles » ouvre la liste, et reste en tête : c'est
- * la seule qui parle du contenu. Elle n'existe que si la vidéo a des pistes.
+ * se rend `null`. La ligne « Subtitles » ouvre la liste, et reste en tête dans
+ * la barre large : c'est la seule qui parle du contenu. Elle n'existe que si la
+ * vidéo a des pistes.
+ *
+ * **Dans un lecteur étroit** (`useControlsNarrow()` vrai), la barre abandonne
+ * les boutons des chapitres, des sous-titres et du Picture-in-Picture : leurs
+ * lignes viennent ici, dans l'ordre Chapters, Subtitles, Speed, Quality,
+ * Picture-in-Picture. Chacune suit la règle du bouton qu'elle remplace. `null`
+ * (pas encore mesuré) vaut « au-dessus du seuil » : la barre large reste
+ * exactement celle d'avant.
  *
  * **La ligne « Quality » reste affichée quand le moteur n'expose aucune
  * qualité**, et passe grisée — c'est le cas d'un MP4 progressif, où le
@@ -41,7 +51,14 @@ import type { PlayerState } from "./player-state-store";
  * capacités.
  */
 
-type View = "root" | "subtitles" | "speed" | "quality";
+/** Les vues du popup : la racine, et la liste de choix qu'ouvre chaque ligne. */
+type View = "root" | "chapters" | "subtitles" | "speed" | "quality";
+
+/**
+ * Une ligne de la racine : chaque vue, plus Picture-in-Picture, qui agit au
+ * lieu d'ouvrir une liste et n'a donc pas de vue.
+ */
+type Row = Exclude<View, "root"> | "pictureInPicture";
 
 /** Le libellé du choix automatique, seul ou suivi de ce qui est joué. */
 const AUTO = "Auto";
@@ -67,36 +84,54 @@ function selectTracks(state: PlayerState) {
   return state.subtitles;
 }
 
+function selectCanPictureInPicture(state: PlayerState) {
+  return state.canPictureInPicture;
+}
+
 /**
  * Les lignes de la racine, dans l'ordre où elles s'affichent. Partagé par le
  * bouton, qui s'efface sans ligne, et par le panneau, qui les dessine et qui
  * s'en sert pour rendre le focus à la ligne d'où l'on revient.
  */
-function useRootRows(): View[] {
+function useRootRows(): Row[] {
   const {
+    chapters: chapterOptions,
     subtitles: subtitlesOptions,
     playbackRate: rateOptions,
     quality: qualityOptions,
+    pictureInPicture: pictureInPictureOptions,
   } = useControlsOptions();
+  const narrow = useControlsNarrow() === true;
+  const chapters = useChapters();
   const tracks = usePlayerValue(selectTracks);
 
-  const rows: View[] = [];
+  const rows: Row[] = [];
+  // Les chapitres et le Picture-in-Picture ne sont des lignes que sous le
+  // seuil : au-dessus, leurs boutons sont dans la barre. Les chapitres sont
+  // vides quand la durée est inconnue, donc jamais de ligne en direct.
+  if (narrow && chapterOptions.enabled && chapters.length > 0) rows.push("chapters");
   if (subtitlesOptions.enabled && tracks.length > 0) rows.push("subtitles");
   if (rateOptions.enabled) rows.push("speed");
   if (qualityOptions.enabled) rows.push("quality");
+  if (narrow && pictureInPictureOptions.enabled) rows.push("pictureInPicture");
   return rows;
 }
 
 export const SettingsMenu = memo(function SettingsMenu(): ReactElement | null {
   const rows = useRootRows();
   const capabilities = usePlayerValue(selectCapabilities);
+  const canPictureInPicture = usePlayerValue(selectCanPictureInPicture);
 
   if (rows.length === 0) return null;
 
-  // Seule la qualité peut être grisée. Quand elle l'est et qu'elle est seule, le
-  // popup ne mènerait nulle part : c'est alors le bouton qui se grise.
-  const hasActionableRow =
-    rows.some((row) => row !== "quality") || capabilities.qualities.length > 0;
+  // Seules la qualité et le Picture-in-Picture peuvent être grisés. Quand toutes
+  // les lignes le sont, le popup ne mènerait nulle part : c'est alors le bouton
+  // qui se grise.
+  const hasActionableRow = rows.some((row) => {
+    if (row === "quality") return capabilities.qualities.length > 0;
+    if (row === "pictureInPicture") return canPictureInPicture;
+    return true;
+  });
 
   return (
     <PlayerMenu>
@@ -119,11 +154,16 @@ export const SettingsMenu = memo(function SettingsMenu(): ReactElement | null {
 function SettingsPanel(): ReactElement {
   const { playbackRate: rateOptions } = useControlsOptions();
   const rows = useRootRows();
+  const chapters = useChapters();
+  const activeChapterIndex = useActiveChapterIndex();
   const tracks = usePlayerValue(selectTracks);
   const activeSubtitle = usePlayerValue((state) => state.activeSubtitle);
   const playbackRate = usePlayerValue((state) => state.playbackRate);
   const capabilities = usePlayerValue(selectCapabilities);
-  const { selectSubtitles, setPlaybackRate, selectQuality } = usePlayerActions();
+  const canPictureInPicture = usePlayerValue(selectCanPictureInPicture);
+  const isPictureInPicture = usePlayerValue((state) => state.isPictureInPicture);
+  const { selectSubtitles, setPlaybackRate, selectQuality, togglePictureInPicture } =
+    usePlayerActions();
   const [view, setView] = useState<View>("root");
   const panelRef = useRef<HTMLDivElement>(null);
   const previousViewRef = useRef<View>("root");
@@ -155,6 +195,8 @@ function SettingsPanel(): ReactElement {
   const playing = qualities.find((level) => level.id === playingQualityId);
   const selected = qualities.find((level) => level.id === activeQualityId);
   const activeTrack = tracks.find((track) => track.src === activeSubtitle);
+  // `-1` avant les premières métadonnées : la ligne s'affiche alors sans valeur.
+  const activeChapter = activeChapterIndex === -1 ? undefined : chapters[activeChapterIndex];
 
   // `←`/`→` sont arrêtés par le popup pour que la vidéo n'avance pas ; ici on
   // leur donne un sens, celui des chevrons : en RTL, ils sont retournés et les
@@ -167,8 +209,16 @@ function SettingsPanel(): ReactElement {
     const backKey = rtl ? "ArrowRight" : "ArrowLeft";
     if (event.key === openKey && view === "root") {
       const active = document.activeElement;
-      // Un clic : la ligne focalisée sait elle-même quelle vue ouvrir.
-      if (active instanceof HTMLElement && panelRef.current?.contains(active)) active.click();
+      const panel = panelRef.current;
+      if (active instanceof HTMLElement && panel?.contains(active)) {
+        // Un clic : la ligne focalisée sait elle-même quelle vue ouvrir. Mais
+        // la ligne Picture-in-Picture n'en ouvre aucune, et `→` ne doit pas
+        // l'activer : on la reconnaît à sa position parmi les lignes, comme
+        // pour le retour de focus.
+        const items = Array.from(panel.querySelectorAll<HTMLElement>('[role="menuitem"]'));
+        const row = rows[items.indexOf(active)];
+        if (row !== undefined && row !== "pictureInPicture") active.click();
+      }
     } else if (event.key === backKey && view !== "root") {
       setView("root");
     }
@@ -180,6 +230,18 @@ function SettingsPanel(): ReactElement {
     <div ref={panelRef} role="none" onKeyDown={handleKeyDown}>
       {view === "root" ? (
         <>
+          {rows.includes("chapters") ? (
+            <PlayerMenuItem onSelect={() => setView("chapters")}>
+              <span>Chapters</span>
+              {/* Sans `dir="ltr"` : le titre vient de l'intégrateur et garde la
+                  direction de la page. `min-w-0 truncate` : un titre long
+                  s'abrège au lieu d'élargir le popup. */}
+              <span className="ml-auto min-w-0 truncate text-muted-foreground">
+                {activeChapter?.label}
+              </span>
+              <RowChevron />
+            </PlayerMenuItem>
+          ) : null}
           {rows.includes("subtitles") ? (
             <PlayerMenuItem onSelect={() => setView("subtitles")}>
               <span>Subtitles</span>
@@ -211,6 +273,30 @@ function SettingsPanel(): ReactElement {
               <RowChevron />
             </PlayerMenuItem>
           ) : null}
+          {rows.includes("pictureInPicture") ? (
+            // `closeOnSelect` : la ligne agit au lieu d'ouvrir une liste. Pas de
+            // chevron, et grisée quand le navigateur ne le permet pas. Le geste
+            // utilisateur que `requestPictureInPicture` exige tient parce que
+            // tout reste synchrone : l'action part dans le `click` (souris) ou
+            // dans le `keydown` qui déclenche `.click()` (`Entrée`, `Espace`), et
+            // passe avant la fermeture. Un `await` ou un report ici le casserait
+            // sans erreur, la promesse rejetée étant avalée par le moteur.
+            <PlayerMenuItem
+              closeOnSelect
+              disabled={!canPictureInPicture}
+              onSelect={() => togglePictureInPicture()}
+            >
+              <span>
+                {isPictureInPicture ? "Exit picture-in-picture" : "Enter picture-in-picture"}
+              </span>
+            </PlayerMenuItem>
+          ) : null}
+        </>
+      ) : null}
+      {view === "chapters" ? (
+        <>
+          <BackItem title="Chapters" onSelect={() => setView("root")} />
+          <ChapterMenuItems />
         </>
       ) : null}
       {view === "subtitles" ? (

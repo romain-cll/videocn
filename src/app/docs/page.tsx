@@ -390,7 +390,8 @@ export default function DocsPage() {
             description={
               <>
                 Pass a list of WebVTT tracks. The player adds a CC button to the bar and a
-                Subtitles entry to the settings menu, where the viewer picks a language. The
+                Subtitles entry to the settings menu, where the viewer picks a language. In a
+                narrow player, under about 506 px, only the menu entry remains. The
                 official English and French subtitles of Sintel start at 1:47.
               </>
             }
@@ -558,6 +559,16 @@ export default function DocsPage() {
             the control is there with its defaults. <InlineCode>false</InlineCode>, it is gone. An
             object, it is there and configured.
           </DocsText>
+          <DocsText>
+            In a narrow player, under about 506 px (30rem of bar), the bar keeps only play, the Live
+            badge, volume, the time display, settings and fullscreen. The chapter, CC and
+            Picture-in-Picture buttons move into the settings menu, which then lists Chapters,
+            Subtitles, Speed, Quality and Picture-in-Picture. Each entry follows the rule of the
+            control it replaces, and each option below set to <InlineCode>false</InlineCode>{" "}
+            removes its entry. The settings button disappears when no entry is left. The player&apos;s width
+            decides, not the device, and crossing the threshold changes the bar at once without
+            interrupting playback.
+          </DocsText>
           <ControlsTable />
         </DocsSection>
 
@@ -626,7 +637,8 @@ export default function DocsPage() {
             <li>
               Every button has a label. Play, mute, fullscreen and subtitles announce their
               shortcut with <InlineCode>aria-keyshortcuts</InlineCode>. The CC button also
-              announces whether subtitles are on.
+              announces whether subtitles are on. In a narrow player the CC button is not in the
+              bar, but the <InlineCode>C</InlineCode> shortcut still works.
             </li>
             <li>
               A click on the video gives the player focus without adding it to the tab order, and

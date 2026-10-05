@@ -51,7 +51,7 @@ export interface UpcomingEntry {
 }
 
 export const upcoming: readonly UpcomingEntry[] = [
-  { title: "Subtitles", description: "Your WebVTT tracks, a picker, size and position." },
+  { title: "Subtitles", description: "Size and position of the subtitles." },
   { title: "Chapters from a file", description: "A WebVTT chapters file, next to the array." },
   { title: "Hover thumbnails", description: "Frame previews from a WebVTT storyboard." },
   { title: "Most replayed", description: "A heatmap above the progress bar." },

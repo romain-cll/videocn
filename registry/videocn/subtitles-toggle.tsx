@@ -5,7 +5,7 @@ import { CaptionsIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-import { useControlsOptions } from "./controls-context";
+import { useControlsNarrow, useControlsOptions } from "./controls-context";
 import { usePlayerActions, usePlayerValue } from "./player-context";
 import type { PlayerState } from "./player-state-store";
 
@@ -32,15 +32,21 @@ function selectActiveSubtitle(state: PlayerState) {
  * quand les sous-titres sont actifs, pas masquée : l'état se lit dans le DOM.
  *
  * Il disparaît sans pistes, comme le menu des chapitres, et avec
- * `controls.subtitles: false`.
+ * `controls.subtitles: false`. Il disparaît aussi sous le seuil de 30rem, où la
+ * barre est étroite (`useControlsNarrow`) : le choix passe alors par le menu de
+ * réglages.
  */
 export const SubtitlesToggle = memo(function SubtitlesToggle() {
   const { subtitles: subtitlesOptions, keyboard } = useControlsOptions();
   const tracks = usePlayerValue(selectSubtitles);
   const activeSubtitle = usePlayerValue(selectActiveSubtitle);
   const { toggleSubtitles } = usePlayerActions();
+  const narrow = useControlsNarrow();
 
-  if (!subtitlesOptions.enabled || tracks.length === 0) return null;
+  // Sous le seuil, la ligne « Subtitles » du menu de réglages prend le relais :
+  // rendu `null`, le bouton est hors du DOM, de la tabulation et de l'arbre
+  // d'accessibilité. `c` garde son effet, la keymap ne lit pas la largeur.
+  if (narrow || !subtitlesOptions.enabled || tracks.length === 0) return null;
 
   const active = activeSubtitle !== null;
 
@@ -48,8 +54,11 @@ export const SubtitlesToggle = memo(function SubtitlesToggle() {
     <Button
       variant="ghost"
       size="icon"
-      // `relative` : c'est le repère de la barre d'état posée sous l'icône.
-      className="relative"
+      // `relative` : c'est le repère de la barre d'état posée sous l'icône. La
+      // garde CSS tient tant que la largeur n'est pas mesurée (rendu serveur,
+      // hydratation) : sous le seuil, le bouton est caché sans attendre le JS.
+      // Même seuil que `time-display.tsx`, voir `player-controls.tsx`.
+      className={narrow === null ? "relative @max-[30rem]:hidden" : "relative"}
       onClick={toggleSubtitles}
       aria-label="Subtitles"
       aria-pressed={active}
