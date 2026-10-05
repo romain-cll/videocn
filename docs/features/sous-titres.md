@@ -35,7 +35,8 @@ l'architect et validés par Romain au plan.
 
 ### Bouton CC
 
-- [ ] CA7 — Étant donné une vidéo avec au moins une piste et aucune prop `controls`, alors la barre
+- [ ] CA7 — Étant donné un lecteur d'au moins 506 px de large (au-dessus du seuil de CA26), une
+  vidéo avec au moins une piste et aucune prop `controls`, alors la barre
   contient un bouton CC à icône, placé entre le bouton des chapitres (ou, sans chapitres, le début
   du groupe de droite) et le bouton Settings. Son nom accessible est « Subtitles », il annonce s'il
   est activé ou non aux lecteurs d'écran, et porte `aria-keyshortcuts="c"` quand les raccourcis sont
@@ -50,8 +51,8 @@ l'architect et validés par Romain au plan.
 
 ### Ligne « Subtitles » du menu de réglages
 
-- [ ] CA11 — Étant donné une vidéo avec au moins une piste, quand on ouvre le menu Settings, alors
-  sa première ligne est « Subtitles », suivie de la valeur courante — « Off », ou le libellé de la
+- [ ] CA11 — Étant donné un lecteur au-dessus du seuil de CA26 et une vidéo avec au moins une
+  piste, quand on ouvre le menu Settings, alors sa première ligne est « Subtitles », suivie de la valeur courante — « Off », ou le libellé de la
   piste active — et d'un chevron, au-dessus de « Speed » et « Quality ».
 - [ ] CA12 — Étant donné le menu au premier niveau, quand on active la ligne « Subtitles », alors le
   popup affiche, sous une ligne de retour « Subtitles », l'entrée « Off » puis une entrée par piste
@@ -98,7 +99,7 @@ l'architect et validés par Romain au plan.
 
 ### Largeur
 
-- [ ] CA22 — Étant donné un lecteur de 360 px de large, une vidéo de moins d'une heure avec
+- [ ] ~~CA22~~ — Remplacé par CA31 (amendement « lecteur étroit » du 05/10/2026). Étant donné un lecteur de 360 px de large, une vidéo de moins d'une heure avec
   chapitres et sous-titres, et aucune prop `controls`, alors tous les contrôles de la barre sont
   entièrement visibles, volume replié comme déplié, et aucun ne déborde du lecteur.
 - [ ] CA23 — Étant donné une vidéo sans sous-titres, alors les critères CA19 et CA22 de la refonte
@@ -115,6 +116,46 @@ l'architect et validés par Romain au plan.
 - [ ] CA25 — Étant donné `docs/mvp.md`, alors un amendement daté du jour décrit le bouton CC, la
   ligne « Subtitles », la prop et le raccourci `c` (tableau des raccourcis compris), et indique que
   la taille et la position font l'objet de la feature suivante.
+
+### Lecteur étroit (amendement du 05/10/2026)
+
+Le seuil est celui que la refonte a posé pour l'horodatage : une barre de moins de 30rem de
+contenu, soit un lecteur de moins d'environ 506 px de large.
+
+- [ ] CA26 — Étant donné un lecteur sous le seuil, une vidéo avec chapitres et sous-titres et
+  aucune prop `controls`, alors la barre montre seulement, dans l'ordre : lecture, pastille Live
+  (sur un direct), son, horodatage, Settings, plein écran. Les boutons des chapitres, CC et
+  Picture-in-Picture n'y sont ni visibles, ni atteignables par `Tab`, ni exposés aux lecteurs
+  d'écran.
+- [ ] CA27 — Étant donné un lecteur sous le seuil, quand on ouvre Settings, alors ses lignes sont,
+  dans l'ordre : « Chapters », « Subtitles », « Speed », « Quality », puis la ligne
+  Picture-in-Picture. Chaque ligne suit la règle d'affichage du contrôle qu'elle remplace :
+  « Chapters » seulement si la vidéo a des chapitres (donc jamais en direct), « Subtitles »
+  seulement si elle a des pistes, la ligne Picture-in-Picture grisée et non activable quand le
+  navigateur ne le permet pas ; et chaque clé de `controls` à `false` (`chapters`, `subtitles`,
+  `playbackRate`, `quality`, `pictureInPicture`) retire sa ligne. Le bouton Settings disparaît
+  quand il ne reste aucune ligne.
+- [ ] CA28 — Étant donné la ligne « Chapters », alors elle affiche le titre du chapitre en cours
+  et un chevron ; activée, le popup montre, sous une ligne de retour « Chapters », la liste des
+  chapitres, celui en cours coché. Choisir un chapitre y saute et ferme le popup, comme le menu des
+  chapitres de la barre large.
+- [ ] CA29 — Étant donné la ligne Picture-in-Picture, alors son libellé est celui du bouton
+  qu'elle remplace (« Enter picture-in-picture » ou « Exit picture-in-picture ») ; l'activer entre
+  en Picture-in-Picture ou en sort, et ferme le popup.
+- [ ] CA30 — Étant donné un lecteur qui franchit le seuil dans un sens ou dans l'autre
+  (redimensionnement de la fenêtre, entrée ou sortie du plein écran), alors la barre et le menu
+  Settings prennent aussitôt la forme de leur côté du seuil, sans rechargement ni perte de l'état
+  (lecture, piste de sous-titres, vitesse, qualité).
+- [ ] CA31 — Étant donné un lecteur de 360 px de large, une vidéo de moins d'une heure avec
+  chapitres et sous-titres et aucune prop `controls`, alors, dans le site comme dans les projets de
+  test `base` (base-nova) et `radix` (radix-vega), chaque contrôle de la barre est entièrement
+  visible et aucun n'en chevauche un autre, volume replié comme déplié (volet à 96 px, horodatage
+  pire cas `59:59 / 59:59`).
+- [ ] CA32 — Étant donné la page `/docs` et `docs/mvp.md`, alors ils décrivent la barre étroite :
+  sous environ 506 px, chapitres, sous-titres et Picture-in-Picture passent dans le menu de
+  réglages. Textes du site en anglais.
+- [ ] CA33 — Étant donné un lecteur sous le seuil et le popup Settings ouvert au clavier, alors
+  CA13 vaut pour toutes ses lignes : `↑`/`↓` ne parcourent que les lignes présentes.
 
 ## Hors scope
 - Réglage de la taille et de la position des sous-titres : feature suivante (décision du
@@ -134,6 +175,8 @@ l'architect et validés par Romain au plan.
 - Fichiers `.vtt` servis depuis une autre origine que la page (pas d'attribut `crossorigin`, pas de
   téléchargement par le lecteur) : prop `crossOrigin` notée pour la phase 7.
 - Masquer des contrôles en dessous de 360 px de large.
+- Popup Settings ouvert au moment où le lecteur franchit le seuil de CA26 : il peut se fermer.
+- Barre étroite déclenchée par le type d'appareil (tactile) plutôt que par la largeur.
 - Entrée dans le changelog du site.
 
 ## Contraintes
@@ -410,3 +453,9 @@ Commandes :
 - 2026-10-05 — Décision 8 = A : taille du texte proportionnelle, `clamp(0.875rem, 2.5cqw, 2.5rem)` (validée par Romain)
 - 2026-10-05 — Décision 9 = A : en plein écran, texte en bas de l'écran, bande noire comprise ; CA16 précisé (validée par Romain)
 - 2026-10-05 — Décision 10 = A : exemple `subtitles` dans la chaîne `docs` de `registry.json` ; CA24 précisé (validée par Romain)
+- 2026-10-05 — Vérification : la barre de CA22 déborde de 26,7 px en radix-vega (boutons de 36 px) avec chapitres et sous-titres à 360 px ; site et base tiennent (+4,8 px au pire)
+- 2026-10-05 — Décision 5 remplacée : sous le seuil de 30rem, chapitres, sous-titres et Picture-in-Picture quittent la barre pour le menu Settings ; la barre garde lecture, Live, son, horodatage, Settings, plein écran (CA26–CA33, CA22 remplacé par CA31) (validée par Romain)
+- 2026-10-05 — Barre étroite déclenchée par la largeur du lecteur, pas par le type d'appareil (validée par Romain)
+- 2026-10-05 — Ordre des lignes sous le seuil : Chapters, Subtitles, Speed, Quality, Picture-in-Picture (validée par Romain)
+- 2026-10-05 — Le CA20 de la refonte (bouton des chapitres dans la barre) ne vaut plus qu'au-dessus du seuil ; l'abandon des chapitres dans le popup (04/10) est levé pour le lecteur étroit seulement (validée par Romain)
+- 2026-10-05 — Le texte « à venir » du changelog sur les sous-titres est corrigé pour ne garder que la taille et la position (validée par Romain)
