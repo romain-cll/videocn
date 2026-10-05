@@ -434,6 +434,151 @@ Commandes :
 - **Changement visible partout** : les déclencheurs des chapitres et des réglages passent de 36 à 32 px, et leur icône de 14 à 16 px, avec ou sans sous-titres.
 - **Taille du bundle** : la valeur affichée dans `/docs` (14 kB gzip) va bouger ; elle est remesurée à la tâche 5.
 
+### Amendement CA26–CA33
+
+#### Approche
+**Détection : mixte, le JS fait foi (décision 11).** `PlayerControls` porte déjà le `@container` et mesure désormais sa propre barre. La mesure se fait sur la boîte de contenu, celle que lit la requête : d'abord dans un `useLayoutEffect`, avant la peinture, puis par un `ResizeObserver` (`contentRect.width`). Elle est comparée à 30 × la police racine, le `30rem` de l'horodatage. Le résultat `narrow: boolean | null` passe par un quatrième contexte de `controls-context.tsx`. Avec `true`, `ChapterMenu`, `SubtitlesToggle` et `PictureInPictureToggle` rendent `null` : hors du DOM, ils sont absents de la tabulation et de l'arbre d'accessibilité (CA26), et aussi de `getItems`, si bien que `↑`/`↓` ne voient que les lignes rendues sans qu'on touche à `player-menu.tsx` (CA33). La valeur `null` couvre le rendu serveur et le rendu d'hydratation, qu'aucun navigateur ne peint puisque la première mesure est synchrone : pendant ce temps, ces trois boutons portent `@max-[30rem]:hidden`, pour qu'un lecteur étroit rendu par le serveur ne montre pas la barre large jusqu'à l'hydratation. Dès la mesure, la classe disparaît et le JS décide seul. Pour CA30, franchir le seuil ne fait que re-rendre la barre : lecture, piste, vitesse et qualité vivent dans l'élément, le moteur et le store, que rien ne démonte.
+
+**Menu (CA27–CA29).** `useRootRows` tient compte de `narrow` et produit, dans l'ordre : `chapters` (si `controls.chapters` et `useChapters()` non vide, donc jamais en direct), `subtitles`, `speed`, `quality`, `pictureInPicture`. La règle du bouton grisé (décision 2 de la refonte) couvre aussi la ligne PiP grisée. La vue « chapters » réutilise la liste de la barre large : son `map` de `PlayerMenuRadioItem` sort de `ChapterMenu` sous le nom `ChapterMenuItems`, exporté par `chapter-menu.tsx` et rendu par les deux popups. On garde donc le même saut, la même fermeture et le même focus sur l'item coché. La ligne PiP est un `PlayerMenuItem` qui porte le libellé du bouton, sans chevron, avec la nouvelle prop `closeOnSelect` : `togglePictureInPicture()` puis fermeture, et le focus revient à Settings. Le geste utilisateur exigé par `requestPictureInPicture` est préservé parce que l'appel reste synchrone : dans le `click` à la souris, ou dans le `keydown` qui déclenche `.click()` (`Entrée`, `Espace`). `→` ne clique que les lignes qui ouvrent une vue, repérées par leur position dans `rows` comme le fait déjà le retour de focus ; sur la ligne PiP, il ne fait rien.
+
+**Au-dessus du seuil, et devenir de l'ancienne décision 5 (décision 12).** Avec `narrow` à `false` ou `null`, les lignes, la barre et le `disabled` restent exactement ceux d'aujourd'hui (CA7, CA11–CA15). `@max-[30rem]:gap-0` est retiré : il ne servait qu'à faire tenir le bouton CC à 360 px, et la barre étroite y perd trois boutons. Avec `gap-1` et le volume replié, la marge devient d'environ 85 px en site et base-nova, et d'environ 65 px en radix-vega. `size="icon"` sur les déclencheurs est conservé : la barre la plus chargée est désormais la barre large juste au-dessus du seuil, et aucun déclencheur ne porte de texte. Volet ouvert, elle demande environ 453 px pour 480 disponibles en base-nova, et environ 485 px en radix-vega, où le volet se comprime. Aucun fichier n'est créé ni supprimé, donc `registry.json` ne change pas.
+
+#### Fichiers
+- créé / supprimé : aucun ; `registry.json` est inchangé (pas de nouveau fichier, et chaîne `docs` selon la décision 14).
+- modifié : `/Users/romain/videoCn/registry/videocn/controls-context.tsx` — un quatrième contexte, la largeur de la barre : `ControlsNarrowProvider` et `useControlsNarrow(): boolean | null`, où `null` signifie « pas encore mesurée ». Il ne change qu'au franchissement du seuil, d'où un contexte à part.
+- modifié : `/Users/romain/videoCn/registry/videocn/player-controls.tsx` — mesure de la barre (`ref`, `useLayoutEffect`, `ResizeObserver`, seuil de 30rem) et fourniture du contexte. `@max-[30rem]:gap-0` est retiré des deux rangées. Les commentaires sont réécrits, avec un renvoi croisé vers `time-display.tsx` pour le seuil.
+- modifié : `/Users/romain/videoCn/registry/videocn/chapter-menu.tsx` — `ChapterMenuItems` est extrait et exporté. Le composant rend `null` sous le seuil, et porte `@max-[30rem]:hidden` sur `PlayerMenu` tant que la valeur est `null`.
+- modifié : `/Users/romain/videoCn/registry/videocn/subtitles-toggle.tsx` — `null` sous le seuil, et la garde CSS tant que la valeur est `null`.
+- modifié : `/Users/romain/videoCn/registry/videocn/picture-in-picture-toggle.tsx` — idem.
+- modifié : `/Users/romain/videoCn/registry/videocn/settings-menu.tsx` — lignes Chapters et Picture-in-Picture sous le seuil, vue `chapters`, `hasActionableRow` étendu à la ligne PiP, `→` sans effet sur la ligne PiP, commentaire d'en-tête.
+- modifié : `/Users/romain/videoCn/registry/videocn/player-menu.tsx` — `PlayerMenuItem` gagne `closeOnSelect?: boolean` (`onSelect()` puis `closeMenu(true)`, dans cet ordre). Le commentaire du `size="icon"` est réécrit, car il invoque le bouton CC à 360 px.
+- modifié : `/Users/romain/videoCn/src/app/docs/page.tsx` — un paragraphe anglais sous Controls sur la barre étroite (CA32).
+- modifié : `/Users/romain/videoCn/src/components/docs/controls-table.tsx` — lignes `chapters` et `pictureInPicture` (« or its settings menu entry in a narrow player »). Dans `quality`, la phrase sur la disparition du bouton Settings tient compte des lignes du lecteur étroit.
+- modifié : `/Users/romain/videoCn/docs/mvp.md` — amendement daté du 5 octobre 2026 sur le lecteur étroit, et section Contrôles (CA32).
+- modifié : `/Users/romain/videoCn/src/lib/changelog.ts` — l'entrée `upcoming` « Subtitles » ne garde que la taille et la position (décision du 05/10).
+- modifié (seulement si la valeur arrondie bouge) : `/Users/romain/videoCn/src/lib/bundle.ts` — `core` remesuré.
+
+#### Tâches (ordonnées)
+1. **Contrats, commités avant tout agent** (préparent CA26–CA29 et CA33).
+   - `controls-context.tsx` : contexte `narrow` (défaut `null`), `ControlsNarrowProvider`, `useControlsNarrow`. Le commentaire « Trois contextes » passe à quatre.
+   - `player-controls.tsx` : les enfants sont enveloppés dans le fournisseur, avec la valeur `null` comme bouchon. La garde CSS fait déjà la barre étroite à elle seule.
+   - `chapter-menu.tsx` : `ChapterMenuItems` extrait tel quel, sans changement de comportement.
+   - `player-menu.tsx` : `closeOnSelect` est implémenté (trois lignes).
+2. **Lot A — barre** (CA26, CA30, CA31 ; non-régression CA7 et CA23). Fichiers : `player-controls.tsx`, `chapter-menu.tsx`, `subtitles-toggle.tsx`, `picture-in-picture-toggle.tsx`, et `player-menu.tsx` pour le commentaire seul. **Disjoint des lots B et C, parallélisable.** Points durs :
+   - Première mesure en `useLayoutEffect` : `getBoundingClientRect().width` moins les deux `padding`, pour rester fractionnaire comme la requête. Ensuite `contentRect.width`.
+   - La police racine est relue à chaque mesure, et l'effet dépend de `visibility`, comme dans `SubtitleDisplay`.
+   - La garde s'écrit en ternaire, chaque chaîne sur une ligne (piège RTL du CLI).
+   - `@max-[30rem]:gap-0` est retiré des deux rangées.
+3. **Lot B — menu** (CA27, CA28, CA29, CA33 ; non-régression CA11–CA15). Fichier : `settings-menu.tsx`. **Disjoint, parallélisable.** Points :
+   - type `Row` = les vues plus `pictureInPicture` ;
+   - `hasActionableRow` vrai pour Chapters, Subtitles ou Speed, pour Quality avec des niveaux, et pour PiP si `canPictureInPicture` ;
+   - valeur de la ligne Chapters = titre du chapitre en cours (`useActiveChapterIndex`), en `min-w-0 truncate`, sans `dir` ;
+   - `→` à la racine ignoré si `rows[index]` n'ouvre pas de vue ;
+   - commentaire sur l'appel synchrone exigé par `requestPictureInPicture`.
+4. **Lot C — textes** (CA32, décision du changelog). Fichiers : `page.tsx`, `controls-table.tsx`, `mvp.md`, `changelog.ts`. **Disjoint, parallélisable.** Contenu :
+   - **`mvp.md`** :
+     - une ligne d'amendement datée ;
+     - ligne Réglages du tableau : « et, dans un lecteur étroit, chapitres et Picture-in-Picture » ;
+     - note sur les menus : « gardent chacun un bouton à part » devient « au-dessus du seuil », et la règle de disparition du bouton est étendue ;
+     - paragraphe du bouton CC : « au-dessus du seuil » ;
+     - le paragraphe « Dans un lecteur de 360 px… » est remplacé par la barre étroite, déclenchée par la largeur et non par le type d'appareil.
+   - **`/docs`** : textes en anglais.
+5. **Barrières.**
+   - CLI Tailwind dans un dossier jetable : `@max-[30rem]:hidden` doit produire `@container (width < 30rem)` et `display: none`.
+   - `pnpm lint`, puis `pnpm build && pnpm typecheck`.
+   - Taille du bundle par la commande esbuild du plan initial.
+6. **Commit, puis sondes.** La page `src/app/sonde-sous-titres/page.tsx`, non commitée, gagne des largeurs de 360, 505, 506 et 640 px, une source en direct, les préréglages `controls` et une bascule de la police racine à 20 px.
+7. **Bancs `base` et `radix`.** Mesures de CA31, garde vérifiée avec le JS coupé, passe RTL (`"rtl": true`, `<html dir="rtl">`, `-y -o`).
+8. **À la main (Romain)** : franchissement du seuil en plein écran système, PiP si le Chrome piloté le refuse, rendu sur téléphone à 360 px, ligne PiP grisée sous Firefox.
+
+#### Stratégie de test
+- **CA26** → e2e (snapshot a11y, Tab, DOM).
+  - À 360 et 505 px, sur Sintel avec chapitres et pistes : le groupe « Player controls » ne contient que Play, Mute, Volume, l'horodatage, Settings et Enter fullscreen. Ni `[aria-label^="Chapters"]`, ni `[aria-label="Subtitles"]`, ni `[aria-label$="picture-in-picture"]` dans le DOM.
+  - Tab depuis un élément placé avant le lecteur : Play, Mute, Volume, Settings, Enter fullscreen. Sur un direct, « Go to live » s'intercale après Play.
+  - **Garde SSR**, au banc `base` avec `Emulation.setScriptExecutionDisabled` : à 360 px, les trois boutons ont `display: none` calculé ; à 640 px, ils sont visibles. JS rétabli : à 360 px, ils sont absents du DOM ; à 640 px, ils sont présents et sans la classe.
+- **CA27** → e2e.
+  - À 360 px, les `[role=menuitem]` de la racine sont, dans l'ordre : Chapters, Subtitles, Speed, Quality, Enter picture-in-picture.
+  - Variantes où une ligne disparaît : sans chapitres ; en direct avec la prop `chapters`, pas de Chapters ; sans pistes, pas de Subtitles ; chacune des cinq clés à `false`, sa ligne seule disparaît ; les cinq à `false`, plus de bouton Settings.
+  - `video.disablePictureInPicture = true` puis rechargement de la source : la ligne PiP porte `disabled` et `data-disabled`.
+  - Lignes toutes grisées (MP4, `playbackRate`, `chapters` et `subtitles` à `false`, PiP désactivé) : Settings est `disabled`.
+- **CA28** → e2e.
+  - Après un saut sur un chapitre connu, la ligne Chapters contient son titre.
+  - `Entrée` ouvre une ligne de retour « Chapters » puis N `menuitemradio`, l'item courant à `aria-checked="true"` et focalisé. Les `textContent` des items sont identiques à ceux du menu de la barre à 640 px.
+  - Un clic sur un autre chapitre donne `currentTime` = son début (±0,1 s), plus de `[data-slot=player-menu-content]`, et le focus sur Settings.
+- **CA29** → e2e, avec un vrai clic CDP (un `element.click()` lancé par script n'a pas de geste utilisateur).
+  - `document.pictureInPictureElement === video`, le popup est fermé, le focus est sur Settings.
+  - Le popup rouvert affiche « Exit picture-in-picture » ; `Entrée` (`press_key`) sort du PiP.
+  - `→` sur la ligne : le popup reste ouvert et le PiP n'est pas lancé.
+  - Si le Chrome piloté refuse le PiP, vérification à la main.
+- **CA30** → e2e.
+  - Mise en place à 640 px : lecture, FR, 1,5×, et 720p en HLS. Des compteurs `loadstart` et `emptied` sont posés.
+  - Le conteneur passe de 640 à 360 puis à 640 px, puis la fenêtre via `resize_page`. Après deux `requestAnimationFrame`, la forme de la barre a changé, et :
+    - `paused` est faux et `currentTime` croît ;
+    - la piste FR est en `hidden` et le calque affiche du texte ;
+    - `playbackRate` vaut 1,5 et 720p est coché ;
+    - les compteurs sont à 0.
+  - Plein écran par un vrai clic à 360 px : forme large en plein écran, forme étroite à la sortie. Plein écran système à la main.
+- **CA31** → mesure, dans le site et dans les deux bancs.
+  - Horodatage forcé à `59:59 / 59:59`.
+  - Chaque contrôle visible (boutons, `span` de l'horodatage) tient dans la boîte de contenu de la rangée (±0,5 px), aucune paire de rectangles ne se chevauche, et `scrollWidth ≤ clientWidth`.
+  - Mesure faite volume replié, puis déplié par survol, par Tab et par glissement (`pointerId: 1`) : volet à 96 px, horodatage en `sr-only`.
+  - Marges relevées, attendues à environ 85 px (site, base) et 65 px (radix) volume replié.
+- **CA32** → `curl -s localhost:3000/docs | grep -Ei "506|narrow"`, relecture des textes anglais et du diff de `mvp.md`.
+- **CA33** → e2e (`press_key`), à 360 px, sur MP4 (Quality grisée).
+  - Tab jusqu'à Settings, puis `Entrée` : le focus est sur Chapters.
+  - `↓` donne Subtitles, puis Speed, puis PiP (Quality sautée), puis Chapters (bouclage) ; `↑` revient sur PiP.
+  - `→` sur Chapters ouvre la liste, focus sur le chapitre courant ; `←` rend le focus à la ligne Chapters. `→` sur Subtitles ouvre sa liste.
+  - `Échap` ferme et rend le focus à Settings. `currentTime` et `volume` n'ont pas bougé.
+  - Avec `chapters: false`, la boucle exclut Chapters. Même séquence en `dir="rtl"`, `←` et `→` inversés.
+- **Non-régression CA7** → snapshot a11y à 506 et 640 px : Chapters, Subtitles, Settings, PiP, plein écran. Subtitles porte `aria-pressed` et `aria-keyshortcuts="c"`.
+  - À 505 px, forme étroite.
+  - Police racine à 20 px : le seuil passe à environ 626 px, et la mesure JS (boutons) bascule à la même largeur que la requête CSS (horodatage masqué au survol).
+- **Non-régression CA11–CA13** → à 640 px, la racine ne contient que Subtitles, Speed et Quality. La séquence de la refonte se joue sur Subtitles, en `ltr` et en `rtl`.
+- **Non-régression CA14** → avec `playbackRate: false, quality: false` à 640 px, Subtitles est la seule ligne. Sans pistes, Settings est absent à 640 px, et présent à 360 px avec Chapters et PiP.
+  - Décision 2 de la refonte : `playbackRate: false` sur MP4 sans pistes donne Settings `disabled` à 640 px, et actif à 360 px.
+- **Non-régression CA15** → `subtitles: false` à 640 et à 360 px : ni bouton, ni ligne, et `c` n'est pas consommé.
+- **Non-régression CA23** → les scripts de CA19 et CA22 de la refonte à 360 px, sur Big Buck Bunny avec chapitres et sans sous-titres. S'y ajoutent CA18 de la refonte (popup contenu à 360 × 202) et CA20 à 640 px.
+
+#### Décisions à valider
+11. **Comment le lecteur sait qu'il est sous le seuil.**
+    - A : CSS seul. `@max-[30rem]:hidden` sur les trois boutons, `@min-[30rem]:hidden` sur les deux lignes, et un filtre de visibilité dans `getItems` pour CA33.
+    - B : mesure JS seule (`ResizeObserver`, booléen en contexte).
+    - C : mixte. B, plus `@max-[30rem]:hidden` sur les trois boutons tant que la première mesure n'a pas eu lieu.
+    - **Reco C.**
+      - A a une seule source et rien ne s'y démonte, mais le `disabled` du bouton Settings ne peut pas dépendre de la largeur. Avec `playbackRate: false` sur un MP4 sans pistes, il faut un bouton grisé au-dessus du seuil (décision 2 de la refonte) et actif en dessous, pour atteindre PiP et Chapters. Un seul attribut pour les deux côtés fait soit régresser la barre large, soit rendre PiP et Chapters inatteignables (CA27).
+      - B est exact partout, mais le rendu serveur d'un lecteur étroit montre la barre large jusqu'à l'hydratation. En radix-vega, elle déborde alors de 26,7 px, puis trois boutons disparaissent.
+      - C supprime ce défaut pour trois ternaires. La classe disparaît dès la mesure, si bien qu'aucune seconde source ne subsiste.
+12. **Ajustements de l'ancienne décision 5.**
+    - A : retirer `@max-[30rem]:gap-0`, garder `size="icon"`.
+    - B : garder les deux.
+    - C : retirer les deux.
+    - **Reco A.**
+      - `gap-0` ne servait qu'au bouton CC à 360 px. Sans lui, la marge reste d'environ 85 px et 65 px. Sous le seuil, on est surtout sur des écrans tactiles, où des cibles collées se touchent.
+      - `icon` sert là où la barre est désormais la plus chargée : la barre large juste au-dessus du seuil. `sm` y coûterait 8 px de plus.
+13. **[Ambiguïté] `c` sous le seuil.** CA21 définit `c` comme « un clic sur le bouton CC », et ce bouton n'est plus dans la barre.
+    - A : `c` garde son effet (CA8, CA9), avec une keymap inchangée. La règle de `mvp.md` « `c` n'agit que si la barre propose les sous-titres » reste vraie grâce à la ligne Subtitles, mais plus aucun `aria-keyshortcuts` n'annonce la touche.
+    - B : `c` est laissé à l'hôte sous le seuil.
+    - **Reco A** : aucune ligne de code, et une touche dont l'effet change avec la largeur de la fenêtre serait incompréhensible.
+14. **[Ambiguïté, périmètre de CA32] Chaîne `docs` de `registry.json`** (« They add a CC button and a Subtitles entry to the settings menu »).
+    - A : ne pas y toucher.
+    - B : ajouter une phrase sur la barre étroite.
+    - **Reco A** : CA32 ne nomme que `/docs` et `mvp.md`, et la phrase reste vraie dans le cas par défaut.
+
+#### Risques
+- **Le seuil est écrit à trois endroits** : les classes de l'horodatage, la garde CSS et la constante JS. Ils concordent tant que la police racine ne change pas sans redimensionnement. Si un hôte change `html { font-size }` à chaud, la mesure JS reste périmée jusqu'au prochain redimensionnement. Les boutons et les lignes suivent alors la mesure, donc rien ne devient inatteignable ; seul le masquage de l'horodatage suit le CSS. Il faut des commentaires croisés.
+- **Une frame de décalage au franchissement.** Le `setState` déclenché par le `ResizeObserver` est rendu après la peinture. C'est invisible pendant un redimensionnement, mais à regarder à l'entrée en plein écran ; un `flushSync` le corrigerait si ça se voit.
+- **Popup ouvert au franchissement** (hors scope) :
+  - le popup des chapitres de la barre large se démonte en passant sous le seuil ;
+  - le popup Settings reste ouvert et ses lignes suivent. Une sous-liste « Chapters » ouverte reste alors affichée au-dessus du seuil jusqu'au retour ;
+  - si la ligne focalisée disparaît, le focus tombe sur le `body`.
+- **Geste utilisateur du PiP.** CA29 tient seulement parce que l'appel est synchrone et que `onSelect` passe avant `closeMenu`. Un `await` ou un report ajouté plus tard le casserait sans erreur, la promesse rejetée étant avalée par `ignoreRejection`.
+- **Hauteur du popup.** Cinq lignes font 148 px. À 360 px en 16:9, la place disponible est d'environ 142 px, donc un léger défilement. En 2,35:1 (Sintel), elle tombe à environ 93 px : trois lignes visibles, et la racine défile. C'est conforme à CA18 de la refonte, mais à juger à l'œil.
+- **Barre large en radix-vega, juste au-dessus du seuil.** Volet ouvert, elle demande environ 485 px pour 480. Le volet se comprime (environ 5 px, environ 30 px sur une vidéo de plus d'une heure) au lieu de déborder. C'est hors CA31, à relever au banc à 506 px.
+- **Garde posée sur le `Button` de l'hôte.** Elle repose sur l'ordre de génération (la variante après `inline-flex`) et sur `tailwind-merge`, qui ne voit pas les deux classes comme concurrentes. À vérifier dans les deux bancs, JS coupé.
+- **Chrome piloté** : le PiP et le vrai plein écran peuvent y être refusés, d'où le repli à la main déjà prévu.
+- **Seuil en `rem`** : les « 506 px » de CA7 et CA26 supposent une police racine de 16 px.
+
+
 ## Décisions
 - 2026-10-05 — Un bouton CC dans la barre active ou coupe les sous-titres ; une ligne « Subtitles » du menu de réglages choisit la piste (validée par Romain)
 - 2026-10-05 — Taille et position des sous-titres reportées à la feature suivante (validée par Romain)
@@ -459,3 +604,7 @@ Commandes :
 - 2026-10-05 — Ordre des lignes sous le seuil : Chapters, Subtitles, Speed, Quality, Picture-in-Picture (validée par Romain)
 - 2026-10-05 — Le CA20 de la refonte (bouton des chapitres dans la barre) ne vaut plus qu'au-dessus du seuil ; l'abandon des chapitres dans le popup (04/10) est levé pour le lecteur étroit seulement (validée par Romain)
 - 2026-10-05 — Le texte « à venir » du changelog sur les sous-titres est corrigé pour ne garder que la taille et la position (validée par Romain)
+- 2026-10-05 — Décision 11 = C : seuil mesuré en JS (contexte `narrow`), garde `@max-[30rem]:hidden` sur les trois boutons tant que la première mesure n'a pas eu lieu (validée par Romain)
+- 2026-10-05 — Décision 12 = A : `@max-[30rem]:gap-0` retiré, déclencheurs de menu gardés en `size="icon"` (validée par Romain)
+- 2026-10-05 — Décision 13 = A : `c` garde son effet sous le seuil (validée par Romain)
+- 2026-10-05 — Décision 14 = A : chaîne `docs` de `registry.json` inchangée par l'amendement (validée par Romain)
