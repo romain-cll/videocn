@@ -20,6 +20,8 @@ import {
 } from "./player-state-store";
 import { createPlayheadStore, type PlayheadStore } from "./playhead-store";
 import { resolveEngine } from "./resolve-engine";
+import { findDefaultSubtitle, resolveSubtitles, type SubtitleTrack } from "./subtitles";
+import { useSubtitles } from "./use-subtitles";
 
 export type { PlayerState } from "./player-state-store";
 
@@ -45,6 +47,16 @@ export interface PlayerActions {
   toggleFullscreen(): void;
   togglePictureInPicture(): void;
   selectQuality(id: string | null): void;
+  /**
+   * Active la piste d'URL `src`, ou coupe les sous-titres avec `null`. Une URL
+   * absente de la liste est ignorée.
+   */
+  selectSubtitles(src: string | null): void;
+  /**
+   * Coupe les sous-titres s'ils sont actifs ; sinon allume la dernière piste
+   * choisie, à défaut la piste par défaut, à défaut la première.
+   */
+  toggleSubtitles(): void;
 }
 
 export interface UsePlayerOptions {
@@ -55,6 +67,11 @@ export interface UsePlayerOptions {
   defaultMuted?: boolean;
   /** Cible du plein écran. À défaut, le `<video>` lui-même. */
   containerRef?: RefObject<HTMLElement | null>;
+  /**
+   * Les pistes de sous-titres, brutes : `usePlayer` les normalise. La liste
+   * peut changer ensuite, contrairement aux valeurs par défaut ci-dessus.
+   */
+  subtitles?: readonly SubtitleTrack[];
 }
 
 export interface UsePlayerResult {
@@ -192,7 +209,14 @@ function engineErrorMessage(cause: unknown): string {
 }
 
 export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
-  const { src, type, defaultVolume = DEFAULT_VOLUME, defaultMuted, containerRef } = options;
+  const {
+    src,
+    type,
+    defaultVolume = DEFAULT_VOLUME,
+    defaultMuted,
+    containerRef,
+    subtitles,
+  } = options;
 
   // L'élément vit à deux endroits, et c'est voulu. L'état le fait suivre aux
   // effets, qui doivent se rejouer s'il change. La ref le donne aux actions
@@ -208,14 +232,19 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
 
   // Les valeurs par défaut n'entrent que dans l'état initial : le lecteur est
   // non contrôlé, et le store n'est jamais recréé si elles changent ensuite.
-  const [store] = useState(() =>
-    createPlayerStateStore(
+  const [store] = useState(() => {
+    // Amorcé avec la liste et sa piste par défaut : le bouton CC est allumé dès
+    // la première peinture, rendu serveur compris.
+    const resolvedSubtitles = resolveSubtitles(subtitles);
+    return createPlayerStateStore(
       createInitialPlayerState({
         volume: clamp01(defaultVolume),
         muted: defaultMuted ?? false,
+        subtitles: resolvedSubtitles,
+        activeSubtitle: findDefaultSubtitle(resolvedSubtitles),
       }),
-    ),
-  );
+    );
+  });
 
   // Un seul store pour la vie du composant : l'initialiseur paresseux de
   // `useState` est le seul moyen que React garantisse de n'appeler qu'une fois.
@@ -602,6 +631,8 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
     engineRef.current?.selectQuality(id);
   }, []);
 
+  const { selectSubtitles, toggleSubtitles } = useSubtitles({ video, store, subtitles });
+
   /**
    * Les actions sont stables pour la vie du composant : les contrôles les
    * reçoivent en props et ne doivent pas se re-rendre parce que la tête de
@@ -623,6 +654,8 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       toggleFullscreen,
       togglePictureInPicture,
       selectQuality,
+      selectSubtitles,
+      toggleSubtitles,
     }),
     [
       play,
@@ -639,6 +672,8 @@ export function usePlayer(options: UsePlayerOptions): UsePlayerResult {
       toggleFullscreen,
       togglePictureInPicture,
       selectQuality,
+      selectSubtitles,
+      toggleSubtitles,
     ],
   );
 

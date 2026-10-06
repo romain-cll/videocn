@@ -89,11 +89,14 @@ const POPUP_CLASSNAME =
  * remplissent leur ligne d'office ; nous rendons des `button`, pour que le
  * focus DOM puisse réellement s'y poser, et il faut le leur demander.
  *
- * Le `pr-8` réserve la place de l'indicateur coché : rien ne bouge quand la
- * sélection change de ligne.
+ * Le `pe-8` réserve la place de l'indicateur coché : rien ne bouge quand la
+ * sélection change de ligne. Propriétés logiques écrites telles quelles : le CLI
+ * shadcn ne réécrit pas les classes d'une constante, seulement celles d'un
+ * `className`, et un `pr-8` resterait à droite en RTL alors que l'indicateur,
+ * lui, passe à gauche — la valeur d'une ligne de réglages s'y superposait.
  */
 const ITEM_CLASSNAME =
-  "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
+  "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pe-8 ps-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
 
 interface PlayerMenuContextValue {
   open: boolean;
@@ -282,11 +285,12 @@ export function PlayerMenuTrigger({
       id={triggerId}
       type="button"
       variant="ghost"
-      // `sm` et non `icon-sm` : aucun déclencheur ne porte plus de texte, mais
-      // la largeur reste libre pour qu'un contenu à venir — une icône suivie
-      // d'un badge, par exemple — ne soit pas rogné. Même hauteur que les
-      // autres boutons de la barre.
-      size="sm"
+      // `icon`, comme les autres boutons de la barre : 32 px de côté et une
+      // icône de 16 px. Aucun déclencheur ne porte de texte, et les 4 px que
+      // `sm` rendait en plus par bouton comptent dans la barre large la plus
+      // chargée, juste au-dessus du seuil de 30rem (chapitres, sous-titres,
+      // réglages et Picture-in-Picture côte à côte).
+      size="icon"
       disabled={disabled}
       aria-label={ariaLabel}
       aria-haspopup="menu"
@@ -510,8 +514,19 @@ function PlayerMenuPopup({ children, className }: PlayerMenuContentProps) {
 }
 
 export interface PlayerMenuItemProps {
-  /** Appelé au clic ; le menu reste ouvert, c'est à l'appelant de le fermer. */
+  /**
+   * Appelé au clic. Le menu reste ouvert, c'est à l'appelant de le fermer,
+   * sauf avec `closeOnSelect`.
+   */
   onSelect: () => void;
+  /**
+   * Ferme le popup après `onSelect` et rend le focus au déclencheur, comme le
+   * fait `PlayerMenuRadioItem`. Pour une ligne qui agit au lieu d'ouvrir un
+   * sous-niveau (Picture-in-Picture). `onSelect` passe avant la fermeture et
+   * dans le même appel synchrone : une action qui exige un geste utilisateur
+   * (`requestPictureInPicture`) doit s'y lancer sans attendre.
+   */
+  closeOnSelect?: boolean;
   disabled?: boolean;
   className?: string;
   children: ReactNode;
@@ -520,9 +535,17 @@ export interface PlayerMenuItemProps {
 /**
  * Un item simple, sans état coché : une ligne qui mène ailleurs, comme celles
  * du menu de réglages. Il ne ferme pas le menu — ouvrir un sous-niveau ne
- * quitte pas le popup.
+ * quitte pas le popup — sauf si `closeOnSelect` le demande.
  */
-export function PlayerMenuItem({ onSelect, disabled, className, children }: PlayerMenuItemProps) {
+export function PlayerMenuItem({
+  onSelect,
+  closeOnSelect,
+  disabled,
+  className,
+  children,
+}: PlayerMenuItemProps) {
+  const { closeMenu } = useMenu();
+
   return (
     <button
       type="button"
@@ -532,7 +555,10 @@ export function PlayerMenuItem({ onSelect, disabled, className, children }: Play
       disabled={disabled}
       tabIndex={-1}
       className={cn(ITEM_CLASSNAME, className)}
-      onClick={onSelect}
+      onClick={() => {
+        onSelect();
+        if (closeOnSelect) closeMenu(true);
+      }}
     >
       {children}
     </button>

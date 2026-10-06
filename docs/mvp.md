@@ -45,6 +45,18 @@ et se déplie au survol, la vitesse et la qualité quittent la barre pour un men
 niveaux. Le bouton de qualité grisé devient une ligne grisée de ce menu. Voir **Contrôles** et
 **Moteur vidéo**.
 
+Amendé le 5 octobre 2026, pendant la phase 6 : les sous-titres entrent par une prop racine, avec
+un bouton CC dans la barre, une ligne « Subtitles » en tête du menu de réglages et le raccourci
+`c`. Leur taille et leur position sont reportées à la feature suivante, et les chapitres chargés
+depuis un fichier WebVTT deviennent une feature séparée. Voir **Contrôles**, **Raccourcis clavier**,
+**Chapitres** et **Sous-titres**.
+
+Amendé le 5 octobre 2026, pendant la phase 6 : un lecteur étroit — moins de 30rem de contenu dans la
+barre, soit environ 506 px de large — a sa propre barre. Chapitres, sous-titres et Picture-in-Picture
+la quittent pour le menu de réglages, qui gagne les lignes « Chapters » et Picture-in-Picture. La
+décision se prend sur la largeur du lecteur, pas sur le type d'appareil. Voir **Contrôles** et
+**Raccourcis clavier**.
+
 ## Lecture
 
 Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
@@ -103,10 +115,11 @@ publié, voir Distribution.
 | Scrubber avec aperçu du buffer, glissement comme YouTube : pause au premier déplacement, recherche continue limitée, reprise au relâchement | maison — voir note |
 | Volume + bascule muet : l'icône seule, le curseur se déplie à sa droite au survol ou au focus | maison — voir note — plus `Button` |
 | Horodatage `0:42 / 9:56` | aucune — du texte |
-| Réglages : un bouton à roue dentée, un popup à deux niveaux — vitesse de lecture (0,5× → 2×) et qualité | maison — voir note sur les menus |
+| Sous-titres : un bouton CC, actif ou coupé — il disparaît sans piste, et dans un lecteur étroit | `Button` |
+| Réglages : un bouton à roue dentée, un popup à deux niveaux — sous-titres, vitesse de lecture (0,5× → 2×) et qualité, et, dans un lecteur étroit, chapitres et Picture-in-Picture | maison — voir note sur les menus |
 | Pastille « Live » | `Button` — seulement sur un flux en direct |
 | Plein écran | `Button` |
-| Picture-in-Picture | `Button` |
+| Picture-in-Picture — dans un lecteur étroit, une ligne du menu de réglages | `Button` |
 
 Note sur les curseurs : le `Slider` shadcn n'expose pas sa piste, ce qui rend impossibles le
 buffer, les chapitres segmentés et le survol. Et il ne laisse pas nommer l'élément qui porte le
@@ -127,10 +140,16 @@ est porté là n'est plus rendu dès qu'un autre élément est en plein écran �
 du lecteur qui passe en plein écran, pour que la barre y survive. Les briques pour recomposer le
 menu ne sont pas exportées, et leur structure interne diverge entre `radix` et `base`. Nos menus
 sont donc écrits à la main, rendus **dans** le conteneur, et reprennent les classes et les tokens
-du `DropdownMenu` pour hériter du thème de l'hôte. Ça vaut pour les réglages (vitesse et qualité),
-les chapitres et les sous-titres. Le menu de réglages est à deux niveaux : la racine liste les
-lignes avec leur valeur courante (`Speed 1×`, `Quality Auto (720p)`), chacune ouvre sa liste de
-choix, et choisir applique et ferme. Les chapitres restent un bouton à part dans la barre. Les
+du `DropdownMenu` pour hériter du thème de l'hôte. Ça vaut pour les réglages (sous-titres, vitesse
+et qualité) et les chapitres. Le menu de réglages est à deux niveaux : la racine liste les lignes
+avec leur valeur courante (`Subtitles English`, `Speed 1×`, `Quality Auto (720p)`), chacune ouvre
+sa liste de choix, et choisir applique et ferme. Au-dessus du seuil, la ligne
+« Subtitles » vient en tête et n'existe que si la vidéo a des pistes ; son popup propose « Off »
+puis une entrée par piste, dans l'ordre de la prop. Le bouton de réglages reste dans la barre tant
+qu'au moins une ligne y est : avec `playbackRate` et `quality` coupés, il ne porte plus que
+« Subtitles », et disparaît sans piste. Au-dessus du seuil, les chapitres et les sous-titres gardent
+chacun un bouton à part dans la barre ; en dessous, ils entrent dans ce menu, et le bouton de
+réglages disparaît quand plus aucune ligne n'y reste (voir le lecteur étroit plus bas). Les
 flèches `←`/`→` n'atteignent jamais la keymap tant qu'un menu a le focus, et la hauteur d'un popup
 est bornée à la place qui reste dans le lecteur.
 
@@ -159,6 +178,27 @@ et non sur une durée ; il reste inerte tant que cette fenêtre est trop courte 
 cherche. L'horodatage affiche le **retard sur le bord** (`−0:42`), et la pastille « Live » ramène
 au bord d'un clic — pleine quand on y est, éteinte quand on est en arrière.
 
+Au-dessus du seuil, le bouton CC se place entre les chapitres et les réglages. Son nom reste « Subtitles » et son état
+passe par `aria-pressed` ; actif, une barre `bg-primary` se pose sous l'icône. Il disparaît, comme
+le menu des chapitres, quand la vidéo n'a pas de piste.
+
+**Le lecteur étroit** — moins de 30rem de contenu dans la barre, le seuil de l'horodatage, soit
+environ 506 px de large — a sa barre : lecture, pastille « Live » sur un direct, son, horodatage,
+réglages, plein écran. Les boutons des chapitres, CC et Picture-in-Picture n'y sont pas rendus :
+ni visibles, ni dans la tabulation, ni exposés aux lecteurs d'écran. Ils passent dans le menu de
+réglages, dont les lignes sont, dans l'ordre, « Chapters », « Subtitles », « Speed », « Quality »,
+puis Picture-in-Picture. Chaque ligne suit la règle d'affichage du contrôle qu'elle remplace :
+« Chapters » seulement si la vidéo a des chapitres (donc jamais en direct), « Subtitles »
+seulement si elle a des pistes, la ligne Picture-in-Picture grisée quand le navigateur ne le permet
+pas. Chaque clé de `controls` à `false` (`chapters`, `subtitles`, `playbackRate`, `quality`,
+`pictureInPicture`) retire sa ligne, et le bouton de réglages disparaît quand il n'en reste aucune.
+« Chapters » affiche le titre du chapitre en cours et ouvre la liste des chapitres, comme le menu
+de la barre large ; la ligne Picture-in-Picture porte le libellé du bouton qu'elle remplace, entre
+ou sort du mode, et ferme le popup. La forme se décide sur la **largeur du lecteur**, pas sur le
+type d'appareil : un tactile large garde la barre large. Franchir le seuil — redimensionnement,
+entrée ou sortie du plein écran — change la forme aussitôt, sans perdre la lecture, la piste, la
+vitesse ni la qualité. À 360 px, la barre étroite tient en entier, volume replié comme déplié.
+
 Deux gestes sur l'image, hors tableau parce qu'ils n'ont pas de bouton : un clic bascule la
 lecture, un double-clic bascule le plein écran.
 
@@ -176,6 +216,7 @@ Robustes et cross-browser.
 | `↑` / `↓` | volume |
 | `f` | plein écran, avec gestion des préfixes navigateurs |
 | `m` | muet |
+| `c` | sous-titres : activer ou couper — seulement s'il y a des pistes |
 | `0`–`9` | saut à X0 % de la vidéo |
 
 Désactivation automatique quand le focus est dans un `input`, un `textarea` ou un élément
@@ -196,10 +237,14 @@ ne lui parviendrait. Il ne s'ajoute pas à l'ordre de tabulation et ne s'entoure
   leur position sur la rangée du haut — en AZERTY, sans Maj.
 - **`Espace` sur un bouton focalisé déclenche ce bouton** ; `k` reste lecture-pause partout.
 - Les combinaisons avec Ctrl, Cmd ou Alt restent au navigateur. Une bascule (`Espace`, `k`, `m`,
-  `f`) ne se répète pas quand la touche reste enfoncée.
+  `f`, `c`) ne se répète pas quand la touche reste enfoncée.
 - Chaque raccourci fait apparaître la barre. Pas d'icône d'action au centre de l'image.
 - `controls.keyboard: false` coupe les raccourcis, pour un hôte qui a déjà les siens.
-- Les boutons lecture, muet et plein écran annoncent leur raccourci (`aria-keyshortcuts`).
+- Les boutons lecture, muet, plein écran et sous-titres annoncent leur raccourci
+  (`aria-keyshortcuts`) ; dans un lecteur étroit, le bouton CC n'est plus dans la barre, mais `c`
+  garde son effet.
+- **`c` n'agit que si le lecteur propose les sous-titres** (bouton CC, ou ligne « Subtitles » dans un lecteur étroit) : sans piste, ou avec
+  `controls.subtitles: false`, la touche reste à l'hôte.
 
 ## Chapitres
 
@@ -212,8 +257,8 @@ La prop est racine et non une clé de `controls` : ici on fournit **ce qu'il y a
 seul tenant sans rien retirer au menu.
 
 **`<VideoCn>` n'accepte toujours pas de `children`.** Le `<track kind="chapters">` du web standard
-n'y change rien : le jour où les chapitres arriveront d'un fichier WebVTT — en phase 6, avec les
-sous-titres, où la mécanique `<track>` s'écrit de toute façon —, c'est le lecteur qui rendra la
+n'y change rien : le jour où les chapitres arriveront d'un fichier WebVTT — feature séparée, juste
+après les sous-titres, dont la mécanique `<track>` sert de base —, c'est le lecteur qui rendra la
 balise depuis une prop. Le composant reste fermé, et les deux formes coexisteront : un tableau en
 dur pour la petite vidéo, un fichier pour qui en a un. C'est le fichier qui compte pour le SaaS,
 parce qu'il change sans redéploiement de la page hôte.
@@ -248,9 +293,42 @@ reprendre avant la v1 si le temps le permet.
 
 ## Sous-titres
 
-Support des `<track>` natifs et de l'API `TextTrack`. Bascule on/off, sélection de piste,
-réglage de la taille et de la position. **Pas de génération automatique** : l'utilisateur
-apporte son VTT.
+Support des `<track>` natifs et de l'API `TextTrack`. Bascule on/off, sélection de piste.
+**Pas de génération automatique** : l'utilisateur apporte son VTT. Le réglage de la taille et de la
+position **n'est pas dans cette feature** : il fait l'objet de la feature suivante (décision du
+5 octobre 2026).
+
+Prop **racine** `subtitles: { src, srcLang, label, default? }[]`, les attributs d'un `<track>` sous
+leur nom React, comme `chapters` pour les chapitres : on fournit ce qu'il y a à afficher,
+`controls` règle ce qui s'affiche. `controls.subtitles: false` retire le bouton CC, la ligne du menu
+et le raccourci `c` ; une piste marquée `default` s'affiche quand même, `controls` ne réglant pas le
+contenu. `<VideoCn>` n'accepte toujours pas de `children` : le lecteur rend lui-même les `<track>`
+depuis la prop.
+
+- **Pas de piste, pas de contrôle.** Sans prop ou avec une liste vide, ni bouton CC, ni ligne
+  « Subtitles », et `c` ne fait rien.
+- **L'URL est l'identité d'une piste.** Une entrée sans `src` ou sans libellé est écartée, et pour
+  une URL répétée la première gagne. Quand la liste change, la piste active reste active si son
+  URL y figure encore ; sinon les sous-titres sont coupés.
+- **`default`** : seule la première piste marquée compte, appliquée au montage — ou à la première
+  arrivée d'une liste non vide, pour qui charge ses pistes de façon asynchrone. Sans piste marquée,
+  les sous-titres démarrent coupés.
+- **Une seule piste affichée à la fois.** Le bouton CC rallume la dernière piste choisie depuis le
+  montage, à défaut la piste marquée par défaut, à défaut la première.
+- **Identique sur les deux moteurs.** Les sous-titres contenus dans un manifeste HLS ou DASH ne sont
+  jamais proposés : seules les pistes de la prop le sont. Shaka garde sa gestion texte désactivée.
+- **Rendu maison.** La piste active est chargée par le navigateur mais ne s'y dessine pas : le
+  lecteur affiche les répliques dans son conteneur, donc aussi en plein écran, centrées en bas, chaque
+  ligne sur un fond tiré des tokens du thème. Quand la barre est visible, le texte remonte
+  au-dessus du scrubber, et redescend quand elle se masque. Taille proportionnelle à la largeur du
+  lecteur. Les réglages de position et de style inscrits dans le fichier (`line`, `position`,
+  `align`, `::cue`) sont ignorés. Seule exception, le plein écran natif de l'iPhone, où le conteneur
+  n'est plus affiché : le système dessine alors la piste lui-même.
+- **Même origine.** Les fichiers `.vtt` doivent être servis depuis l'origine de la page : le lecteur
+  n'ajoute pas `crossorigin`, qui casserait les vidéos servies sans en-tête CORS. Une prop
+  `crossOrigin` est notée pour la phase 7.
+- **Hors périmètre ici** : la mémorisation du choix d'une visite à l'autre, le choix selon la
+  langue du navigateur, les formats autres que WebVTT, le signalement d'un fichier introuvable.
 
 ## Theming
 

@@ -32,6 +32,7 @@ export const SHORTCUTS: readonly Shortcut[] = [
   },
   { keys: ["M"], action: "Mute / unmute" },
   { keys: ["F"], action: "Fullscreen" },
+  { keys: ["C"], action: "Subtitles on / off" },
   { keys: ["0", "9"], joiner: "–", action: "Jump to 0%, 10%… 90% of the video" },
 ];
 

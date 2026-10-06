@@ -8,7 +8,7 @@
       "type": "registry:ui",
       "title": "Video Player",
       "description": "Le lecteur vidéo complet : socle, contrôles, chapitres et sous-titres.",
-      "docs": "Drop it in and it works:\n\n  import { VideoCn } from \"@/components/ui/video-player/video-cn\"\n\n  <VideoCn src=\"/clip.mp4\" />\n\nEverything is tuned through props — never by editing the code you just received:\n\n  <VideoCn\n    src=\"https://example.com/stream.m3u8\"\n    poster=\"/poster.jpg\"\n    defaultVolume={0.5}\n    controls={{\n      pictureInPicture: false,\n      playbackRate: { rates: [1, 1.5, 2] },\n      autoHideDelay: 2000,\n    }}\n  />\n\nChapters are a prop as well — a start time and a title, in any order:\n\n  <VideoCn\n    src=\"/talk.mp4\"\n    chapters={[\n      { time: 0, label: \"Introduction\" },\n      { time: 135, label: \"Setting things up\" },\n      { time: 450, label: \"Questions\" },\n    ]}\n  />\n\nThey segment the progress bar and fill a menu. Live streams ignore them.\n\nThe source type is detected from the URL. Pass type=\"hls\" | \"dash\" | \"native\" when\nthe URL is signed or has no extension. Adjust the import path to match your aliases.",
+      "docs": "Drop it in and it works:\n\n  import { VideoCn } from \"@/components/ui/video-player/video-cn\"\n\n  <VideoCn src=\"/clip.mp4\" />\n\nEverything is tuned through props — never by editing the code you just received:\n\n  <VideoCn\n    src=\"https://example.com/stream.m3u8\"\n    poster=\"/poster.jpg\"\n    defaultVolume={0.5}\n    controls={{\n      pictureInPicture: false,\n      playbackRate: { rates: [1, 1.5, 2] },\n      autoHideDelay: 2000,\n    }}\n  />\n\nChapters are a prop as well — a start time and a title, in any order:\n\n  <VideoCn\n    src=\"/talk.mp4\"\n    chapters={[\n      { time: 0, label: \"Introduction\" },\n      { time: 135, label: \"Setting things up\" },\n      { time: 450, label: \"Questions\" },\n    ]}\n  />\n\nThey segment the progress bar and fill a menu. Live streams ignore them.\n\nSubtitles are a prop too — your own WebVTT files, one entry per language:\n\n  <VideoCn\n    src=\"/talk.mp4\"\n    subtitles={[\n      { src: \"/subs/en.vtt\", srcLang: \"en\", label: \"English\", default: true },\n      { src: \"/subs/fr.vtt\", srcLang: \"fr\", label: \"French\" },\n    ]}\n  />\n\nThey add a CC button and a Subtitles entry to the settings menu. The .vtt files must be served\nfrom the same origin as your page, or the browser will not load them.\n\nThe source type is detected from the URL. Pass type=\"hls\" | \"dash\" | \"native\" when\nthe URL is signed or has no extension. Adjust the import path to match your aliases.",
       "registryDependencies": [
         "@shadcn/button"
       ],
@@ -79,6 +79,11 @@
           "target": "@ui/video-player/chapters.ts"
         },
         {
+          "path": "registry/videocn/subtitles.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/subtitles.ts"
+        },
+        {
           "path": "registry/videocn/controls-options.ts",
           "type": "registry:ui",
           "target": "@ui/video-player/controls-options.ts"
@@ -102,6 +107,11 @@
           "path": "registry/videocn/use-keyboard-shortcuts.ts",
           "type": "registry:ui",
           "target": "@ui/video-player/use-keyboard-shortcuts.ts"
+        },
+        {
+          "path": "registry/videocn/use-subtitles.ts",
+          "type": "registry:ui",
+          "target": "@ui/video-player/use-subtitles.ts"
         },
         {
           "path": "registry/videocn/video-cn.tsx",
@@ -162,6 +172,16 @@
           "path": "registry/videocn/chapter-menu.tsx",
           "type": "registry:ui",
           "target": "@ui/video-player/chapter-menu.tsx"
+        },
+        {
+          "path": "registry/videocn/subtitles-toggle.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/subtitles-toggle.tsx"
+        },
+        {
+          "path": "registry/videocn/subtitle-display.tsx",
+          "type": "registry:ui",
+          "target": "@ui/video-player/subtitle-display.tsx"
         },
         {
           "path": "registry/videocn/settings-menu.tsx",
