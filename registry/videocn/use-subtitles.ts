@@ -178,7 +178,11 @@ export function useSubtitles(options: UseSubtitlesOptions): UseSubtitlesResult {
       const ours = readOurTracks(element);
 
       // Les pistes du moteur ou du système : jamais affichées, nous seuls
-      // décidons de ce que montre le lecteur.
+      // décidons de ce que montre le lecteur. Les pistes `chapters` ne sont
+      // jamais concernées, dont celle que `use-chapter-track` garde en
+      // `hidden` : la boucle ne force que `subtitles` et `captions`, et `ours`
+      // ne retient que les pistes de sous-titres. Les chapitres comme le calque
+      // des sous-titres en dépendent.
       const mine = new Set(ours.map((entry) => entry.track));
       for (let index = 0; index < textTracks.length; index += 1) {
         const track = textTracks[index];

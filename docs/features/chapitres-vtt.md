@@ -14,12 +14,12 @@ que la page, dont chaque réplique est un chapitre. « Le tableau équivalent »
 
 ### Fournir le fichier
 
-- [ ] CA1 — Étant donné `chapters="<URL d'un fichier de chapitres>"` sur une vidéo à la demande,
+- [x] CA1 — Étant donné `chapters="<URL d'un fichier de chapitres>"` sur une vidéo à la demande,
   quand la durée de la vidéo est connue et le fichier chargé, alors les segments du scrubber, le
   menu des chapitres et, sous le seuil du lecteur étroit, la ligne « Chapters » du menu Settings
   sont ceux que donne le tableau équivalent : mêmes segments, mêmes titres dans le même ordre, même
   chapitre en cours coché, même saut au choix d'un chapitre.
-- [ ] CA2 — Étant donné un fichier de chapitres, alors seuls le début et le titre de chaque
+- [x] CA2 — Étant donné un fichier de chapitres, alors seuls le début et le titre de chaque
   réplique comptent ; sa fin est ignorée. Les règles du tableau s'appliquent telles quelles : la
   fin d'un chapitre est le début du suivant et la durée de la vidéo pour le dernier, le premier
   chapitre commence à 0, l'ordre des répliques dans le fichier n'importe pas, une réplique qui
@@ -27,57 +27,57 @@ que la page, dont chaque réplique est un chapitre. « Le tableau équivalent »
   celle qui finit le plus tard, et à fins égales la première du fichier (ordre des répliques
   imposé par le navigateur). Un trou
   entre deux répliques (ex. 0:00–1:00 puis 1:30–2:00) ne laisse aucun trou sur la barre.
-- [ ] CA3 — Étant donné une réplique dont le texte porte des balises WebVTT (`<b>`, `<i>`,
+- [x] CA3 — Étant donné une réplique dont le texte porte des balises WebVTT (`<b>`, `<i>`,
   `<v Nom>`, `<c.classe>`…), des entités (`&amp;`) ou plusieurs lignes, alors son titre est le texte
   affichable sans balises, entités décodées, lignes jointes par une espace, espaces de bord
   retirées. L'identifiant et les réglages de la réplique (`line`, `position`…) sont ignorés. Une
   réplique dont le titre est vide est écartée.
-- [ ] CA4 — Étant donné le même fichier de chapitres passé à une source MP4 (moteur natif), HLS et
+- [x] CA4 — Étant donné le même fichier de chapitres passé à une source MP4 (moteur natif), HLS et
   DASH (Shaka), alors les chapitres affichés sont identiques : mêmes titres, mêmes débuts, même
   ordre ; la largeur des segments suit la durée de chaque source. Seuls les chapitres de la prop sont
   proposés, jamais d'éventuels chapitres portés par la vidéo ou son manifeste.
-- [ ] CA5 — Étant donné un fichier de chapitres et un lecteur monté sans lecture lancée, alors les
+- [x] CA5 — Étant donné un fichier de chapitres et un lecteur monté sans lecture lancée, alors les
   chapitres apparaissent dès que la durée de la vidéo est connue et le fichier chargé, sans action
   du spectateur.
-- [ ] CA6 — Étant donné un fichier de chapitres sur un flux en direct, alors ni segments, ni menu
+- [x] CA6 — Étant donné un fichier de chapitres sur un flux en direct, alors ni segments, ni menu
   des chapitres, ni ligne « Chapters ».
 
 ### Changer de source
 
-- [ ] CA7 — Étant donné un lecteur monté, quand `chapters` passe d'une URL à une autre, d'une URL à
+- [x] CA7 — Étant donné un lecteur monté, quand `chapters` passe d'une URL à une autre, d'une URL à
   un tableau, d'un tableau à une URL, ou d'une URL à `undefined`, alors la barre et le menu suivent
   la nouvelle source. Tant que le nouveau fichier n'est pas chargé, la barre est d'un seul tenant et
   le menu absent : jamais les chapitres de l'ancienne source, jamais un mélange des deux.
-- [ ] CA8 — Étant donné une page hôte qui rend de nouveau `<VideoCn>` avec la même URL de
+- [x] CA8 — Étant donné une page hôte qui rend de nouveau `<VideoCn>` avec la même URL de
   chapitres, alors le fichier n'est pas redemandé (aucune nouvelle requête réseau) et les chapitres
   ne disparaissent pas, même un instant.
 
 ### Fichier inexploitable
 
-- [ ] CA9 — Étant donné `chapters` égal à une chaîne vide ou blanche, une URL introuvable (404), un
+- [x] CA9 — Étant donné `chapters` égal à une chaîne vide ou blanche, une URL introuvable (404), un
   fichier qui n'est pas du WebVTT, ou un fichier sans aucune réplique exploitable, alors le lecteur
   se comporte comme sans chapitres (barre d'un seul tenant, ni menu ni ligne « Chapters »), la
   vidéo se lit normalement, et aucune exception non interceptée n'apparaît dans la console.
 
 ### Cohabitation
 
-- [ ] CA10 — Étant donné un fichier de chapitres, alors `controls={{ chapters: false }}` retire le
+- [x] CA10 — Étant donné un fichier de chapitres, alors `controls={{ chapters: false }}` retire le
   menu des chapitres et la ligne « Chapters », et `controls={{ scrubber: { chapters: false } }}`
   garde la barre d'un seul tenant sans toucher au menu, comme avec le tableau.
-- [ ] CA11 — Étant donné un fichier de chapitres et des pistes de sous-titres, alors la piste de
+- [x] CA11 — Étant donné un fichier de chapitres et des pistes de sous-titres, alors la piste de
   chapitres n'apparaît jamais dans la liste « Subtitles », aucun de ses titres ne s'affiche sur
   l'image, et le bouton CC, la touche `c` et la piste par défaut se comportent comme sans fichier de
   chapitres.
-- [ ] CA12 — Étant donné `chapters` passé en tableau, alors rien ne change par rapport à
+- [x] CA12 — Étant donné `chapters` passé en tableau, alors rien ne change par rapport à
   aujourd'hui : les exemples de `/docs` qui utilisent un tableau (exemple principal, Chapters,
   Configured) et le playground se comportent comme sur `master`.
-- [ ] CA13 — Étant donné un projet TypeScript qui a installé le lecteur, alors `chapters` accepte
+- [x] CA13 — Étant donné un projet TypeScript qui a installé le lecteur, alors `chapters` accepte
   une `string` ou un tableau de `Chapter`, et rejette tout autre type. Le JSDoc de la prop décrit
   les deux formes et l'obligation de même origine pour le fichier.
 
 ### Site et documentation
 
-- [ ] CA14 — Étant donné la page `/docs`, alors elle documente la forme fichier de `chapters` : une
+- [x] CA14 — Étant donné la page `/docs`, alors elle documente la forme fichier de `chapters` : une
   réplique par chapitre, seuls son début et son texte comptent, fichier servi depuis la même origine
   que la page. Elle montre un exemple jouable : Sintel avec les chapitres de l'exemple actuel, sous
   forme d'un fichier `.vtt` servi par le site, l'extrait de code identique à ce qui est monté et le
@@ -85,7 +85,7 @@ que la page, dont chaque réplique est un chapitre. « Le tableau équivalent »
   `string | { time: number; label: string }[]`. La chaîne
   `docs` de `registry.json`, affichée par le CLI à l'installation, montre aussi la forme fichier.
   Textes en anglais.
-- [ ] CA15 — Étant donné `docs/mvp.md`, alors un amendement daté du jour décrit la forme fichier de
+- [x] CA15 — Étant donné `docs/mvp.md`, alors un amendement daté du jour décrit la forme fichier de
   la prop `chapters` et ses règles (début et titre seulement, même origine, fichier inexploitable =
   pas de chapitres), et la section Chapitres ne la présente plus comme à venir.
 
@@ -462,3 +462,12 @@ Commandes :
 - 2026-10-14 — Ambiguïtés du plan : CA2 reformulé (doublons de début : la fin la plus tardive
   gagne, à fins égales la première du fichier) ; CA4 précisé (mêmes titres, débuts, ordre) ; CA14
   précisé (union des deux formes) ; entrée « upcoming » du changelog retirée (validée par Romain)
+- 2026-10-14 — Vérification : CA1–CA15 OK sous Chrome, Firefox et WebKit (builds Playwright), bancs
+  `base` et `radix` compris ; Safari réel (MP4, HLS par Shaka, HLS `type="native"`) et iPhone restent
+  à vérifier à la main par Romain. La décision 3 (`hidden` reposé sur `change`) n'a pas pu être
+  éprouvée sur le défaut Safari documenté par Shaka ; si elle échoue, passer à l'option C
+- 2026-10-14 — Bundle remesuré : gzip de 17 231 o à 17 553 o, `bundle.ts` passe à 18 kB (décision 6)
+- 2026-10-14 — Risque confirmé sous Chrome : un fichier de chapitres lent retarde le début de lecture
+  de sa latence (3 s → 3 s), comme une piste de sous-titres par défaut ; accepté, non couvert par CA9
+- 2026-10-14 — Review OK du premier coup, sans bloquant ; retouches de texte de « À noter »
+  appliquées (`/docs`, `mvp.md`, `registry.json`, commentaire de `lazy-player.tsx`)

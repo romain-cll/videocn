@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -21,7 +24,12 @@ import {
   ReferenceTable,
   type ReferenceRow,
 } from "@/components/docs/reference-table";
-import { EXAMPLE_VIDEOS, SINTEL_CHAPTERS, SINTEL_SUBTITLES } from "@/lib/videos";
+import {
+  EXAMPLE_VIDEOS,
+  SINTEL_CHAPTERS,
+  SINTEL_CHAPTERS_FILE,
+  SINTEL_SUBTITLES,
+} from "@/lib/videos";
 import { Frame } from "@/components/frame";
 import { bundleSize } from "@/lib/bundle";
 import { BUNNY_CHAPTERS, getDemoSource } from "@/lib/demo-media";
@@ -45,6 +53,7 @@ const S = {
   usage: { id: "usage", title: "Usage" },
   examples: { id: "examples", title: "Examples" },
   chapters: { id: "chapters", title: "Chapters" },
+  chaptersFile: { id: "chapters-from-a-file", title: "Chapters from a file" },
   subtitles: { id: "subtitles", title: "Subtitles" },
   streaming: { id: "streaming", title: "Streaming (HLS)" },
   live: { id: "live", title: "Live" },
@@ -66,7 +75,17 @@ const TOC: readonly DocsTocItem[] = [
   S.usage,
   {
     ...S.examples,
-    items: [S.chapters, S.subtitles, S.streaming, S.live, S.poster, S.configured, S.square, S.palette],
+    items: [
+      S.chapters,
+      S.chaptersFile,
+      S.subtitles,
+      S.streaming,
+      S.live,
+      S.poster,
+      S.configured,
+      S.square,
+      S.palette,
+    ],
   },
   { ...S.api, items: [S.props, S.controls] },
   S.keyboard,
@@ -121,6 +140,23 @@ const CHAPTERS = {
 const CHAPTERS_CODE = `${chaptersCode(SINTEL_CHAPTERS)}
 
 ${videoCnSnippet({ ...CHAPTERS, chapters: "chapters" })}`;
+
+const CHAPTERS_FILE = {
+  src: SINTEL.src,
+  poster: SINTEL.poster,
+  chapters: SINTEL_CHAPTERS_FILE,
+};
+// Le contenu du fichier servi, lu au build : l'extrait ne peut pas diverger de
+// ce que le lecteur charge.
+const CHAPTERS_FILE_VTT = readFileSync(
+  join(process.cwd(), "public", SINTEL_CHAPTERS_FILE),
+  "utf8",
+).trimEnd();
+const CHAPTERS_FILE_JSX = videoCnSnippet({
+  ...CHAPTERS_FILE,
+  chapters: undefined,
+  chaptersUrl: CHAPTERS_FILE.chapters,
+});
 
 /** Écrit une liste de pistes telle qu'on la taperait, pour l'extrait. */
 function subtitlesCode(tracks: readonly SubtitleTrack[]) {
@@ -194,11 +230,12 @@ const PROPS: readonly ReferenceRow[] = [
   },
   {
     name: "chapters",
-    type: "{ time: number; label: string }[]",
+    type: "string | { time: number; label: string }[]",
     description: (
       <>
-        Start time in seconds and title. See{" "}
-        <DocsLink href={`#${S.chapters.id}`}>Chapters</DocsLink>.
+        Start time in seconds and title, or the URL of a WebVTT chapters file. See{" "}
+        <DocsLink href={`#${S.chapters.id}`}>Chapters</DocsLink> and{" "}
+        <DocsLink href={`#${S.chaptersFile.id}`}>Chapters from a file</DocsLink>.
       </>
     ),
   },
@@ -382,6 +419,59 @@ export default function DocsPage() {
             }
           >
             <LazyPlayer {...CHAPTERS} ratio="sintel" />
+          </DocsExample>
+
+          <DocsExample
+            {...S.chaptersFile}
+            label='chapters=".vtt"'
+            description={
+              <>
+                Pass the URL of a WebVTT file instead of a list. Each cue is a chapter: the start of
+                the cue is the start of the chapter, and its text is the title. These are the same
+                chapters of Sintel as above, read from a file served by this site.
+              </>
+            }
+            code={[
+              { code: CHAPTERS_FILE_VTT, title: `public${SINTEL_CHAPTERS_FILE}` },
+              { code: CHAPTERS_FILE_JSX },
+            ]}
+            extra={
+              <>
+                <DocsList>
+                  <li>
+                    Only the start time and the text of a cue are used. The end time is ignored, so
+                    a gap between two cues leaves no gap on the bar.
+                  </li>
+                  <li>
+                    Tags are stripped and entities decoded, lines are joined with a space, and cue
+                    identifiers and settings are ignored. A cue without text is dropped.
+                  </li>
+                  <li>
+                    The rules of the list apply: a chapter ends where the next one starts, the
+                    first chapter starts at 0, order does not matter, and cues starting at or
+                    after the end of the video are dropped. If several cues start at the same
+                    time, only one is kept: the one that ends last, or the first in the file if they
+                    end together.
+                  </li>
+                  <li>
+                    A missing or invalid file, or one without a usable cue, gives no chapters, and
+                    the video plays as usual. Nothing is reported. While a new file loads, the bar
+                    stays in one piece.
+                  </li>
+                  <li>
+                    Chapters embedded in the video or in an HLS or DASH manifest are ignored: only
+                    the ones you pass are offered, whatever the source.
+                  </li>
+                </DocsList>
+                <DocsText>
+                  The file must be served from the same origin as the page. The video element has
+                  no <InlineCode>crossorigin</InlineCode> attribute, so the browser does not load a
+                  track from another origin, and fails silently.
+                </DocsText>
+              </>
+            }
+          >
+            <LazyPlayer {...CHAPTERS_FILE} ratio="sintel" />
           </DocsExample>
 
           <DocsExample

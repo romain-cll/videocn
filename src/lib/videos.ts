@@ -53,6 +53,15 @@ export const SINTEL_CHAPTERS = [
 ] as const;
 
 /**
+ * Les mêmes chapitres que `SINTEL_CHAPTERS`, sous forme de fichier WebVTT servi
+ * par le site, pour l'exemple « Chapters from a file » de la doc. Titres et
+ * débuts doivent rester identiques à ceux du tableau. Le fichier écrit aussi des
+ * fins (le début suivant, et la durée du MP4 d'archive.org pour la dernière) :
+ * le lecteur les ignore.
+ */
+export const SINTEL_CHAPTERS_FILE = "/examples/sintel-chapters.vtt";
+
+/**
  * Les sous-titres officiels de Sintel, pour l'exemple des sous-titres de la
  * doc. Ils sont servis par le site et non par archive.org : le `<video>` ne
  * porte pas d'attribut `crossorigin`, donc un `<track>` ne se charge que depuis

@@ -9,9 +9,10 @@
  * complète et ses deux fractions, calculées une fois pour toutes.
  *
  * Ce passage d'une forme à l'autre n'est pas une coquetterie : il isole le
- * rendu de la source. Le jour où les chapitres arriveront d'un fichier WebVTT
- * — qui, lui, porte des fins explicites —, il suffira de produire le même
- * `ResolvedChapter[]`. Ni la piste ni le menu n'en sauront rien.
+ * rendu de la source. Un fichier WebVTT, que `use-chapter-track` lit, produit
+ * lui aussi un `Chapter[]` : le début de chaque réplique et son titre, ses fins
+ * sont ignorées. Il passe donc par `resolveChapters` comme le tableau, et ni la
+ * piste ni le menu n'en savent rien.
  */
 
 /** Ce que l'intégrateur écrit. */
