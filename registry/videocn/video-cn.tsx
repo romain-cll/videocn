@@ -28,6 +28,7 @@ import { SubtitleDisplay } from "./subtitle-display";
 import type { SubtitleTrack } from "./subtitles";
 import { useControlsVisibility } from "./use-controls-visibility";
 import { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
+import { useChapterTrack } from "./use-chapter-track";
 import { usePlayer } from "./use-player";
 
 export interface VideoCnProps {
@@ -39,14 +40,30 @@ export interface VideoCnProps {
   type?: SourceType;
   poster?: string;
   /**
-   * Les chapitres, un début et un titre par entrée, le temps en secondes.
+   * Les chapitres, sous l'une de deux formes qui s'excluent : un tableau, ou
+   * l'URL d'un fichier WebVTT.
    *
-   * L'ordre n'a pas d'importance, les doublons et les valeurs hors de la vidéo
-   * sont écartés, et le premier chapitre est ramené à zéro — un trou en tête de
-   * barre ne voudrait rien dire. Sans effet sur un flux en direct, où un
-   * chapitre n'aurait ni fin ni place fixe.
+   * Un tableau donne un début et un titre par entrée, le temps en secondes.
+   * Un fichier donne une réplique par chapitre : seuls son début et son texte
+   * comptent, sa fin est ignorée (la fin d'un chapitre est le début du suivant,
+   * un trou entre deux répliques ne laisse donc pas de trou sur la barre). Le
+   * texte est celui qu'on afficherait : sans balises, entités décodées, lignes
+   * jointes par une espace.
+   *
+   * Dans les deux cas, l'ordre n'a pas d'importance, les doublons et les
+   * valeurs hors de la vidéo sont écartés, et le premier chapitre est ramené à
+   * zéro — un trou en tête de barre ne voudrait rien dire. Sans effet sur un
+   * flux en direct, où un chapitre n'aurait ni fin ni place fixe. Seuls ces
+   * chapitres sont proposés : ceux d'un manifeste HLS ou DASH, ou du conteneur
+   * MP4, sont ignorés.
+   *
+   * Le fichier doit être servi depuis la **même origine** que la page : le
+   * lecteur n'ajoute pas d'attribut `crossorigin`. Un fichier introuvable, qui
+   * n'est pas du WebVTT ou sans réplique exploitable ne donne aucun chapitre,
+   * sans message, et la vidéo se lit normalement. Pendant le chargement d'une
+   * nouvelle URL, la barre reste d'un seul tenant.
    */
-  chapters?: readonly Chapter[];
+  chapters?: string | readonly Chapter[];
   /**
    * Les pistes de sous-titres : l'URL d'un fichier WebVTT, un code de langue et
    * un libellé par entrée, et `default` sur celle qui doit s'afficher au
@@ -121,6 +138,11 @@ export function VideoCn({
     containerRef,
     subtitles,
   });
+
+  // L'URL du fichier de chapitres, nettoyée ; vide pour un tableau, `undefined`
+  // ou une chaîne blanche. Aucun `<track>` n'est rendu quand elle est vide.
+  const chapterSrc = typeof chapters === "string" ? chapters.trim() : "";
+  const { ref: chapterTrackRef, chapters: fileChapters } = useChapterTrack(chapterSrc);
 
   const { actions } = player;
   const paused = usePlayerStoreValue(player.store, (state) => state.paused);
@@ -291,10 +313,24 @@ export function VideoCn({
               label={track.label}
             />
           ))}
+          {/* Les chapitres du fichier : jamais `default` non plus, et `key` est
+              l'URL — une URL nouvelle est un élément neuf, donc une piste neuve.
+              `use-chapter-track` la passe en `hidden` pour la charger. Ce
+              `data-slot` n'est pas celui des sous-titres : `use-subtitles` ne la
+              voit pas. */}
+          {chapterSrc !== "" && (
+            <track
+              key={chapterSrc}
+              ref={chapterTrackRef}
+              data-slot="video-player-chapter-track"
+              kind="chapters"
+              src={chapterSrc}
+            />
+          )}
         </video>
         {/* Autour des contrôles et non du lecteur entier : les chapitres ne
             servent qu'à la barre, et ce fournisseur s'abonne à la durée. */}
-        <ChaptersProvider chapters={chapters}>
+        <ChaptersProvider chapters={typeof chapters === "string" ? fileChapters : chapters}>
           <ControlsProvider options={controlsOptions} visible={visible} holdVisible={holdVisible}>
             {/* Dans le fournisseur des contrôles : le calque a besoin de savoir
                 s'il y a une barre à éviter. Avant elle, pour passer dessous. */}

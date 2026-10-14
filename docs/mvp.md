@@ -57,6 +57,11 @@ la quittent pour le menu de réglages, qui gagne les lignes « Chapters » et Pi
 décision se prend sur la largeur du lecteur, pas sur le type d'appareil. Voir **Contrôles** et
 **Raccourcis clavier**.
 
+Amendé le 14 octobre 2026 : la prop `chapters` accepte aussi l'URL d'un fichier WebVTT, une
+réplique par chapitre, seuls son début et son titre comptant. Le fichier est servi depuis la même
+origine que la page, et un fichier inexploitable ne donne simplement pas de chapitres. Voir
+**Chapitres**.
+
 ## Lecture
 
 Un wrapper autour de `<video>` natif et un hook `usePlayer` exposant l'état :
@@ -248,8 +253,8 @@ ne lui parviendrait. Il ne s'ajoute pas à l'ordre de tabulation et ne s'entoure
 
 ## Chapitres
 
-Prop **racine** `chapters: { time, label }[]`. Rendu en segments sur le scrubber, plus un menu
-listant les titres.
+Prop **racine** `chapters: string | { time, label }[]`. Rendu en segments sur le scrubber, plus un
+menu listant les titres.
 
 La prop est racine et non une clé de `controls` : ici on fournit **ce qu'il y a à afficher**,
 `controls` règle **ce qui s'affiche**. Les deux clés d'affichage existent quand même —
@@ -257,11 +262,29 @@ La prop est racine et non une clé de `controls` : ici on fournit **ce qu'il y a
 seul tenant sans rien retirer au menu.
 
 **`<VideoCn>` n'accepte toujours pas de `children`.** Le `<track kind="chapters">` du web standard
-n'y change rien : le jour où les chapitres arriveront d'un fichier WebVTT — feature séparée, juste
-après les sous-titres, dont la mécanique `<track>` sert de base —, c'est le lecteur qui rendra la
-balise depuis une prop. Le composant reste fermé, et les deux formes coexisteront : un tableau en
-dur pour la petite vidéo, un fichier pour qui en a un. C'est le fichier qui compte pour le SaaS,
-parce qu'il change sans redéploiement de la page hôte.
+n'y change rien : quand `chapters` est une chaîne, c'est le lecteur qui rend la balise depuis la
+prop, comme pour les sous-titres. Le composant reste fermé, et les deux formes s'excluent : un
+tableau en dur pour la petite vidéo, un fichier pour qui en a un, sans règle de priorité ni
+fusion. C'est le fichier qui compte pour le SaaS, parce qu'il change sans redéploiement de la page
+hôte.
+
+Le fichier est un WebVTT lu par le navigateur et l'API `TextTrack`, identiquement pour les deux
+moteurs, sans analyseur maison :
+
+- **Une réplique par chapitre, début et titre seulement.** La fin de la réplique est ignorée : un
+  trou entre deux répliques ne laisse aucun trou sur la barre, et les trois règles ci-dessous
+  s'appliquent telles quelles. Le titre est le texte affichable — sans balises, entités décodées,
+  lignes jointes par une espace —, l'identifiant et les réglages de la réplique sont ignorés.
+  Deux répliques au même début n'en donnent qu'une : celle que le navigateur range en premier,
+  c'est-à-dire la fin la plus tardive, et à fins égales la première du fichier.
+- **Même origine que la page.** Le lecteur n'ajoute pas d'attribut `crossorigin` : un fichier
+  d'une autre origine ne se charge pas. `crossOrigin` est notée pour la phase 7.
+- **Un fichier inexploitable ne donne pas de chapitres**, sans signalement : introuvable, pas du
+  WebVTT, ou sans aucune réplique exploitable. La vidéo se lit normalement.
+- **Pendant le chargement, la barre est d'un seul tenant**, y compris quand l'URL change : on ne
+  montre jamais les chapitres de l'ancienne.
+- **Seuls les chapitres de la prop sont proposés.** Ceux que porterait la vidéo (conteneur MP4)
+  ou son manifeste HLS ou DASH sont ignorés.
 
 Trois règles de normalisation, appliquées une fois pour toutes :
 

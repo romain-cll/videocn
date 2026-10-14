@@ -3,7 +3,7 @@
 /**
  * Le lecteur des aperçus de la doc, monté seulement quand il sert.
  *
- * La page porte sept aperçus : les monter tous au chargement tirerait sept
+ * La page porte dix aperçus : les monter tous au chargement tirerait dix
  * `<video>` et leurs métadonnées pour un visiteur qui n'en regardera qu'un.
  * Deux modes :
  *
